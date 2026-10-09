@@ -12,6 +12,24 @@
 </style></head><body><div id="toast" class="toast"></div><div class="wrap">
 <header class="top"><div><div class="brand">PUBG Tournament Manager <span class="pill">V25 PRO</span></div><div class="sub">Competition Control • Results • Analytics • Team Intelligence</div></div><div class="topActions"><button class="iconbtn" onclick="backup()">↥</button><button class="iconbtn" onclick="restore()">↧</button></div></header>
 <main>
+
+<div id="continueTournamentPanel" class="card" style="margin-bottom:16px;border:1px solid rgba(255,255,255,.12);">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+    <div>
+      <div style="font-weight:800;font-size:18px">Continue Existing Tournament</div>
+      <div style="opacity:.75;font-size:13px;margin-top:4px">يقرأ بيانات البطولة المحفوظة على هذا الجهاز ويحافظ عليها عند تحديث النظام.</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" type="button" onclick="continueTournament()">Continue Tournament</button>
+      <button class="btn secondary" type="button" onclick="exportTournamentBackup()">Backup</button>
+      <label class="btn secondary" style="cursor:pointer">Restore
+        <input type="file" accept=".json,application/json" style="display:none" onchange="restoreTournamentBackup(event)">
+      </label>
+    </div>
+  </div>
+  <div id="continuationStatus" style="margin-top:12px"></div>
+</div>
+
 <section id="teams" class="section active"><div class="aiShell" id="aiAssistant">
 <div class="aiHead"><div class="aiBrand"><div class="aiOrb">✦</div><div><div class="aiTitle">Tournament AI Assistant</div><div class="aiSub">مساعد ذكي متصل ببيانات البطولة الحالية ويشرح لك النظام ويحلل الأرقام</div></div></div><button class="small ghost" onclick="clearAIChat()">Clear</button></div>
 <div class="aiBody"><div class="aiQuick"><button onclick="aiQuick('ما حالة البطولة الآن؟')">حالة البطولة</button><button onclick="aiQuick('من المتصدر ولماذا؟')">المتصدر</button><button onclick="aiQuick('من أكثر لاعب قتلات؟')">Top Fragger</button><button onclick="aiQuick('هل توجد أخطاء في البيانات؟')">فحص البيانات</button><button onclick="aiQuick('اشرح لي طريقة حساب النقاط')">شرح النقاط</button><button onclick="aiQuick('كيف أضيف مباراة؟')">كيف أضيف مباراة؟</button><button onclick="aiQuick('اعمل تقرير عن آخر 5 مباريات')">آخر 5 مباريات</button><button onclick="aiQuick('قارن بين الفريقين')">مقارنة</button><button onclick="aiQuick('أي فريق يعتمد أكثر على القتلات؟')">Kill Dependence</button></div>
@@ -38,7 +56,114 @@ function render(){document.getElementById('tournament').value=S.tournament||'';r
 function setTeam(i,v){S.teams[i].name=v.trim();S.tournament=document.getElementById('tournament').value.trim();save();renderAnalytics();renderOverall()}
 function setLogo(i,file){if(!file)return;let r=new FileReader();r.onload=()=>{S.teams[i].logo=r.result;save();render()};r.readAsDataURL(file)}
 function renderTeams(){let h='<div class="scroll"><table class="table"><tr><th>Slot</th><th>Team + Logo</th><th>Logo</th></tr>';S.teams.forEach((t,i)=>{h+=`<tr><td class="rank">${t.slot}</td><td><div class="teamCell"><img class="logoThumb" src="${esc(t.logo||'')}" onerror="this.style.display='none'"><input value="${esc(t.name)}" onchange="setTeam(${i},this.value)" placeholder="Team ${t.slot}"></div></td><td><input class="logoInput" type="file" accept="image/png,image/jpeg,image/webp" onchange="setLogo(${i},this.files[0])"></td></tr>`});h+='</table></div><div class="hint" style="margin-top:8px">Team logos are stored with the tournament and automatically appear in the leaderboard, analytics, match results and player statistics.</div>';document.getElementById('teamTable').innerHTML=h}
-function importTeams(){let a=document.getElementById('bulk').value.split(/\n|\r/).map(x=>x.trim()).filter(Boolean);if(!a.length)return toast('Paste team names first');if(a.length>16)return toast('Maximum 16 teams');for(let i=0;i<a.length;i++)S.teams[i].name=a[i];S.tournament=document.getElementById('tournament').value.trim();save();document.getElementById('bulk').value='';render();toast(`${a.length} teams imported`)}
+function importTeams(){let a=document.getElementById('bulk').value.split(/\n|\r/).map(x=>x.trim()).filter(Boolean);if(!a.length)return toast('Paste team names first');if(a.length>16)return toast('Maximum 16 teams');for(let i=0;i<a.length;i++)S.teams[i].name=a[i];S.tournament=document.getElementById('tournament').value.trim();save();document.getElementById('bulk').value='';
+// ===== Tournament Continuation / Migration =====
+function tournamentSnapshot(){
+  return {
+    schemaVersion: 3,
+    exportedAt: new Date().toISOString(),
+    storageKey: 'pubg_tm_v21_pro',
+    data: S
+  };
+}
+function continuationSummary(){
+  const teams = Array.isArray(S.teams) ? S.teams : [];
+  const matches = Array.isArray(S.matches) ? S.matches : [];
+  const approved = matches.filter(m => m && (m.status === 'approved' || m.approved === true)).length;
+  const review = matches.filter(m => m && !(m.status === 'approved' || m.approved === true)).length;
+  return {teams: teams.length, matches: matches.length, approved, review};
+}
+function renderContinuationStatus(){
+  const el = document.getElementById('continuationStatus');
+  if(!el) return;
+  const s = continuationSummary();
+  const hasData = s.teams > 0 || s.matches > 0 || (Array.isArray(S.tournaments) && S.tournaments.length);
+  el.innerHTML = hasData
+    ? `<div style="padding:10px;border-radius:10px;background:rgba(46,204,113,.10)">
+        <b>Existing tournament detected ✓</b>
+        <div style="margin-top:5px;font-size:13px;opacity:.82">
+          Teams: ${s.teams} · Matches: ${s.matches} · Approved: ${s.approved} · Review: ${s.review}
+        </div>
+        <div style="margin-top:5px;font-size:12px;opacity:.65">سيتم الحفاظ على البيانات الحالية وعدم إنشاء بطولة فارغة فوقها.</div>
+       </div>`
+    : `<div style="padding:10px;border-radius:10px;background:rgba(255,255,255,.05);font-size:13px;opacity:.8">
+        لا توجد بطولة محفوظة حاليًا على هذا المتصفح. يمكنك إنشاء بطولة جديدة أو استعادة Backup.
+       </div>`;
+}
+function continueTournament(){
+  // Re-read the exact legacy key without changing it.
+  try{
+    const raw = localStorage.getItem('pubg_tm_v21_pro');
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && typeof parsed === 'object'){
+        S = parsed;
+        // Non-destructive migrations: only add missing containers.
+        if(!Array.isArray(S.teams)) S.teams = [];
+        if(!Array.isArray(S.matches)) S.matches = [];
+        if(!Array.isArray(S.results)) S.results = [];
+        if(!Array.isArray(S.players)) S.players = [];
+        if(!Array.isArray(S.audit)) S.audit = [];
+        if(!S.settings) S.settings = {};
+        localStorage.setItem('pubg_tm_v21_pro', JSON.stringify(S));
+        render();
+        renderContinuationStatus();
+        alert('تم فتح البطولة المحفوظة بنجاح. لم يتم حذف أو استبدال أي بيانات.');
+        return;
+      }
+    }
+  }catch(e){
+    console.error('Continuation load failed', e);
+    alert('تعذر قراءة البيانات القديمة. استخدم Restore لاستعادة نسخة Backup.');
+    return;
+  }
+  renderContinuationStatus();
+}
+function exportTournamentBackup(){
+  try{
+    const blob = new Blob([JSON.stringify(tournamentSnapshot(), null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'PUBG_Tournament_Backup_' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }catch(e){
+    alert('تعذر إنشاء Backup.');
+  }
+}
+function restoreTournamentBackup(ev){
+  const file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(){
+    try{
+      const imported = JSON.parse(reader.result);
+      const incoming = imported && imported.data ? imported.data : imported;
+      if(!incoming || typeof incoming !== 'object') throw new Error('Invalid backup');
+      if(!confirm('سيتم استبدال البيانات الحالية ببيانات الـ Backup. هل تريد المتابعة؟')) return;
+      S = incoming;
+      if(!Array.isArray(S.teams)) S.teams = [];
+      if(!Array.isArray(S.matches)) S.matches = [];
+      if(!Array.isArray(S.results)) S.results = [];
+      if(!Array.isArray(S.players)) S.players = [];
+      if(!Array.isArray(S.audit)) S.audit = [];
+      localStorage.setItem('pubg_tm_v21_pro', JSON.stringify(S));
+      render();
+      renderContinuationStatus();
+      alert('تمت استعادة البطولة بنجاح.');
+    }catch(e){
+      console.error('Restore failed', e);
+      alert('ملف الـ Backup غير صالح أو غير متوافق.');
+    }finally{
+      ev.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+render();toast(`${a.length} teams imported`)}
 function newMatch(){let name=document.getElementById('mname').value.trim()||`Match ${S.matches.length+1}`,gid=document.getElementById('gameid').value.trim();if(gid&&S.matches.some(m=>m.gameId===gid))return toast('Duplicate Game ID blocked');let m={id:crypto.randomUUID(),name,gameId:gid,created:new Date().toISOString(),approved:false,results:[],review:[],snapshot:S.teams.map(x=>({...x})),players:[]};S.matches.push(m);S.activeMatchId=m.id;save();render();toast('Match created — enter results below');setTimeout(focusResults,50)}
 function getActive(){return S.matches.find(m=>m.id===S.activeMatchId)||S.matches[S.matches.length-1]}
 function focusResults(){let m=getActive();if(!m){newMatch();return}document.getElementById('matches').scrollIntoView({behavior:'smooth'});renderEntry(m);}
