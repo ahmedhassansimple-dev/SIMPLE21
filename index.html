@@ -393,25 +393,81 @@ function makePdfExportStage(type){
  clone.querySelectorAll('.section').forEach(el=>el.style.display='block');
  stage.appendChild(clone); document.body.appendChild(stage); return stage;
 }
+function pdfDocBase(type){
+ const jsPDF=window.jspdf.jsPDF;
+ const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+ pdf.setProperties({title:`${S.tournament||'Tournament'} — ${pdfSectionTitle(type)}`,subject:'PUBG Tournament Manager PRO',author:'PUBG Tournament Manager PRO'});
+ return pdf;
+}
+function pdfColors(){return {bg:[8,10,15],panel:[18,22,30],panel2:[25,30,40],line:[48,57,70],text:[242,245,249],muted:[145,155,170],accent:[90,170,255],gold:[244,190,70],green:[65,205,145],red:[235,90,100]}}
+function pdfHeader(pdf,title,subtitle,page){
+ const C=pdfColors(),W=210;
+ pdf.setFillColor(...C.bg);pdf.rect(0,0,W,297,'F');
+ pdf.setFillColor(...C.accent);pdf.rect(0,0,6,297,'F');
+ pdf.setTextColor(...C.text);pdf.setFont('helvetica','bold');pdf.setFontSize(18);pdf.text('PUBG TOURNAMENT MANAGER PRO',14,17);
+ pdf.setFont('helvetica','bold');pdf.setFontSize(13);pdf.text(String(title||'Tournament Report'),14,25);
+ pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor(...C.muted);pdf.text(String(subtitle||S.tournament||'Tournament'),14,31);
+ pdf.text(new Date().toLocaleDateString('en-GB'),W-14,17,{align:'right'});
+ pdf.setDrawColor(...C.line);pdf.line(14,35,W-14,35);
+ pdf.setFontSize(7);pdf.text(`PUBG Tournament Manager PRO · ${String(S.tournament||'Tournament')}`,14,291);pdf.text(`PAGE ${page}`,W-14,291,{align:'right'});
+}
+function pdfCard(pdf,x,y,w,h,label,value,sub,color){const C=pdfColors();pdf.setFillColor(...C.panel);pdf.roundedRect(x,y,w,h,3,3,'F');pdf.setDrawColor(...C.line);pdf.roundedRect(x,y,w,h,3,3,'S');pdf.setFillColor(...(color||C.accent));pdf.roundedRect(x,y,2.2,h,1,1,'F');pdf.setTextColor(...C.muted);pdf.setFont('helvetica','bold');pdf.setFontSize(7);pdf.text(label,x+7,y+9);pdf.setTextColor(...C.text);pdf.setFontSize(17);pdf.text(String(value),x+7,y+20);if(sub){pdf.setTextColor(...C.muted);pdf.setFont('helvetica','normal');pdf.setFontSize(6.5);pdf.text(String(sub),x+7,y+27)}}
+function pdfSection(pdf,x,y,w,title){const C=pdfColors();pdf.setTextColor(...C.text);pdf.setFont('helvetica','bold');pdf.setFontSize(11);pdf.text(title,x,y);pdf.setDrawColor(...C.line);pdf.line(x,y+3,x+w,y+3);return y+10}
+function pdfPodium(pdf,arr,y){const C=pdfColors(),x0=14,gap=5,w=55,h=49;arr.slice(0,3).forEach((a,i)=>{const x=x0+i*(w+gap);const col=i===0?C.gold:i===1?C.accent:C.green;pdf.setFillColor(...C.panel);pdf.roundedRect(x,y,w,h,3,3,'F');pdf.setDrawColor(...col);pdf.setLineWidth(0.8);pdf.roundedRect(x,y,w,h,3,3,'S');pdf.setTextColor(...col);pdf.setFont('helvetica','bold');pdf.setFontSize(9);pdf.text(`#${i+1}`,x+6,y+9);pdf.setTextColor(...C.text);pdf.setFontSize(9);pdf.text(String(a.name||'Team').slice(0,24),x+6,y+20);pdf.setFontSize(18);pdf.text(String(a.points||0),x+6,y+35);pdf.setTextColor(...C.muted);pdf.setFontSize(6.5);pdf.text('TOTAL POINTS',x+6,y+43)})}
+function pdfRankingChart(pdf,arr,y){const C=pdfColors(),x=14,w=182,h=7,max=Math.max(...arr.map(a=>a.points),1);pdf.setTextColor(...C.muted);pdf.setFont('helvetica','normal');pdf.setFontSize(6.5);arr.forEach((a,i)=>{const yy=y+i*10;pdf.setTextColor(...C.text);pdf.text(`${i+1}. ${String(a.name||'').slice(0,25)}`,x,yy+5);pdf.setFillColor(...C.panel2);pdf.roundedRect(x+62,yy,w-62,6,2,2,'F');pdf.setFillColor(...C.accent);pdf.roundedRect(x+62,yy,Math.max(1,(w-62)*(a.points/max)),6,2,2,'F');pdf.setTextColor(...C.text);pdf.setFont('helvetica','bold');pdf.text(String(a.points),x+w,yy+5,{align:'right'})})}
+function pdfTable(pdf,head,body,y,opts={}){const C=pdfColors();pdf.autoTable({startY:y,head:[head],body,theme:'plain',margin:{left:14,right:14},styles:{font:'helvetica',fontSize:7.2,textColor:C.text,fillColor:C.panel,cellPadding:2.5,lineColor:C.line,lineWidth:0.15,overflow:'ellipsize'},headStyles:{fillColor:C.panel2,textColor:C.muted,fontStyle:'bold',fontSize:7},alternateRowStyles:{fillColor:[13,17,23]},columnStyles:opts.columnStyles||{},didDrawPage:()=>{}});return pdf.lastAutoTable.finalY}
+function leaderboardRows(){return aggregate().filter(a=>a.name).sort((a,b)=>b.points-a.points||b.top1-a.top1||b.placePts-a.placePts||b.kills-a.kills||a.latestPlacement-b.latestPlacement||a.slot-b.slot)}
+function playerStatRows(){
+ const players=[];
+ for(const m of S.matches.filter(m=>m.approved)) for(const r of (m.results||[])){
+  const list=(r.players&&r.players.length)?r.players:(m.players||[]).filter(p=>Number(p.slot)===Number(r.slot));
+  for(const p of list)players.push({...p,team:r.team||p.team||'',slot:r.slot,match:m.name});
+ }
+ const agg=new Map();for(const p of players){const name=String(p.name||'Unknown').trim()||'Unknown';const key=`${Number(p.slot)||0}|${norm(name)}`;const a=agg.get(key)||{name,team:p.team||'Unassigned',matches:0,kills:0,damage:0,knockouts:0,survival:0};a.matches++;a.kills+=Number(p.kills??p.elim??p.killNum)||0;a.damage+=Number(p.damage)||0;a.knockouts+=Number(p.knockouts)||0;a.survival+=Number(p.survivalTime)||0;agg.set(key,a)}
+ return [...agg.values()].map(a=>({...a,avgKills:a.matches?a.kills/a.matches:0,avgDamage:a.matches?a.damage/a.matches:0})).sort((a,b)=>b.kills-a.kills||b.damage-a.damage||a.name.localeCompare(b.name));
+}
+function approvedMatches(){return S.matches.filter(m=>m.approved).slice().sort((a,b)=>(Date.parse(a.created)||0)-(Date.parse(b.created)||0))}
+function drawOverallPdf(){
+ const pdf=pdfDocBase('overall'),C=pdfColors(),arr=leaderboardRows(),ms=approvedMatches();
+ // Page 1 — Executive overview
+ pdfHeader(pdf,'Tournament Leaderboard','Executive Overview',1);
+ pdfCard(pdf,14,44,43,33,'APPROVED MATCHES',ms.length,'Official results',C.green);
+ pdfCard(pdf,61,44,43,33,'TEAMS SCORED',arr.length,`${S.teams.filter(t=>t.name).length} registered`,C.accent);
+ pdfCard(pdf,108,44,43,33,'TOTAL POINTS',arr.reduce((s,a)=>s+a.points,0),'Placement + kills',C.gold);
+ pdfCard(pdf,155,44,41,33,'TOTAL KILLS',arr.reduce((s,a)=>s+a.kills,0),'Team eliminations',C.red);
+ pdfSection(pdf,14,90,182,'TOP 3 — CURRENT LEADERS');pdfPodium(pdf,arr,97);
+ pdfSection(pdf,14,160,182,'RANKING SNAPSHOT');pdfRankingChart(pdf,arr.slice(0,10),167);
+ pdfSection(pdf,14,272,182,'REPORT SCOPE');pdf.setTextColor(...C.muted);pdf.setFontSize(7);pdf.text('This report contains the complete tournament leaderboard, official approved-match totals, and ranking context.',14,282);
+ // Full leaderboard pages, 10 rows per page
+ let rank=0;for(let page=0;page<arr.length;page+=10){pdf.addPage();pdfHeader(pdf,'Complete Leaderboard','All ranked teams — official approved matches',pdf.getNumberOfPages());const chunk=arr.slice(page,page+10);const body=chunk.map((a,j)=>[page+j+1,a.name,a.matches,a.top1,a.top3,a.top8,a.placePts,a.kills,a.points]);pdfTable(pdf,['#','TEAM','MP','WWCD','TOP 3','TOP 8','PLACEMENT','KILLS','TOTAL'],body,44,{columnStyles:{0:{cellWidth:9},1:{cellWidth:47},2:{cellWidth:12,halign:'center'},3:{cellWidth:13,halign:'center'},4:{cellWidth:13,halign:'center'},5:{cellWidth:13,halign:'center'},6:{cellWidth:20,halign:'center'},7:{cellWidth:14,halign:'center'},8:{cellWidth:16,halign:'center'}}});
+  pdfSection(pdf,14,Math.min(pdf.lastAutoTable.finalY+12,267),182,'SCORING PROFILE');const avg=chunk.length?chunk.reduce((s,a)=>s+a.points,0)/chunk.length:0;pdf.setTextColor(...C.muted);pdf.setFontSize(7);pdf.text(`Page average: ${avg.toFixed(1)} points · Full leaderboard continues on the next page when applicable.`,14,Math.min(pdf.lastAutoTable.finalY+22,277));
+ }
+ // Final page — match archive summary
+ pdf.addPage();pdfHeader(pdf,'Match Archive','Approved matches included in the leaderboard',pdf.getNumberOfPages());
+ const rows=ms.map((m,i)=>{const total=(m.results||[]).reduce((s,r)=>s+points(r),0);const winner=(m.results||[]).find(r=>Number(r.placement)===1);return [i+1,m.name||`Match ${i+1}`,m.gameId||'—',winner?.team||S.teams.find(t=>t.slot===winner?.slot)?.name||'—',total]});
+ pdfTable(pdf,['#','MATCH','GAME ID','WINNER','MATCH PTS'],rows,44,{columnStyles:{0:{cellWidth:9},1:{cellWidth:55},2:{cellWidth:45},3:{cellWidth:48},4:{cellWidth:22,halign:'center'}}});
+ return pdf;
+}
+function drawStatsPdf(){
+ const pdf=pdfDocBase('stats'),C=pdfColors(),ps=playerStatRows(),ms=approvedMatches();
+ pdfHeader(pdf,'Player Statistics','Competitive player performance report',1);
+ const top=ps[0];pdfCard(pdf,14,44,43,33,'PLAYERS TRACKED',ps.length,'Player-level approved data',C.accent);pdfCard(pdf,61,44,43,33,'MATCHES',ms.length,'Approved matches',C.green);pdfCard(pdf,108,44,43,33,'TOP FRAGGER',top?top.name:'—',top?`${top.kills} kills`:'No player data',C.gold);pdfCard(pdf,155,44,41,33,'TOTAL KILLS',ps.reduce((s,a)=>s+a.kills,0),'Tracked player kills',C.red);
+ pdfSection(pdf,14,90,182,'TOP FRAGGERS');pdfRankingChart(pdf,ps.slice(0,10).map((p)=>({...p,points:p.kills})),97);
+ for(let i=0;i<ps.length;i+=14){pdf.addPage();pdfHeader(pdf,'Player Statistics','Complete player table',pdf.getNumberOfPages());const body=ps.slice(i,i+14).map((p,j)=>[i+j+1,p.name,p.team,p.matches,p.kills,p.avgKills.toFixed(1),Math.round(p.damage),p.knockouts]);pdfTable(pdf,['#','PLAYER','TEAM','MP','KILLS','AVG K','DAMAGE','KNOCKS'],body,44,{columnStyles:{0:{cellWidth:9},1:{cellWidth:38},2:{cellWidth:43},3:{cellWidth:12,halign:'center'},4:{cellWidth:15,halign:'center'},5:{cellWidth:15,halign:'center'},6:{cellWidth:25,halign:'center'},7:{cellWidth:18,halign:'center'}}});}
+ return pdf;
+}
+function drawResultsPdf(){
+ const pdf=pdfDocBase('results'),C=pdfColors(),ms=approvedMatches();
+ pdfHeader(pdf,'Match Results Archive','Complete approved match-by-match results',1);pdfCard(pdf,14,44,43,33,'MATCHES',ms.length,'Approved',C.green);pdfCard(pdf,61,44,43,33,'TEAMS / MATCH',16,'Standard field',C.accent);pdfCard(pdf,108,44,43,33,'TOTAL MATCH PTS',ms.reduce((s,m)=>s+(m.results||[]).reduce((q,r)=>q+points(r),0),0),'Across approved matches',C.gold);pdfCard(pdf,155,44,41,33,'TOTAL KILLS',ms.reduce((s,m)=>s+(m.results||[]).reduce((q,r)=>q+(Number(r.kills)||0),0),0),'Across approved matches',C.red);
+ let first=true;for(const m of ms){const rows=(m.results||[]).slice().sort((a,b)=>a.placement-b.placement);if(!first)pdf.addPage();first=false;pdfHeader(pdf,m.name||'Match Results',`Game ID: ${m.gameId||'—'}`,pdf.getNumberOfPages());const body=rows.map(r=>[r.placement,r.team||S.teams.find(t=>t.slot===r.slot)?.name||'—',S.rules.place[r.placement]||0,Number(r.kills)||0,(Number(r.kills)||0)*S.rules.kill,points(r)]);pdfTable(pdf,['#','TEAM','PLACEMENT PTS','KILLS','KILL PTS','TOTAL'],body,44,{columnStyles:{0:{cellWidth:10,halign:'center'},1:{cellWidth:70},2:{cellWidth:28,halign:'center'},3:{cellWidth:18,halign:'center'},4:{cellWidth:24,halign:'center'},5:{cellWidth:25,halign:'center'}}});}
+ return pdf;
+}
 async function exportVisualPDF(type){
- if(typeof html2canvas!=='function' || !window.jspdf || !window.jspdf.jsPDF) throw new Error('PDF engine not loaded');
- const stage=makePdfExportStage(type);
- try{
-  if(document.fonts&&document.fonts.ready) await document.fonts.ready;
-  await new Promise(r=>setTimeout(r,250));
-  const canvas=await html2canvas(stage,{backgroundColor:'#080a0f',scale:2.5,useCORS:true,allowTaint:false,logging:false,windowWidth:980,scrollX:0,scrollY:0,imageTimeout:15000});
-  const jsPDF=window.jspdf.jsPDF; const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
-  const margin=7,pageW=210,pageH=297,innerW=pageW-margin*2,innerH=pageH-margin*2;
-  const pxPerMm=canvas.width/innerW, sliceH=Math.max(1,Math.floor(innerH*pxPerMm)); let y=0,page=0;
-  while(y<canvas.height){
-   const sh=Math.min(sliceH,canvas.height-y), slice=document.createElement('canvas'); slice.width=canvas.width; slice.height=sh;
-   const ctx=slice.getContext('2d'); ctx.fillStyle='#080a0f'; ctx.fillRect(0,0,slice.width,sh); ctx.drawImage(canvas,0,y,canvas.width,sh,0,0,canvas.width,sh);
-   if(page>0) pdf.addPage(); pdf.addImage(slice.toDataURL('image/jpeg',0.97),'JPEG',margin,margin,innerW,sh/pxPerMm,'FAST');
-   pdf.setFontSize(7); pdf.setTextColor(145,155,170); pdf.text(`PUBG Tournament Manager PRO · ${String(S.tournament||'Tournament')} · ${page+1}`,margin,pageH-3);
-   y+=sh; page++;
-  }
-  pdf.save(`${pdfFileName(S.tournament||'Tournament')}_${type}_Report.pdf`); toast('High-quality PDF exported successfully.');
- }finally{stage.remove()}
+ if(!window.jspdf||!window.jspdf.jsPDF||typeof window.jspdf.jsPDF!=='function'||typeof window.jspdf.jsPDF.prototype.autoTable!=='function') throw new Error('PDF engine not loaded');
+ let pdf;if(type==='overall')pdf=drawOverallPdf();else if(type==='stats')pdf=drawStatsPdf();else if(type==='results')pdf=drawResultsPdf();else { // analytics keeps the visual system but now exports as a clean report page
+   pdf=pdfDocBase(type);pdfHeader(pdf,'Performance & Analytics','Current analytics view',1);const el=document.getElementById('analytics');if(el){const text=(el.innerText||'').replace(/\n{3,}/g,'\n\n').trim();pdf.setTextColor(...pdfColors().text);pdf.setFontSize(8);const lines=pdf.splitTextToSize(text,182);pdf.text(lines,14,48,{maxWidth:182,lineHeightFactor:1.5});}
+ }
+ pdf.save(`${pdfFileName(S.tournament||'Tournament')}_${type}_PRO_Report.pdf`);toast('Advanced multi-page PDF exported successfully.');
 }
 async function exportPDF(type){
  try{await exportVisualPDF(type)}catch(e){console.error('Visual PDF export failed',e);try{printSection(type);toast('PDF fallback opened — Chrome can Save as PDF.')}catch(_){toast('PDF export failed. Reload the Web App and try again.')}}
