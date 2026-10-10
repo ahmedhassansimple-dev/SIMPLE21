@@ -47,6 +47,9 @@
  .trendLabel{min-width:46px;font-size:9px}
  .trendLabel b{font-size:10px}
 }
+
+/* V25 PRO advanced analytics refinement */
+.trendPro{background:#0b1017;border:1px solid var(--line);border-radius:16px;padding:10px;overflow:hidden}.trendSummary{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:10px;padding:2px 4px 8px}.trendSummary b{color:var(--txt);font-size:11px}.trendPlot{width:100%;height:255px;background:linear-gradient(180deg,#0d131c,#0a0f15);border:1px solid #222c39;border-radius:12px;overflow:hidden}.trendSvg{width:100%;height:100%;display:block}.advancedGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.advancedMetric{background:#0b1017;border:1px solid var(--line);border-radius:13px;padding:11px;min-height:84px}.advancedMetric b{display:block;font-size:20px;margin-top:3px}.advancedMetric span{display:block;color:var(--muted);font-size:9px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.advancedInsight{margin-top:8px;padding:10px 11px;border:1px solid #283445;background:#0c1219;border-radius:12px;font-size:11px;line-height:1.5}.insightCard{display:flex;gap:8px;align-items:flex-start}.insightNum{flex:0 0 21px;height:21px;border-radius:7px;display:grid;place-items:center;background:#1b2b16;color:var(--accent);font-weight:900;font-size:10px}.trendLabels{display:none}@media(max-width:620px){.advancedGrid{grid-template-columns:1fr 1fr}.trendPlot{height:230px}.advancedMetric b{font-size:18px}}@media(max-width:400px){.advancedGrid{grid-template-columns:1fr}}
 </style><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><style id="aiAssistantStyle">
 .aiShell{margin:10px 0 14px;border:1px solid #33412b;border-radius:18px;background:linear-gradient(145deg,#11191a,#10141b 60%,#16200f);box-shadow:0 10px 30px #0003;overflow:hidden}.aiHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px;border-bottom:1px solid var(--line)}.aiBrand{display:flex;align-items:center;gap:10px}.aiOrb{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#9cf052,#5f9d35);color:#071006;font-weight:1000;font-size:18px;box-shadow:0 0 20px #9cf05225}.aiTitle{font-weight:950}.aiSub{font-size:10px;color:var(--muted);margin-top:2px}.aiBody{padding:12px}.aiQuick{display:flex;gap:6px;overflow:auto;padding-bottom:9px}.aiQuick button{white-space:nowrap;font-size:10px;padding:8px 10px}.aiMessages{height:245px;overflow:auto;padding:4px 2px 10px;display:flex;flex-direction:column;gap:8px}.aiMsg{max-width:92%;padding:10px 11px;border-radius:13px;border:1px solid var(--line);font-size:12px;line-height:1.55;white-space:normal}.aiMsg.bot{align-self:flex-start;background:#0c1218}.aiMsg.user{align-self:flex-end;background:#172416;border-color:#33412b}.aiMsg b{font-weight:950}.aiInput{display:grid;grid-template-columns:1fr auto;gap:7px}.aiInput textarea{min-height:48px;max-height:110px;resize:none;padding:10px}.aiSend{min-width:74px}.aiStatus{font-size:10px;color:var(--muted);margin-top:7px}.aiContext{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.aiContext .pill{font-size:9px}
 @media(max-width:620px){.aiMessages{height:285px}.aiInput{grid-template-columns:1fr}.aiSend{width:100%}}
@@ -116,72 +119,66 @@ function renderMatches(){let el=document.getElementById('matchList');if(!S.match
 function openMatch(id){S.activeMatchId=id;save();document.querySelector('.nav button:nth-child(2)').click();setTimeout(()=>renderEntry(getActive()),0)}
 function renderResultsArchive(){let el=document.getElementById('resultsArchive');let ms=S.matches.filter(m=>m.approved).slice().reverse();if(!ms.length){el.innerHTML='<div class="card empty">No approved match results yet.</div>';return}el.innerHTML=ms.map(m=>{let rows=(m.results||[]).slice().sort((a,b)=>a.placement-b.placement);let total=rows.reduce((x,r)=>x+points(r),0);return `<div class="card matchResultCard"><div class="matchResultHead"><div><div class="title">${esc(m.name)}</div><div class="meta">${new Date(m.created).toLocaleString()} · Game ID: ${esc(m.gameId||'—')}</div></div><span class="badge ok">APPROVED · ${total} PTS</span></div><div class="scroll" style="margin-top:9px"><div class="matchResultRow" style="font-weight:900;color:var(--muted)"><div>#</div><div>Team</div><div>Placement Pts</div><div>Kills</div><div>Kill Pts</div><div>Total</div></div>${rows.map(r=>{let t=S.teams.find(x=>x.slot===r.slot)||{};return `<div class="matchResultRow"><div class="rank">${r.placement}</div><div><div class="teamCell"><img class="logoThumb" src="${esc(t.logo||'')}" onerror="this.style.visibility='hidden'"><span>${esc(t.name||r.team)}</span></div></div><div class="placePts">${S.rules.place[r.placement]||0}</div><div>${Number(r.kills)||0}</div><div class="killPts">${(Number(r.kills)||0)*S.rules.kill}</div><div class="totalPts">${points(r)}</div></div>`}).join('')}</div></div>`}).join('')}
 function renderOCRSelectors(){let s=document.getElementById('ocrMatch');if(!s)return;let old=s.value;s.innerHTML=S.matches.map(m=>`<option value="${m.id}">${esc(m.name)}${m.approved?' · Approved':''}</option>`).join('');if([...s.options].some(o=>o.value===old))s.value=old}
+
+function pdfCanvasText(ctx,text,x,y,maxWidth,lineHeight,font){
+  ctx.font=font||'14px Arial';
+  const words=String(text??'').split(/\s+/); let line=''; let yy=y;
+  for(const w of words){const test=line?line+' '+w:w;if(ctx.measureText(test).width>maxWidth&&line){ctx.fillText(line,x,yy);line=w;yy+=lineHeight}else line=test;}
+  if(line){ctx.fillText(line,x,yy);yy+=lineHeight;} return yy;
+}
+function pdfDrawTable(ctx,headers,rows,x,y,width,rowH=30){
+  const cols=headers.length, cw=width/cols;
+  ctx.fillStyle='#20252e';ctx.fillRect(x,y,width,rowH);ctx.fillStyle='#fff';ctx.font='bold 14px Arial';
+  headers.forEach((h,i)=>ctx.fillText(String(h),x+i*cw+8,y+20));
+  let yy=y+rowH; ctx.font='13px Arial';
+  rows.forEach((r,ri)=>{ctx.fillStyle=ri%2?'#f4f6f8':'#ffffff';ctx.fillRect(x,yy,width,rowH);ctx.strokeStyle='#d8dde3';ctx.strokeRect(x,yy,width,rowH);ctx.fillStyle='#20252e';r.forEach((v,i)=>ctx.fillText(String(v??''),x+i*cw+8,yy+20));yy+=rowH;});
+  return yy;
+}
+function buildImagePdf(canvases,filename){
+  const enc=new TextEncoder(); const objects=[]; const add=o=>{objects.push(o);return objects.length};
+  const catalog=add(null),pages=add(null), pageIds=[];
+  canvases.forEach((canvas,idx)=>{
+    const raw=canvas.toDataURL('image/jpeg',0.9).split(',')[1]; const bin=atob(raw); const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    const imgId=add({prefix:`<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${bytes.length} >>\nstream\n`,bytes,suffix:'\nendstream'});
+    const content=`q\n${canvas.width} 0 0 ${canvas.height} 0 0 cm\n/Im${idx+1} Do\nQ\n`;
+    const contentId=add({prefix:`<< /Length ${enc.encode(content).length} >>\nstream\n`,bytes:enc.encode(content),suffix:'endstream'});
+    const pageId=add({prefix:`<< /Type /Page /Parent ${pages} 0 R /MediaBox [0 0 ${canvas.width} ${canvas.height}] /Resources << /XObject << /Im${idx+1} ${imgId} 0 R >> >> /Contents ${contentId} 0 R >>`,bytes:new Uint8Array(0),suffix:''});
+    pageIds.push(pageId);
+  });
+  objects[catalog-1]={prefix:`<< /Type /Catalog /Pages ${pages} 0 R >>`,bytes:new Uint8Array(0),suffix:''};
+  objects[pages-1]={prefix:`<< /Type /Pages /Count ${pageIds.length} /Kids [${pageIds.map(i=>i+' 0 R').join(' ')}] >>`,bytes:new Uint8Array(0),suffix:''};
+  const chunks=[]; let total=0; const offsets=[0]; const push=(u)=>{chunks.push(u);total+=u.length}; push(enc.encode('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'));
+  objects.forEach((o,i)=>{offsets[i+1]=total;push(enc.encode(`${i+1} 0 obj\n${o.prefix}`));if(o.bytes?.length)push(o.bytes);push(enc.encode(`${o.suffix}\nendobj\n`));});
+  const xref=total; let tail=`xref\n0 ${objects.length+1}\n0000000000 65535 f \n`;for(let i=1;i<=objects.length;i++)tail+=String(offsets[i]).padStart(10,'0')+' 00000 n \n';tail+=`trailer\n<< /Size ${objects.length+1} /Root ${catalog} 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  push(enc.encode(tail)); const blob=new Blob(chunks,{type:'application/pdf'}); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+
+function exportPDFCanvas(type){
+  const W=1754,H=1240,M=55; const pages=[]; const title=String(S.tournament||'PUBG Tournament').trim()||'PUBG Tournament';
+  const make=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,W,H);x.fillStyle='#11161e';x.fillRect(0,0,W,86);x.fillStyle='#fff';x.font='bold 28px Arial';x.fillText('PUBG TOURNAMENT MANAGER PRO',M,38);x.fillStyle='#9cf052';x.font='bold 18px Arial';x.fillText(title,M,66);return [c,x]};
+  const footer=(x,n,total)=>{x.fillStyle='#6b7480';x.font='12px Arial';x.fillText('PUBG Tournament Manager PRO',M,H-25);x.textAlign='right';x.fillText(`Page ${n} / ${total}`,W-M,H-25);x.textAlign='left'};
+  if(type==='overall'){
+    const arr=aggregate().sort((a,b)=>b.points-a.points||b.top1-a.top1||b.placePts-a.placePts||b.kills-a.kills||a.latestPlacement-b.latestPlacement||a.slot-b.slot);
+    for(let start=0;start<arr.length;start+=18){const [c,x]=make();x.fillStyle='#20252e';x.font='bold 22px Arial';x.fillText('Tournament Leaderboard',M,125);const rows=arr.slice(start,start+18).map((a,i)=>[start+i+1,a.name,a.matches,a.top1,a.placePts,a.kills,a.points]);pdfDrawTable(x,['#','Team','Matches','Winners','Placement Pts','Kills','Total'],rows,M,150,W-2*M,42);pages.push(c);}
+  } else if(type==='results'){
+    const ms=S.matches.filter(m=>m.approved).slice().sort((a,b)=>(a.number||0)-(b.number||0)); let pageRows=[]; for(const m of ms){for(const r of (m.results||[]).slice().sort((a,b)=>(a.placement||99)-(b.placement||99))){const t=S.teams.find(z=>Number(z.slot)===Number(r.slot))||{};const k=Number(r.kills)||0;pageRows.push([m.name,r.placement,t.name||r.team||`Slot ${r.slot}`,S.rules.place[r.placement]||0,k,k*S.rules.kill,points(r)]);}} for(let start=0;start<pageRows.length;start+=20){const [c,x]=make();x.fillStyle='#20252e';x.font='bold 22px Arial';x.fillText('Match Results',M,125);pdfDrawTable(x,['Match','#','Team','Placement Pts','Kills','Kill Pts','Total'],pageRows.slice(start,start+20),M,150,W-2*M,42);pages.push(c);}
+  } else if(type==='stats'){
+    const chosen=document.getElementById('statsMatch')?.value||'all'; const players=[]; for(const m of S.matches.filter(m=>m.approved)){if(chosen!=='all'&&m.id!==chosen)continue;for(const r of m.results||[]){const list=(r.players&&r.players.length)?r.players:(m.players||[]).filter(p=>Number(p.slot)===Number(r.slot));for(const p of list)players.push({...p,team:r.team||p.team||'',teamSlot:r.slot});}} const aggMap=new Map(); for(const p of players){const name=String(p.name||'Unknown Player').trim()||'Unknown Player';const key=String(p.playerId||p.uId||p.uid||(`${p.teamSlot}|${norm(name)}`));const a=aggMap.get(key)||{name,team:p.team||'',matches:0,kills:0,damage:0};a.matches++;a.kills+=Number(p.kills??p.elim??p.killNum)||0;a.damage+=Number(p.damage)||0;aggMap.set(key,a);}const arr=[...aggMap.values()].sort((a,b)=>b.kills-a.kills||a.name.localeCompare(b.name));for(let start=0;start<arr.length;start+=20){const [c,x]=make();x.fillStyle='#20252e';x.font='bold 22px Arial';x.fillText('Player Statistics',M,125);pdfDrawTable(x,['#','Player','Team','Matches','Kills','Avg Kills','Damage'],arr.slice(start,start+20).map((a,i)=>[start+i+1,a.name,a.team,a.matches,a.kills,(a.kills/a.matches).toFixed(2),Math.round(a.damage).toLocaleString()]),M,150,W-2*M,42);pages.push(c);}
+  } else {toast('PDF section unavailable');return}
+  pages.forEach((c,i)=>footer(c.getContext('2d'),i+1,pages.length)); buildImagePdf(pages,`${pdfFileName(title)}_${type}_${new Date().toISOString().slice(0,10)}.pdf`);toast('PDF exported successfully.');
+}
+
 function pdfEscapeText(v){return String(v??'').replace(/\s+/g,' ').trim()}
 function pdfFileName(name){return pdfEscapeText(name||'Tournament').replace(/[^a-z0-9_-]+/gi,'_').replace(/^_+|_+$/g,'')||'Tournament'}
 function exportPDF(type){
   try{
-    if(!window.jspdf||!window.jspdf.jsPDF){toast('PDF engine is still loading. Try again in a moment.');return}
-    const {jsPDF}=window.jspdf;
-    const doc=new jsPDF({orientation:'landscape',unit:'pt',format:'a4',compress:true});
-    if(typeof doc.autoTable!=='function'){toast('PDF table engine is unavailable.');return}
-    const title=String(S.tournament||'PUBG Tournament').trim()||'PUBG Tournament';
-    const now=new Date();
-    const margin=28;
-    const pageW=doc.internal.pageSize.getWidth(), pageH=doc.internal.pageSize.getHeight();
-    const green=[156,240,82], dark=[12,16,23], muted=[105,116,132], line=[205,210,218];
-    function header(sub){
-      doc.setFillColor(...dark);doc.rect(0,0,pageW,54,'F');
-      doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('PUBG TOURNAMENT MANAGER PRO',margin,25);
-      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(185,193,204);doc.text(title,margin,41);
-      doc.setTextColor(...green);doc.setFont('helvetica','bold');doc.text(sub,pageW-margin,31,{align:'right'});
-    }
-    function footer(){
-      const n=doc.internal.getNumberOfPages();
-      for(let i=1;i<=n;i++){doc.setPage(i);doc.setDrawColor(...line);doc.line(margin,pageH-24,pageW-margin,pageH-24);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...muted);doc.text('PUBG Tournament Manager PRO',margin,pageH-10);doc.text(`Page ${i} / ${n}`,pageW-margin,pageH-10,{align:'right'});}
-    }
-    function sectionTitle(t,y){doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(20,24,31);doc.text(t,margin,y);return y+16}
-    if(type==='overall'){
-      header('LEADERBOARD');
-      const arr=aggregate().sort((a,b)=>b.points-a.points||b.top1-a.top1||b.placePts-a.placePts||b.kills-a.kills||a.latestPlacement-b.latestPlacement||a.slot-b.slot);
-      let y=78; y=sectionTitle('Tournament Leaderboard',y);
-      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...muted);doc.text(`Generated ${now.toLocaleString()} · Approved matches: ${S.matches.filter(m=>m.approved).length}`,margin,y);y+=12;
-      doc.autoTable({startY:y,margin:{left:margin,right:margin},head:[['#','Team','Matches','Winners','Placement Pts','Kills','Total']],body:arr.map((a,i)=>[i+1,a.name,a.matches,a.top1,a.placePts,a.kills,a.points]),theme:'grid',styles:{font:'helvetica',fontSize:8,cellPadding:5,textColor:[30,35,42],lineColor:[220,223,228],lineWidth:.35},headStyles:{fillColor:[30,37,47],textColor:[255,255,255],fontStyle:'bold'},alternateRowStyles:{fillColor:[246,248,250]},columnStyles:{0:{cellWidth:28},2:{cellWidth:52},3:{cellWidth:52},4:{cellWidth:70},5:{cellWidth:52},6:{cellWidth:55}}});
-      y=doc.lastAutoTable.finalY+18;
-      const top=arr.slice(0,3); if(top.length){y=sectionTitle('Top 3',y);doc.autoTable({startY:y,margin:{left:margin,right:margin},head:[['Rank','Team','Total Points','Kills','Winners']],body:top.map((a,i)=>[`#${i+1}`,a.name,a.points,a.kills,a.top1]),theme:'grid',styles:{fontSize:9,cellPadding:6},headStyles:{fillColor:[30,37,47],textColor:[255,255,255]},alternateRowStyles:{fillColor:[246,248,250]}})}
-    } else if(type==='results'){
-      header('MATCH RESULTS');
-      const ms=S.matches.filter(m=>m.approved).slice().sort((a,b)=>(a.number||0)-(b.number||0));
-      let y=78;
-      if(!ms.length){doc.setFontSize(12);doc.text('No approved matches.',margin,y)}
-      ms.forEach((m,mi)=>{
-        if(mi>0 && y>pageH-150){doc.addPage();header('MATCH RESULTS');y=78}
-        y=sectionTitle(m.name||`Match ${m.number||mi+1}`,y);
-        doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...muted);doc.text(`Game ID: ${m.gameId||'—'} · ${m.created?new Date(m.created).toLocaleString():''}`,margin,y);y+=10;
-        const rows=(m.results||[]).slice().sort((a,b)=>(a.placement||99)-(b.placement||99));
-        doc.autoTable({startY:y,margin:{left:margin,right:margin},head:[['#','Team','Placement Pts','Kills','Kill Pts','Total']],body:rows.map(r=>{const t=S.teams.find(x=>Number(x.slot)===Number(r.slot))||{};const k=Number(r.kills)||0;return [r.placement,t.name||r.team||`Slot ${r.slot}`,S.rules.place[r.placement]||0,k,k*S.rules.kill,points(r)]}),theme:'grid',styles:{fontSize:7.5,cellPadding:4},headStyles:{fillColor:[30,37,47],textColor:[255,255,255]},alternateRowStyles:{fillColor:[246,248,250]},columnStyles:{0:{cellWidth:28},2:{cellWidth:65},3:{cellWidth:48},4:{cellWidth:52},5:{cellWidth:48}}});
-        y=doc.lastAutoTable.finalY+14;
-      });
-    } else if(type==='stats'){
-      header('PLAYER STATISTICS');
-      const chosen=document.getElementById('statsMatch')?.value||'all';
-      const players=[];
-      for(const m of S.matches.filter(m=>m.approved)){
-        if(chosen!=='all'&&m.id!==chosen)continue;
-        for(const r of m.results||[]){const list=(r.players&&r.players.length)?r.players:(m.players||[]).filter(p=>Number(p.slot)===Number(r.slot));for(const p of list)players.push({...p,team:r.team||p.team||'',teamSlot:r.slot,match:m.name,matchId:m.id})}
-      }
-      const agg=new Map();
-      for(const p of players){const name=String(p.name||'Unknown Player').trim()||'Unknown Player';const key=(p.playerId||p.uId||p.uid)?'id:'+String(p.playerId||p.uId||p.uid):'slot:'+Number(p.teamSlot||0)+'|name:'+norm(name);let a=agg.get(key)||{name,team:p.team||'Unassigned',matches:0,kills:0,damage:0,knockouts:0,survival:0};a.matches++;a.kills+=Math.max(0,Number(p.kills??p.elim??p.killNum)||0);a.damage+=Math.max(0,Number(p.damage)||0);a.knockouts+=Math.max(0,Number(p.knockouts??p.knock??0)||0);a.survival+=Math.max(0,Number(p.survivalTime??p.time??0)||0);agg.set(key,a)}
-      const a=[...agg.values()].sort((x,y)=>y.kills-x.kills||y.matches-x.matches||x.name.localeCompare(y.name));
-      let y=78;y=sectionTitle('Player Kill Leaderboard',y);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...muted);doc.text(`Scope: ${chosen==='all'?'All approved matches':'Selected match'} · Generated ${now.toLocaleString()}`,margin,y);y+=12;
-      doc.autoTable({startY:y,margin:{left:margin,right:margin},head:[['#','Player','Team','Matches','Kills','Avg Kills']],body:a.map((x,i)=>[i+1,x.name,x.team,x.matches,x.kills,(x.kills/x.matches).toFixed(2)]),theme:'grid',styles:{fontSize:7.5,cellPadding:4},headStyles:{fillColor:[30,37,47],textColor:[255,255,255]},alternateRowStyles:{fillColor:[246,248,250]}});
-      y=doc.lastAutoTable.finalY+18;if(y>pageH-170){doc.addPage();header('PLAYER STATISTICS');y=78}y=sectionTitle('Detailed Player Statistics',y);
-      doc.autoTable({startY:y,margin:{left:margin,right:margin},head:[['#','Player','Team','MP','Kills','Damage','Knockouts','Avg Survival']],body:a.map((x,i)=>[i+1,x.name,x.team,x.matches,x.kills,Math.round(x.damage).toLocaleString(),x.knockouts,x.survival?((x.survival/x.matches)/60).toFixed(1)+' min':'—']),theme:'grid',styles:{fontSize:7,cellPadding:3.5},headStyles:{fillColor:[30,37,47],textColor:[255,255,255]},alternateRowStyles:{fillColor:[246,248,250]}});
-    } else {toast('Unknown PDF section.');return}
-    footer();
-    doc.save(`${pdfFileName(title)}_${type}_${now.toISOString().slice(0,10)}.pdf`);
-    toast('PDF exported successfully.');
-  }catch(e){console.error(e);toast('PDF export failed. Use Print / Save PDF as fallback.');}
+    exportPDFCanvas(type);
+  }catch(e){
+    console.error('PDF canvas export failed',e);
+    try{printSection(type);toast('PDF generator failed — Print / Save PDF opened.')}catch(_){toast('PDF export failed.')}
+  }
 }
+
 function printSection(id){document.querySelectorAll('.section').forEach(x=>x.classList.remove('printing'));let el=document.getElementById(id);if(!el)return;el.classList.add('printing');window.print();setTimeout(()=>el.classList.remove('printing'),500)}
 function logoForSlot(slot){return (S.teams.find(t=>t.slot===Number(slot))||{}).logo||''}
 function teamForSlot(slot){return S.teams.find(t=>t.slot===Number(slot))||null}
@@ -202,34 +199,55 @@ function teamHistory(a){return S.matches.filter(m=>m.approved).map(m=>{let r=m.r
 function renderAnalytics(){let teams=S.teams.filter(t=>t.name);let aSel=document.getElementById('teamA'),bSel=document.getElementById('teamB');if(!teams.length){document.getElementById('analyticsContent').innerHTML='<div class="card empty">Add teams first.</div>';return}let oldA=aSel.value,oldB=bSel.value;aSel.innerHTML=teams.map(t=>`<option value="${t.slot}">${esc(t.name)}</option>`).join('');bSel.innerHTML=teams.map(t=>`<option value="${t.slot}">${esc(t.name)}</option>`).join('');aSel.value=teams.some(t=>String(t.slot)===oldA)?oldA:teams[0].slot;bSel.value=teams.some(t=>String(t.slot)===oldB)?oldB:(teams[1]?.slot||teams[0].slot);let A=aggregate().find(x=>String(x.slot)===String(aSel.value))||aggregate()[0],B=aggregate().find(x=>String(x.slot)===String(bSel.value))||aggregate()[1]||A;let w=document.getElementById('analyticsWindow').value;let hA=teamHistory(A),hB=teamHistory(B);if(w!=='all'){hA=hA.slice(-Number(w));hB=hB.slice(-Number(w))}let html=`<div class="card"><div class="title">Head-to-Head</div><div class="compareGrid">${compareCard(A,B,'points','Total Points')}${compareCard(A,B,'kills','Total Kills')}${compareCard(A,B,'avgPoints','Average Points')}${compareCard(A,B,'avgKills','Average Kills')}${compareCard(A,B,'avgPlace','Average Placement',true)}${compareCard(A,B,'top3','Top 3 Finishes')}</div></div>`;
 html+=`<div class="card"><div class="title">Points Trend — ${esc(A.name)}</div>${trendForHistory(hA)}</div><div class="card"><div class="title">Points Trend — ${esc(B.name)}</div>${trendForHistory(hB)}</div>`;
 html+=`<div class="card"><div class="title">Performance Scorecard</div><div class="compareGrid"><div class="teamCard"><div class="teamName">${esc(A.name)}</div>${scoreRows(A)}</div><div class="teamCard"><div class="teamName">${esc(B.name)}</div>${scoreRows(B)}</div></div></div>`;
+html+=`<div class="card"><div class="title">Advanced Team Analytics</div>${advancedAnalytics(A,B,hA,hB)}</div>`;
 html+=`<div class="card"><div class="title">Match-by-Match Comparison</div>${comparisonTable(A,B,hA,hB)}</div><div class="card"><div class="title">Automated Insights</div>${insights(A,B)}</div>`;document.getElementById('analyticsContent').innerHTML=html}
 function compareCard(a,b,k,label,lowerBetter=false){let av=Number(a[k])||0,bv=Number(b[k])||0,better=lowerBetter?(av<bv?0:av>bv?1:-1):(av>bv?0:av<bv?1:-1);return `<div class="teamCard"><div class="muted">${label}</div><div style="display:flex;justify-content:space-between;margin-top:6px"><b>${formatMetric(k,av)}</b><span class="delta">${better===0?'A':better===1?'B':'='}</span><b>${formatMetric(k,bv)}</b></div><div class="progress" style="margin-top:7px"><i style="width:${Math.min(100,Math.max(4,(av/(Math.max(av,bv,1)))*100))}%"></i></div><div class="meta">A: ${esc(a.name)} • B: ${esc(b.name)}</div></div>`}
 function formatMetric(k,v){return k==='avgPlace'||k==='avgPoints'||k==='avgKills'?v.toFixed(1):String(Math.round(v))}
 function trendForHistory(rows){
  if(!rows.length)return '<div class="empty">No approved matches for this team yet.</div>';
- const max=Math.max(...rows.map(x=>Number(x.points)||0),1),w=760,h=190,pL=28,pR=16,pT=14,pB=18;
+ const max=Math.max(...rows.map(x=>Number(x.points)||0),1),w=860,h=240,pL=34,pR=24,pT=28,pB=42;
  const usableW=w-pL-pR, usableH=h-pT-pB;
  const xy=(x,i)=>({x:pL+(i/(Math.max(1,rows.length-1)))*usableW,y:pT+usableH-(Number(x.points)||0)/max*usableH});
  const pts=rows.map((x,i)=>{const q=xy(x,i);return `${q.x},${q.y}`}).join(' ');
- const grid=[0,.25,.5,.75,1].map(v=>{const y=pT+usableH-v*usableH;return `<line x1="${pL}" y1="${y}" x2="${w-pR}" y2="${y}" stroke="#27303d" stroke-width="1" opacity="${v===0?0.9:.55}"/>`}).join('');
- const labels=rows.map((x,i)=>{
-   const n=String(x.match||'').replace(/^Match\s*/i,'');
-   return `<div class="trendLabel"><span class="trendMatch">M${esc(n)}</span><b>${Number(x.points)||0}</b></div>`;
- }).join('');
- return `<div class="trendChartBox">
-   <div class="trendPlot">
-    <svg class="trendSvg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Points trend">
-      ${grid}
-      <polyline fill="none" stroke="#70a7ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="${pts}"/>
-      ${rows.map((x,i)=>{const q=xy(x,i);return `<circle cx="${q.x}" cy="${q.y}" r="4.5" fill="#70a7ff" stroke="#0c1118" stroke-width="2"/>`}).join('')}
-    </svg>
-   </div>
-   <div class="trendLabels" style="--trend-count:${rows.length}">${labels}</div>
- </div>`;
+ const grid=[0,.25,.5,.75,1].map(v=>{const y=pT+usableH-v*usableH;return `<line x1="${pL}" y1="${y}" x2="${w-pR}" y2="${y}" stroke="#27303d" stroke-width="1" opacity="${v===0?.9:.55}"/>`}).join('');
+ const yLabels=[0,.25,.5,.75,1].map(v=>{const y=pT+usableH-v*usableH;return `<text x="${pL-8}" y="${y+3}" text-anchor="end" fill="#98a3b3" font-size="10">${Math.round(max*v)}</text>`}).join('');
+ const points=rows.map((x,i)=>{const q=xy(x,i);const val=Number(x.points)||0;const show=rows.length<=14||i===0||i===rows.length-1||i%2===0;return `<g><circle cx="${q.x}" cy="${q.y}" r="5" fill="#70a7ff" stroke="#0c1118" stroke-width="2"/><rect x="${q.x-14}" y="${Math.max(3,q.y-25)}" width="28" height="17" rx="7" fill="#18202c" stroke="#334154"/><text x="${q.x}" y="${Math.max(15,q.y-13)}" text-anchor="middle" fill="#f4f6f8" font-size="10" font-weight="800">${val}</text>${show?`<text x="${q.x}" y="${h-17}" text-anchor="middle" fill="#98a3b3" font-size="9">M${esc(String(x.match||'').replace(/^Match\s*/i,''))}</text>`:''}</g>`}).join('');
+ return `<div class="trendChartBox trendPro"><div class="trendSummary"><span><i class="dot blue"></i>Points per Match</span><b>${rows.reduce((a,x)=>a+(Number(x.points)||0),0)} total</b></div><div class="trendPlot"><svg class="trendSvg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Points trend">${grid}${yLabels}<polyline fill="none" stroke="#70a7ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="${pts}"/>${points}</svg></div></div>`;
 }
 function scoreRows(a){let consistency=a.matches?Math.max(0,100-Math.min(100,(Math.sqrt(a.matches?0:0)+Math.abs(a.avgPlace-4))*18)):0;return `<div style="margin-top:10px"><div class="muted">Kill contribution</div><div class="kpi">${a.killShare}%</div><div class="progress"><i style="width:${a.killShare}%"></i></div></div><div style="margin-top:12px"><div class="muted">Top 3 rate</div><div class="kpi">${a.matches?(a.top3/a.matches*100).toFixed(0):0}%</div><div class="progress"><i style="width:${a.matches?Math.min(100,a.top3/a.matches*100):0}%"></i></div></div><div class="grid3" style="margin-top:12px"><div><div class="muted">Top 1</div><b>${a.top1}</b></div><div><div class="muted">Top 8</div><b>${a.top8}</b></div><div><div class="muted">Matches</div><b>${a.matches}</b></div></div>`}
 function comparisonTable(a,b,ha,hb){let n=Math.max(ha.length,hb.length);if(!n)return '<div class="empty">No match data.</div>';let rows='';for(let i=0;i<n;i++){let x=ha[i],y=hb[i];rows+=`<tr><td>${i+1}</td><td>${x?x.placement:'—'}</td><td>${x?x.kills:'—'}</td><td><b>${x?x.points:'—'}</b></td><td>${y?y.points:'—'}</td><td>${y?y.kills:'—'}</td><td>${y?y.placement:'—'}</td></tr>`}return `<div class="scroll"><table class="table"><tr><th>Match</th><th>${esc(a.name)} Place</th><th>${esc(a.name)} K</th><th>${esc(a.name)} Pts</th><th>${esc(b.name)} Pts</th><th>${esc(b.name)} K</th><th>${esc(b.name)} Place</th></tr>${rows}</table></div>`}
-function insights(a,b){let out=[];if(a.matches&&b.matches){out.push(`${esc(a.name)} averages <b>${a.avgPoints.toFixed(1)}</b> points per match versus <b>${b.avgPoints.toFixed(1)}</b> for ${esc(b.name)}.`);out.push(`${esc(a.name)} has <b>${a.kills}</b> total kills; ${esc(b.name)} has <b>${b.kills}</b>.`);if(a.avgPlace<b.avgPlace)out.push(`${esc(a.name)} has the stronger average placement (${a.avgPlace.toFixed(1)} vs ${b.avgPlace.toFixed(1)}).`);else if(b.avgPlace<a.avgPlace)out.push(`${esc(b.name)} has the stronger average placement (${b.avgPlace.toFixed(1)} vs ${a.avgPlace.toFixed(1)}).`);if(a.top3>b.top3)out.push(`${esc(a.name)} has more Top-3 finishes (${a.top3} vs ${b.top3}).`);else if(b.top3>a.top3)out.push(`${esc(b.name)} has more Top-3 finishes (${b.top3} vs ${a.top3}).`)}else out.push('Approve more matches to unlock reliable comparative insights.');return out.map(x=>`<div class="callout" style="margin:7px 0">${x}</div>`).join('')}
+function insights(a,b){
+ const one=a.matches?((a.top1/a.matches)*100):0, two=b.matches?((b.top1/b.matches)*100):0;
+ const killEffA=a.points?a.kills/a.points:0, killEffB=b.points?b.kills/b.points:0;
+ const consistency=(x)=>x.matches?Math.max(0,100-Math.min(100,Math.abs(x.avgPlace-4)*18)):0;
+ const cards=[];
+ if(a.matches&&b.matches){
+  cards.push(`${esc(a.name)} averages <b>${a.avgPoints.toFixed(1)}</b> points per match versus <b>${b.avgPoints.toFixed(1)}</b> for ${esc(b.name)}.`);
+  cards.push(`${esc(a.name)} has <b>${a.kills}</b> kills and ${esc(b.name)} has <b>${b.kills}</b> — kill efficiency is ${killEffA.toFixed(2)} vs ${killEffB.toFixed(2)} kills per point.`);
+  cards.push(`${esc(a.name)} Top-3 rate: <b>${a.matches?(a.top3/a.matches*100).toFixed(0):0}%</b> · ${esc(b.name)}: <b>${b.matches?(b.top3/b.matches*100).toFixed(0):0}%</b>.`);
+  cards.push(`Consistency score: <b>${consistency(a).toFixed(0)}</b> for ${esc(a.name)} vs <b>${consistency(b).toFixed(0)}</b> for ${esc(b.name)}.`);
+  if(a.avgPlace<b.avgPlace)cards.push(`<b>${esc(a.name)}</b> has the stronger average placement (${a.avgPlace.toFixed(1)} vs ${b.avgPlace.toFixed(1)}).`); else if(b.avgPlace<a.avgPlace)cards.push(`<b>${esc(b.name)}</b> has the stronger average placement (${b.avgPlace.toFixed(1)} vs ${a.avgPlace.toFixed(1)}).`);
+  if(a.top1>b.top1)cards.push(`<b>${esc(a.name)}</b> has more Chicken Dinners (${a.top1} vs ${b.top1}).`); else if(b.top1>a.top1)cards.push(`<b>${esc(b.name)}</b> has more Chicken Dinners (${b.top1} vs ${a.top1}).`);
+ } else cards.push('Approve more matches to unlock reliable comparative insights.');
+ return cards.map((x,i)=>`<div class="callout insightCard"><span class="insightNum">${i+1}</span>${x}</div>`).join('');
+}
+function advancedAnalytics(a,b,rowsA,rowsB){
+ const all=S.matches.filter(m=>m.approved);
+ const hist=(slot)=>all.map(m=>{const r=(m.results||[]).find(x=>Number(x.slot)===Number(slot));return r?{match:m.name,points:points(r),kills:Number(r.kills)||0,place:Number(r.placement)||16}:null}).filter(Boolean);
+ const hA=hist(a.slot),hB=hist(b.slot);
+ const avg=(arr,k)=>arr.length?arr.reduce((s,x)=>s+(Number(x[k])||0),0)/arr.length:0;
+ const variance=(arr,k)=>{if(arr.length<2)return 0;const m=avg(arr,k);return Math.sqrt(arr.reduce((s,x)=>s+Math.pow((Number(x[k])||0)-m,2),0)/arr.length)};
+ const best=(arr,k,desc=true)=>arr.length?arr.slice().sort((x,y)=>desc?(y[k]-x[k]):(x[k]-y[k]))[0]:null;
+ const dist=(arr)=>[1,2,3,4,5,6,7,8].map(p=>arr.filter(x=>x.place===p).length);
+ const winRate=x=>x.matches?(x.top1/x.matches*100):0;
+ const cards=[];
+ const bA=best(hA,'points',true), bB=best(hB,'points',true), wA=best(hA,'points',false), wB=best(hB,'points',false);
+ cards.push(`<div class="advancedMetric"><div class="muted">Best Match</div><b>${bA?bA.points:'—'}</b><span>${bA?esc(bA.match):''}</span></div><div class="advancedMetric"><div class="muted">Lowest Match</div><b>${wA?wA.points:'—'}</b><span>${wA?esc(wA.match):''}</span></div>`);
+ cards.push(`<div class="advancedMetric"><div class="muted">Point Volatility</div><b>${variance(hA,'points').toFixed(1)}</b><span>Lower = more consistent</span></div><div class="advancedMetric"><div class="muted">Chicken Dinner Rate</div><b>${winRate(a).toFixed(0)}%</b><span>${a.top1} wins / ${a.matches} matches</span></div>`);
+ cards.push(`<div class="advancedMetric"><div class="muted">Top 8 Rate</div><b>${a.matches?(a.top8/a.matches*100).toFixed(0):0}%</b><span>${a.top8} Top-8 finishes</span></div><div class="advancedMetric"><div class="muted">Kill Share</div><b>${a.killShare}%</b><span>Points from kills</span></div>`);
+ const cmp=rowsA.length&&rowsB.length?Math.sign(avg(rowsA,'points')-avg(rowsB,'points')):0;
+ return `<div class="advancedGrid">${cards.join('')}</div><div class="advancedInsight"><b>Momentum:</b> ${hA.length>=3?`${esc(a.name)} last 3 average is <strong>${avg(hA.slice(-3),'points').toFixed(1)}</strong> points.`:'Not enough matches for momentum.'} ${hB.length>=3?`${esc(b.name)} last 3 average is <strong>${avg(hB.slice(-3),'points').toFixed(1)}</strong>.`:''}</div><div class="advancedInsight"><b>Scoring profile:</b> ${cmp>0?esc(a.name):cmp<0?esc(b.name):'Both teams'} currently lead the selected comparison on recent average points.</div>`;
+}
 function renderStats(){
   let sel=document.getElementById('statsMatch');
   let old=sel.value;
