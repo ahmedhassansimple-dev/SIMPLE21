@@ -756,20 +756,56 @@ function addFiles(list){const fresh=[...list].filter(f=>/^image\/(png|jpe?g|webp
 function renderFiles(){const el=$('slotImportFilesV2');if(!el)return;el.innerHTML=X.files.length?X.files.map((f,i)=>`<div class="slotFileItem"><img id="slotThumb${i}" alt=""><div style="min-width:0"><b>${escv(f.name)}</b><div class="meta">${(f.size/1024/1024).toFixed(2)} MB</div></div><button class="small ghost x" onclick="slotImportRemoveFile(${i})">×</button></div>`).join(''):'<div class="hint">لا توجد صور مضافة.</div>';X.files.forEach((f,i)=>{const r=new FileReader();r.onload=()=>{const im=$('slotThumb'+i);if(im)im.src=r.result};r.readAsDataURL(f)})}
 window.slotImportRemoveFile=i=>{X.files.splice(i,1);renderFiles()};window.slotImportAddFiles=addFiles;
 function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('Image could not be loaded'))};im.src=u})}
-async function ensureOCR(){const lang=$('slotImportLang')?.value||'eng';if(!window.Tesseract?.createWorker){setStatus('تحميل محرك OCR الاحترافي…',3);await new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=ok;s.onerror=no;document.head.appendChild(s)});}
- if(!window.Tesseract?.createWorker)throw Error('Tesseract.js unavailable');
+async function ensureOCR(){
+ const lang=$('slotImportLang')?.value||'eng';
  if(X.worker&&X.workerLang===lang)return X.worker;
+ if(!window.Tesseract){
+   setStatus('تحميل محرك OCR…',3);
+   await new Promise((resolve,reject)=>{
+     const s=document.createElement('script');
+     s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+     s.onload=()=>resolve(); s.onerror=()=>reject(new Error('تعذر تحميل Tesseract.js من الشبكة'));
+     document.head.appendChild(s);
+   });
+ }
+ if(!window.Tesseract)throw new Error('Tesseract.js غير متاح في هذا المتصفح');
  if(X.worker){try{await X.worker.terminate()}catch(e){}X.worker=null}
- setStatus(`تهيئة OCR Worker · ${lang}…`,5);
- X.worker=await Tesseract.createWorker(lang,1,{logger:m=>{if(m.status==='recognizing text'&&m.progress){const p=5+m.progress*15;setStatus(`OCR Worker… ${Math.round(m.progress*100)}%`,p)}}});
- X.workerLang=lang;return X.worker;
+ setStatus(`تهيئة محرك OCR · ${lang}…`,5);
+ try{
+   X.worker=await Tesseract.createWorker(lang,1,{
+     logger:m=>{if(m.status==='recognizing text'&&m.progress){setStatus(`OCR… ${Math.round(m.progress*100)}%`,5+m.progress*15)}}
+   });
+   X.workerLang=lang;
+   X.direct=false;
+   return X.worker;
+ }catch(workerErr){
+   console.warn('Worker OCR unavailable; direct OCR fallback will be used.',workerErr);
+   X.worker=null; X.workerLang=null; X.direct=true;
+   setStatus('تم تشغيل وضع OCR البديل — سيتم تحليل كل منطقة بشكل مستقل.',8);
+   return null;
+ }
 }
 function canvasCrop(img,x,y,w,h,scale=6){const c=document.createElement('canvas');c.width=Math.max(2,Math.round(w*scale));c.height=Math.max(2,Math.round(h*scale));const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,x,y,w,h,0,0,c.width,c.height);return c}
 function preprocess(src,mode='original'){const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(src,0,0);const d=g.getImageData(0,0,c.width,c.height),p=d.data;
  for(let i=0;i<p.length;i+=4){let v=.299*p[i]+.587*p[i+1]+.114*p[i+2];if(mode==='gray'){p[i]=p[i+1]=p[i+2]=v}else if(mode==='contrast'){v=clamp((v-35)*2.15+35,0,255);p[i]=p[i+1]=p[i+2]=v}else if(mode==='threshold'){v=v>145?255:0;p[i]=p[i+1]=p[i+2]=v}else if(mode==='soft'){v=clamp((v-55)*1.55+55,0,255);p[i]=p[i+1]=p[i+2]=v}}
  g.putImageData(d,0,0);return c}
 function sharpen(src){const g=src.getContext('2d',{willReadFrequently:true}),d=g.getImageData(0,0,src.width,src.height),p=d.data;const copy=new Uint8ClampedArray(p);const w=src.width,h=src.height;for(let y=1;y<h-1;y++){for(let x=1;x<w-1;x++){const i=(y*w+x)*4;for(let ch=0;ch<3;ch++){const v=copy[i+ch]*5-copy[i-4+ch]-copy[i+4+ch]-copy[i-w*4+ch]-copy[i+w*4+ch];p[i+ch]=clamp(v,0,255)}}}g.putImageData(d,0,0);return src}
-async function recognize(c,psm=7){const w=await ensureOCR();const r=await w.recognize(c,{tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1'});return r.data||{text:'',words:[]}}
+async function recognize(c,psm=7){
+ const w=await ensureOCR();
+ const opts={tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1'};
+ try{
+   if(w){const r=await w.recognize(c,opts);return r.data||{text:'',words:[]};}
+   if(window.Tesseract?.recognize){
+     const lang=$('slotImportLang')?.value||'eng';
+     const r=await Tesseract.recognize(c,lang,{...opts,logger:m=>{if(m.status==='recognizing text'&&m.progress)setStatus(`OCR fallback… ${Math.round(m.progress*100)}%`,10+m.progress*10)}});
+     return r.data||{text:'',words:[]};
+   }
+   throw new Error('لا يوجد محرك OCR متاح');
+ }catch(e){
+   console.warn('OCR pass failed',psm,e);
+   return {text:'',words:[],error:String(e?.message||e)};
+ }
+}
 function avgConf(data){const ws=(data.words||[]).filter(w=>clean(w.text));return ws.length?ws.reduce((s,w)=>s+Number(w.confidence||0),0)/ws.length:0}
 function normalizeCandidate(s,type){s=clean(s);s=s.replace(/[|¦]+/g,'').replace(/^[^A-Za-z0-9_\-\u0600-\u06FF]+/,'').replace(/[^A-Za-z0-9_\-\u0600-\u06FF\s×x乂丨ツ々丶〆\.]+$/g,'').trim();if(type==='slot'){const m=s.match(/\d{1,2}/);return m?m[0]:''}if(type==='team'){s=s.replace(/(?:\/\s*0|0\s*(?:eliminations?|eliminatons?).*)$/i,'').trim()}return s}
 function lineBands(img,x0,x1,y0,y1){const c=document.createElement('canvas');c.width=Math.max(1,Math.round(x1-x0));c.height=Math.max(1,Math.round(y1-y0));const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,x0,y0,x1-x0,y1-y0,0,0,c.width,c.height);const d=g.getImageData(0,0,c.width,c.height).data;const vals=[];for(let y=0;y<c.height;y++){let n=0;for(let x=0;x<c.width;x+=1){const i=(y*c.width+x)*4,v=.299*d[i]+.587*d[i+1]+.114*d[i+2];if(v>145)n++}if(n>=Math.max(8,c.width*.045))vals.push(y+y0)}const groups=[];for(const y of vals){if(!groups.length||y-groups[groups.length-1][groups[groups.length-1].length-1]>3)groups.push([]);groups[groups.length-1].push(y)}return groups.map(gp=>[gp[0],gp[gp.length-1]]).filter(b=>b[1]-b[0]>=3&&b[1]-b[0]<=18)}
@@ -794,8 +830,36 @@ async function analyzeImage(file,index,globalSlots){const img=await loadImg(file
 function merge(all){const map=new Map();for(const d of all){if(!d.slot)continue;if(!map.has(d.slot))map.set(d.slot,[]);map.get(d.slot).push(d)}return [...map.entries()].map(([slot,arr])=>{const groups=[];for(const d of arr){let g=groups.find(x=>sim(x.team,d.team)>=.78);if(!g)groups.push(g={team:d.team,items:[]});g.items.push(d)}groups.sort((a,b)=>b.items.length*35+b.items.reduce((s,x)=>s+x.confidence,0)-a.items.length*35-a.items.reduce((s,x)=>s+x.confidence,0));const best=groups[0];const consensus=best?best.items.length/arr.length*100:0;const sources=best?.items||[];const players=[];const maxPlayers=Math.max(0,...sources.map(x=>(x.players||[]).length));for(let pi=0;pi<maxPlayers;pi++){const ps=sources.map(x=>x.players?.[pi]).filter(Boolean);const pg=[];for(const p of ps){let g=pg.find(x=>sim(x.name,p.name)>=.84);if(!g)pg.push(g={name:p.name,items:[]});g.items.push(p)}pg.sort((a,b)=>b.items.length*30+b.items.reduce((s,x)=>s+x.confidence,0)-a.items.length*30-a.items.reduce((s,x)=>s+x.confidence,0));if(pg[0]){const z=pg[0];players.push({name:z.name,confidence:Math.round(z.items.reduce((s,x)=>s+x.confidence,0)/z.items.length),reads:z.items.length,alternatives:z.items.slice(1).map(x=>x.name)})}}
  const conf=Math.round(clamp((sources.reduce((s,x)=>s+x.confidence,0)/Math.max(1,sources.length))*.65+consensus*.35,0,100));const conflict=groups.length>1;const playerReview=players.some(p=>p.confidence<72);return {slot:Number(slot),team:best?.team||'',confidence:conf,consensus:Math.round(consensus),conflict,alternatives:groups.slice(1).map(g=>({team:g.team,confidence:Math.round(g.items.reduce((s,x)=>s+x.confidence,0)/g.items.length)})),players:players.slice(0,4),sources,needsReview:conflict||conf<Number($('slotImportThreshold')?.value||86)||playerReview,missing:false,manual:false}})}
 function assignSequentialFallback(all,min,max){const missing=[];const used=new Set(all.map(x=>x.slot).filter(Boolean));for(let s=min;s<=max;s++)if(!used.has(s))missing.push(s);const noSlot=all.filter(x=>!x.slot);if(!noSlot.length)return;const canUse=noSlot.length<=missing.length; if(canUse)noSlot.forEach((x,i)=>{x.slot=missing[i];x.sequenceInferred=true;x.needsReview=true;x.confidence=Math.min(x.confidence||60,72)});}
-window.runTeamSlotImportV2=async()=>{if(X.scanning)return;if(!X.files.length)return toast('ارفع Screenshot واحدة على الأقل');const min=Number($('slotImportMin')?.value||3),max=Number($('slotImportMax')?.value||18);X.scanning=true;X.results=[];renderReview();try{await ensureOCR();let all=[];const expected=max-min+1;let remaining=Array.from({length:expected},(_,i)=>min+i);for(let i=0;i<X.files.length;i++){const res=await analyzeImage(X.files[i],i,[]);const recognized=res.out.filter(x=>x.slot>=min&&x.slot<=max);const used=new Set(recognized.map(x=>x.slot));const missing=remaining.filter(s=>!used.has(s));for(const d of res.out.filter(x=>!x.slot)){if(missing.length){d.slot=missing.shift();d.sequenceInferred=true;d.needsReview=true;d.confidence=Math.min(d.confidence||60,72)}}all.push(...res.out);remaining=remaining.filter(s=>!all.some(x=>Number(x.slot)===s));}
- assignSequentialFallback(all,min,max);X.results=merge(all.filter(x=>x.slot>=min&&x.slot<=max));const have=new Set(X.results.map(x=>x.slot));for(let s=min;s<=max;s++)if(!have.has(s))X.results.push({slot:s,team:'',players:[],confidence:0,consensus:0,conflict:false,alternatives:[],sources:[],needsReview:true,missing:true,manual:false});X.results.sort((a,b)=>a.slot-b.slot);renderReview();setStatus(`اكتمل التحليل Precision V4: ${all.length} Cards → ${X.results.filter(x=>!x.missing).length} Slots`,100)}catch(e){console.error(e);setStatus('تعذر تشغيل التحليل — لم يتم تعديل بيانات البطولة.',0);toast('Precision OCR failed — no tournament data changed')}finally{X.scanning=false}};
+window.runTeamSlotImportV2=async()=>{
+ if(X.scanning)return;
+ if(!X.files.length)return toast('ارفع Screenshot واحدة على الأقل');
+ const min=Number($('slotImportMin')?.value||3),max=Number($('slotImportMax')?.value||18);
+ X.scanning=true; X.results=[]; renderReview();
+ try{
+   setStatus('بدء تحليل صور PUBG — بدون تعديل بيانات البطولة…',1);
+   await ensureOCR();
+   let all=[];
+   for(let i=0;i<X.files.length;i++){
+     setStatus(`فحص الصورة ${i+1}/${X.files.length}…`,10+(i/X.files.length)*70);
+     const res=await analyzeImage(X.files[i],i,[]);
+     all.push(...res.out);
+   }
+   assignSequentialFallback(all,min,max);
+   X.results=merge(all.filter(x=>x.slot>=min&&x.slot<=max));
+   const have=new Set(X.results.map(x=>Number(x.slot)));
+   for(let slot=min;slot<=max;slot++)if(!have.has(slot))X.results.push({slot,team:'',players:[],confidence:0,consensus:0,conflict:false,alternatives:[],sources:[],needsReview:true,missing:true,manual:false});
+   X.results.sort((a,b)=>a.slot-b.slot);
+   renderReview();
+   const found=X.results.filter(x=>!x.missing).length;
+   setStatus(`اكتمل التحليل: ${found} من ${max-min+1} Slots — راجع النتائج قبل الحفظ.`,100);
+ }catch(e){
+   console.error('PUBG Precision Engine failure:',e);
+   X.results=[]; renderReview();
+   const msg=String(e?.message||e||'Unknown error');
+   setStatus(`فشل التحليل: ${msg}`,0);
+   toast('فشل تشغيل محرك التحليل — لم يتم تعديل بيانات البطولة');
+ }finally{X.scanning=false}
+};
 window.clearTeamSlotImportV2=async()=>{X.files=[];X.results=[];renderFiles();renderReview();setStatus('جاهز — PUBG Precision Image Engine V4',0)};
 window.slotImportFilterV2=f=>{X.filter=f;renderReview()};
 window.slotImportAddManualRow=()=>{X.results.push({slot:0,team:'',players:[],confidence:100,consensus:100,conflict:false,alternatives:[],sources:[],needsReview:true,manual:true});renderReview()};
