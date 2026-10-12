@@ -2,7 +2,7 @@
 
 <html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/><meta content="yes" name="apple-mobile-web-app-capable"/><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/><meta content="#090b10" name="theme-color"/><title>PUBG Tournament Manager V26 ELITE</title>
 <style>
-:root{--bg:#080a0f;--panel:#11151d;--panel2:#171d27;--panel3:#0d1118;--line:#27303d;--txt:#f4f6f8;--muted:#98a3b3;--accent:#9cf052;--gold:#f5c451;--red:#ff6868;--blue:#70a7ff;--cyan:#57d6d1;--shadow:0 14px 40px #0007}*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:radial-gradient(circle at 50% -10%,#1a2434 0,#080a0f 38%);color:var(--txt);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:82px}.wrap{max-width:1100px;margin:auto;padding:14px}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.brand{font-size:20px;font-weight:950;letter-spacing:-.3px}.sub{color:var(--muted);font-size:11px;margin-top:2px}.topActions{display:flex;gap:6px}.iconbtn{padding:9px 10px;background:var(--panel);border:1px solid var(--line)}button,input,select,textarea{font:inherit}button{border:1px solid transparent;border-radius:12px;padding:11px 13px;background:var(--panel2);color:var(--txt);font-weight:800;cursor:pointer}button:active{transform:scale(.98)}button.primary{background:var(--accent);color:#071006}button.blue{background:#1a3359;color:#a9cbff;border-color:#28558d}button.danger{background:#36191d;color:#ff9a9a}button.ghost{background:transparent;border-color:var(--line)}button.small{padding:7px 9px;font-size:11px}.card{background:linear-gradient(180deg,#131821,#10141b);border:1px solid var(--line);border-radius:18px;padding:14px;margin:10px 0;box-shadow:0 5px 20px #0002}.hero{padding:18px;background:linear-gradient(135deg,#151d27,#10141b 60%,#17210f);border-color:#33412b}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}label{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}input,select,textarea{width:100%;background:#0a0e14;border:1px solid var(--line);border-radius:11px;color:var(--txt);padding:11px;outline:none}input:focus,select:focus,textarea:focus{border-color:#56713e;box-shadow:0 0 0 3px #9cf05215}textarea{min-height:120px;resize:vertical}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.title{font-size:16px;font-weight:950;margin-bottom:9px}.titleline{display:flex;justify-content:space-between;align-items:center;gap:8px}.pill{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;background:#202733;color:var(--muted);font-size:10px;font-weight:800}.ok{color:var(--accent)}.bad{color:var(--red)}.warn{color:var(--gold)}.muted{color:var(--muted)}.scroll{overflow:auto}.empty{text-align:center;color:var(--muted);padding:25px}.nav{position:fixed;left:0;right:0;overflow-x:auto;bottom:0;background:#0b0e14ed;backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(10,minmax(76px,1fr));padding:7px max(7px,env(safe-area-inset-left)) max(7px,env(safe-area-inset-bottom));z-index:30}.nav button{background:transparent;padding:8px 3px;font-size:10px;color:var(--muted)}.nav button.active{color:var(--accent)}.section{display:none}.section.active{display:block}.kpi{font-size:24px;font-weight:950}.kpiLabel{font-size:10px;color:var(--muted);margin-top:2px}.kpiGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.kpiBox{background:#0d1219;border:1px solid var(--line);border-radius:14px;padding:12px}.hint{color:var(--muted);font-size:12px;line-height:1.5}.matchitem{display:flex;justify-content:space-between;align-items:center;gap:10px}.meta{color:var(--muted);font-size:11px;margin-top:3px}.badge{font-size:10px;font-weight:900;padding:5px 8px;border-radius:999px}.badge.ok{background:#19321a}.badge.review{background:#352a12;color:#ffd67a}.badge.bad{background:#381a1f}.review{border-color:#735b26;background:#18140b}.table{width:100%;border-collapse:collapse;font-size:12px}.table th,.table td{padding:9px 7px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.table th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}.rank{font-weight:950}.gold{color:var(--gold)}.chartWrap{height:250px;display:flex;align-items:end;gap:6px;padding:16px 6px 8px;background:#0c1118;border:1px solid var(--line);border-radius:14px;overflow:hidden}.barCol{flex:1;min-width:12px;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px}.bar{width:70%;max-width:32px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#b4f66f,#5f9d35);min-height:3px;box-shadow:0 3px 12px #9cf05222}.bar.secondary{background:linear-gradient(180deg,#79b8ff,#3f6fa8)}.barLabel{font-size:9px;color:var(--muted);max-width:48px;overflow:hidden;text-overflow:ellipsis}.barValue{font-size:9px;font-weight:900}.lineChart{position:relative;height:210px;background:#0c1118;border:1px solid var(--line);border-radius:14px;padding:12px;overflow:hidden}.lineSvg{width:100%;height:100%}.legend{display:flex;gap:12px;font-size:10px;color:var(--muted);margin-top:7px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:4px}.dot.blue{background:var(--blue)}.resultRow{display:grid;grid-template-columns:38px minmax(100px,1.4fr) 100px 110px 90px;gap:7px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.resultRow.head{color:var(--muted);font-size:10px;text-transform:uppercase}.placeSelect{font-weight:900;text-align:center}.killControl{display:grid;grid-template-columns:34px minmax(40px,1fr) 34px;gap:4px;align-items:center}.killInput{text-align:center;font-weight:950;min-width:0;padding:9px 5px}.killBtn{padding:8px 0;min-height:40px;font-size:17px;line-height:1}.killInput::-webkit-inner-spin-button,.killInput::-webkit-outer-spin-button{appearance:none;margin:0}.ptsCell{text-align:center;font-weight:950}.totalCell{text-align:right;font-weight:950}.scorePreview{background:#0b1016;border:1px solid var(--line);border-radius:14px;padding:10px}.scoreBig{font-size:22px;font-weight:950}.progress{height:7px;background:#242b35;border-radius:20px;overflow:hidden}.progress i{display:block;height:100%;background:var(--accent);border-radius:20px}.compareGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.teamCard{background:#0c1118;border:1px solid var(--line);border-radius:15px;padding:13px}.teamName{font-weight:950;font-size:15px}.delta{font-weight:950}.filterbar{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px}.callout{border-left:3px solid var(--accent);padding:9px 11px;background:#0c1210;border-radius:0 10px 10px 0;color:#dce7d7;font-size:12px;line-height:1.5}.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#1e2631;border:1px solid var(--line);padding:10px 14px;border-radius:12px;z-index:50;display:none;box-shadow:var(--shadow)}@media(max-width:620px){.grid3,.grid4{grid-template-columns:1fr 1fr}.kpiGrid{grid-template-columns:repeat(2,1fr)}.resultRow{grid-template-columns:30px minmax(95px,1fr) 78px 86px 70px;font-size:11px}.resultRow.head{font-size:9px}.filterbar{grid-template-columns:1fr}.compareGrid{grid-template-columns:1fr}.top .sub{display:none}}@media(min-width:760px){body{padding-bottom:20px}.nav{position:sticky;top:0;bottom:auto;margin:0 auto 15px;max-width:1100px;border:1px solid var(--line);border-radius:14px}.wrap{padding-top:16px}}
+:root{--bg:#080a0f;--panel:#11151d;--panel2:#171d27;--panel3:#0d1118;--line:#27303d;--txt:#f4f6f8;--muted:#98a3b3;--accent:#9cf052;--gold:#f5c451;--red:#ff6868;--blue:#70a7ff;--cyan:#57d6d1;--shadow:0 14px 40px #0007}*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:radial-gradient(circle at 50% -10%,#1a2434 0,#080a0f 38%);color:var(--txt);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:82px}.wrap{max-width:1100px;margin:auto;padding:14px}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.brand{font-size:20px;font-weight:950;letter-spacing:-.3px}.sub{color:var(--muted);font-size:11px;margin-top:2px}.topActions{display:flex;gap:6px}.iconbtn{padding:9px 10px;background:var(--panel);border:1px solid var(--line)}button,input,select,textarea{font:inherit}button{border:1px solid transparent;border-radius:12px;padding:11px 13px;background:var(--panel2);color:var(--txt);font-weight:800;cursor:pointer}button:active{transform:scale(.98)}button.primary{background:var(--accent);color:#071006}button.blue{background:#1a3359;color:#a9cbff;border-color:#28558d}button.danger{background:#36191d;color:#ff9a9a}button.ghost{background:transparent;border-color:var(--line)}button.small{padding:7px 9px;font-size:11px}.card{background:linear-gradient(180deg,#131821,#10141b);border:1px solid var(--line);border-radius:18px;padding:14px;margin:10px 0;box-shadow:0 5px 20px #0002}.hero{padding:18px;background:linear-gradient(135deg,#151d27,#10141b 60%,#17210f);border-color:#33412b}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}label{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}input,select,textarea{width:100%;background:#0a0e14;border:1px solid var(--line);border-radius:11px;color:var(--txt);padding:11px;outline:none}input:focus,select:focus,textarea:focus{border-color:#56713e;box-shadow:0 0 0 3px #9cf05215}textarea{min-height:120px;resize:vertical}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.title{font-size:16px;font-weight:950;margin-bottom:9px}.titleline{display:flex;justify-content:space-between;align-items:center;gap:8px}.pill{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;background:#202733;color:var(--muted);font-size:10px;font-weight:800}.ok{color:var(--accent)}.bad{color:var(--red)}.warn{color:var(--gold)}.muted{color:var(--muted)}.scroll{overflow:auto}.empty{text-align:center;color:var(--muted);padding:25px}.nav{position:fixed;left:0;right:0;overflow-x:auto;bottom:0;background:#0b0e14ed;backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(11,minmax(76px,1fr));padding:7px max(7px,env(safe-area-inset-left)) max(7px,env(safe-area-inset-bottom));z-index:30}.nav button{background:transparent;padding:8px 3px;font-size:10px;color:var(--muted)}.nav button.active{color:var(--accent)}.section{display:none}.section.active{display:block}.kpi{font-size:24px;font-weight:950}.kpiLabel{font-size:10px;color:var(--muted);margin-top:2px}.kpiGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.kpiBox{background:#0d1219;border:1px solid var(--line);border-radius:14px;padding:12px}.hint{color:var(--muted);font-size:12px;line-height:1.5}.matchitem{display:flex;justify-content:space-between;align-items:center;gap:10px}.meta{color:var(--muted);font-size:11px;margin-top:3px}.badge{font-size:10px;font-weight:900;padding:5px 8px;border-radius:999px}.badge.ok{background:#19321a}.badge.review{background:#352a12;color:#ffd67a}.badge.bad{background:#381a1f}.review{border-color:#735b26;background:#18140b}.table{width:100%;border-collapse:collapse;font-size:12px}.table th,.table td{padding:9px 7px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.table th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}.rank{font-weight:950}.gold{color:var(--gold)}.chartWrap{height:250px;display:flex;align-items:end;gap:6px;padding:16px 6px 8px;background:#0c1118;border:1px solid var(--line);border-radius:14px;overflow:hidden}.barCol{flex:1;min-width:12px;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px}.bar{width:70%;max-width:32px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#b4f66f,#5f9d35);min-height:3px;box-shadow:0 3px 12px #9cf05222}.bar.secondary{background:linear-gradient(180deg,#79b8ff,#3f6fa8)}.barLabel{font-size:9px;color:var(--muted);max-width:48px;overflow:hidden;text-overflow:ellipsis}.barValue{font-size:9px;font-weight:900}.lineChart{position:relative;height:210px;background:#0c1118;border:1px solid var(--line);border-radius:14px;padding:12px;overflow:hidden}.lineSvg{width:100%;height:100%}.legend{display:flex;gap:12px;font-size:10px;color:var(--muted);margin-top:7px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:4px}.dot.blue{background:var(--blue)}.resultRow{display:grid;grid-template-columns:38px minmax(100px,1.4fr) 100px 110px 90px;gap:7px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.resultRow.head{color:var(--muted);font-size:10px;text-transform:uppercase}.placeSelect{font-weight:900;text-align:center}.killControl{display:grid;grid-template-columns:34px minmax(40px,1fr) 34px;gap:4px;align-items:center}.killInput{text-align:center;font-weight:950;min-width:0;padding:9px 5px}.killBtn{padding:8px 0;min-height:40px;font-size:17px;line-height:1}.killInput::-webkit-inner-spin-button,.killInput::-webkit-outer-spin-button{appearance:none;margin:0}.ptsCell{text-align:center;font-weight:950}.totalCell{text-align:right;font-weight:950}.scorePreview{background:#0b1016;border:1px solid var(--line);border-radius:14px;padding:10px}.scoreBig{font-size:22px;font-weight:950}.progress{height:7px;background:#242b35;border-radius:20px;overflow:hidden}.progress i{display:block;height:100%;background:var(--accent);border-radius:20px}.compareGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.teamCard{background:#0c1118;border:1px solid var(--line);border-radius:15px;padding:13px}.teamName{font-weight:950;font-size:15px}.delta{font-weight:950}.filterbar{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px}.callout{border-left:3px solid var(--accent);padding:9px 11px;background:#0c1210;border-radius:0 10px 10px 0;color:#dce7d7;font-size:12px;line-height:1.5}.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#1e2631;border:1px solid var(--line);padding:10px 14px;border-radius:12px;z-index:50;display:none;box-shadow:var(--shadow)}@media(max-width:620px){.grid3,.grid4{grid-template-columns:1fr 1fr}.kpiGrid{grid-template-columns:repeat(2,1fr)}.resultRow{grid-template-columns:30px minmax(95px,1fr) 78px 86px 70px;font-size:11px}.resultRow.head{font-size:9px}.filterbar{grid-template-columns:1fr}.compareGrid{grid-template-columns:1fr}.top .sub{display:none}}@media(min-width:760px){body{padding-bottom:20px}.nav{position:sticky;top:0;bottom:auto;margin:0 auto 15px;max-width:1100px;border:1px solid var(--line);border-radius:14px}.wrap{padding-top:16px}}
 
 /* ===== V26 ELITE 2.1 — Tournament Workspace Hub ===== */
 .workspaceHub{position:relative;overflow:hidden;background:linear-gradient(135deg,#111a25 0%,#10151d 52%,#17220f 100%);border-color:#3a4b31}
@@ -74,96 +74,63 @@
 .proChart{background:#0b1017;border:1px solid var(--line);border-radius:16px;padding:12px}.proChartRow{display:grid;grid-template-columns:28px minmax(90px,1.1fr) 2fr 58px;gap:8px;align-items:center;padding:8px 3px;border-bottom:1px solid #1d2530}.proChartRow:last-child{border-bottom:0}.proChartName{display:flex;align-items:center;gap:7px;min-width:0}.proChartName span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.proChartLogo{width:25px;height:25px;border-radius:7px;object-fit:contain;background:#0a0e14;border:1px solid #303948}.proChartTrack{height:11px;border-radius:99px;background:#202733;overflow:hidden}.proChartFill{height:100%;border-radius:99px;background:linear-gradient(90deg,#9cf052,#70a7ff)}.proChartValue{text-align:right;font-weight:950}.spark{display:flex;gap:4px;align-items:end;height:80px;padding:8px;background:#0b1017;border:1px solid var(--line);border-radius:14px}.spark i{flex:1;min-width:4px;background:linear-gradient(180deg,#70a7ff,#3f6fa8);border-radius:4px 4px 1px 1px}.insightGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.insightCard{background:#0b1017;border:1px solid var(--line);border-radius:14px;padding:11px}.insightCard b{display:block;margin-top:4px}.auditList{max-height:260px;overflow:auto}.auditRow{padding:9px;border-bottom:1px solid var(--line);font-size:11px}.auditRow b{font-size:10px}.auditTime{color:var(--muted);font-size:9px}
 @media(max-width:720px){.modernSwitcher{grid-template-columns:1fr}.switchStats{grid-template-columns:repeat(2,1fr)}.healthMatrix{grid-template-columns:repeat(2,1fr)}.insightGrid{grid-template-columns:1fr}.proChartRow{grid-template-columns:25px minmax(85px,1fr) 1.6fr 50px}}
 </style>
+
+<style id="v16WorkspaceAndOCR">
+/* ===== V26 ELITE V16 — cleaner workspace + intelligence layers ===== */
+.homeHeroV16{position:relative;overflow:hidden;background:radial-gradient(circle at 90% 10%,#23351b 0,#121923 38%,#0d1118 78%);border:1px solid #34482f;border-radius:24px;padding:20px}
+.homeHeroV16:after{content:"";position:absolute;width:220px;height:220px;right:-90px;top:-100px;border-radius:50%;background:#9cf05212;filter:blur(2px);pointer-events:none}
+.homeKicker{font-size:10px;color:var(--accent);font-weight:950;letter-spacing:1px;text-transform:uppercase}.homeTitleV16{font-size:28px;font-weight:1000;letter-spacing:-.7px;margin-top:6px}.homeSubV16{max-width:680px;color:#b9c3cf;line-height:1.6;font-size:12px;margin-top:7px}
+.homeCurrentV16{display:grid;grid-template-columns:58px 1fr auto;gap:12px;align-items:center;margin-top:16px;padding:11px;border:1px solid #303b48;border-radius:16px;background:#0b1017}.homeCurrentV16 img{width:58px;height:58px;border-radius:14px;object-fit:contain;background:#080c11;border:1px solid #344050;padding:5px}.homeCurrentName{font-size:17px;font-weight:1000}.homeCurrentMeta{font-size:10px;color:var(--muted);margin-top:3px}.homeCurrentStats{display:grid;grid-template-columns:repeat(4,auto);gap:6px}.homeCurrentStat{min-width:65px;text-align:center;padding:8px 9px;border-radius:11px;background:#0a0f15;border:1px solid var(--line)}.homeCurrentStat small{display:block;color:var(--muted);font-size:9px}.homeCurrentStat b{display:block;margin-top:2px;font-size:14px}
+.homeActionsV16{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:13px}.homeActionsV16 button{min-height:46px}.homeCreateV16{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:8px;margin-top:12px}.homeCreateV16 .createName{height:45px}.homeLogoPickV16{height:45px;border:1px dashed #465362;border-radius:11px;background:#0a0e14;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;font-size:10px}.homeLogoPickV16 img{width:100%;height:100%;object-fit:contain;padding:4px}
+.homeLibraryV16{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:12px}.homeLibraryListV16{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}.homeLibraryCardV16{display:grid;grid-template-columns:42px 1fr;gap:9px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:14px;background:#0b1017}.homeLibraryCardV16.active{border-color:#617b47;background:#101a13}.homeLibraryCardV16 img{width:42px;height:42px;border-radius:11px;object-fit:contain;background:#080c11;border:1px solid #303947}.homeLibraryCardV16 b{font-size:12px}.homeLibraryCardV16 small{display:block;color:var(--muted);margin-top:3px;font-size:9px}.homeLibraryActionsV16{display:flex;gap:5px;margin-top:7px}.homeLibraryActionsV16 button{padding:5px 7px;font-size:9px;border-radius:8px}
+.homeQuickV16{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.homeQuickV16 .card{margin:0}.homeQuickIcon{font-size:20px}.homeQuickTitle{font-weight:950;margin-top:5px}.homeQuickText{font-size:10px;color:var(--muted);line-height:1.45;margin-top:3px}
+.aiPageHeroV16{background:radial-gradient(circle at 100% 0,#23351a 0,#121821 45%,#0d1118 100%);border-color:#3b4f31}.aiPageGridV16{display:grid;grid-template-columns:1.1fr .9fr;gap:9px}.aiFeatureV16{background:#0b1017;border:1px solid var(--line);border-radius:15px;padding:11px}.aiFeatureV16 b{display:block;margin-bottom:3px}.aiFeatureV16 span{font-size:10px;color:var(--muted);line-height:1.45}
+.ocrEngineBadgeV16{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid #38502e;border-radius:999px;background:#101d12;color:#bfe5b6;font-size:9px;font-weight:900}.ocrEngineBadgeV16 i{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px #9cf05255}.slotEvidenceV2 img{object-fit:contain!important;object-position:center!important;background:#06090d!important}
+@media(max-width:760px){.homeCurrentV16{grid-template-columns:50px 1fr}.homeCurrentV16 img{width:50px;height:50px}.homeCurrentStats{grid-column:1/-1;grid-template-columns:repeat(4,1fr)}.homeActionsV16{grid-template-columns:1fr 1fr}.homeCreateV16{grid-template-columns:1fr}.homeLibraryListV16,.aiPageGridV16,.homeQuickV16{grid-template-columns:1fr}}
+</style>
 </head><body><div class="toast" id="toast"></div><div class="wrap">
 <header class="top"><div><div class="brand">PUBG Tournament Manager <span class="pill">V26 ELITE</span></div><div class="sub">Tournament Command Center • Competition Control • Intelligence • Reports</div></div><div class="topActions"><button class="iconbtn" onclick="backup()">↥</button><button class="iconbtn" onclick="restore()">↧</button></div></header>
 <main>
 <section class="section active" id="home">
-<div class="card workspaceHub">
-<div class="workspaceHubGrid">
-<div class="workspaceHero">
-<div class="workspaceKicker">Tournament Workspace</div>
-<div class="workspaceHeroTitle">اختار البطولة أولًا… ثم أضف بياناتها</div>
-<div class="workspaceHeroSub">كل بطولة لها مساحة مستقلة للفرق، اللوجوهات، المباريات، النتائج والتقارير. أنشئ بطولة جديدة في ثوانٍ، أو ارجع لأي بطولة قديمة من نفس المكان بدون خلط البيانات.</div>
-<div class="workspaceCurrent">
-<img alt="" class="workspaceCurrentLogo" id="hubCurrentLogo"/>
-<div>
-<div class="workspaceCurrentName" id="hubCurrentName">لا توجد بطولة محددة</div>
-<div class="workspaceCurrentMeta" id="hubCurrentMeta">ابدأ بإنشاء بطولة أو اختر بطولة محفوظة.</div>
+<div class="homeHeroV16">
+  <div class="homeKicker">PUBG Tournament Workspace</div>
+  <div class="homeTitleV16">بطولتك تبدأ من هنا.</div>
+  <div class="homeSubV16">اختر بطولة موجودة أو أنشئ واحدة جديدة. بعد ذلك انتقل مباشرة إلى الفرق، الـOCR، المباريات والتقارير. كل بطولة لها بياناتها المستقلة بدون تداخل.</div>
+  <div class="homeCurrentV16">
+    <img id="hubCurrentLogo" alt="" style="display:none">
+    <div><div class="homeCurrentName" id="hubCurrentName">لا توجد بطولة محددة</div><div class="homeCurrentMeta" id="hubCurrentMeta">أنشئ بطولة جديدة أو افتح بطولة محفوظة.</div></div>
+    <div class="homeCurrentStats" id="hubCurrentStats">
+      <div class="homeCurrentStat"><small>Teams</small><b>0/16</b></div><div class="homeCurrentStat"><small>Matches</small><b>0</b></div><div class="homeCurrentStat"><small>Approved</small><b>0</b></div><div class="homeCurrentStat"><small>Health</small><b>0%</b></div>
+    </div>
+  </div>
+  <div class="homeActionsV16">
+    <button class="primary" onclick="eliteHubContinue()">متابعة البطولة الحالية</button>
+    <button onclick="eliteGo('teams')">الفرق والـOCR</button>
+    <button onclick="eliteGo('matches')">Match Center</button>
+    <button onclick="eliteGo('reports')">Reports</button>
+  </div>
+  <div class="homeCreateV16">
+    <input class="createName" autocomplete="off" id="hubNewName" placeholder="اسم البطولة الجديدة — مثال: PMNC KSA 2026 Fall">
+    <label class="homeLogoPickV16" for="hubNewLogo"><span id="hubLogoLabel">＋ إضافة شعار اختياري</span><img id="hubNewLogoPreview" alt="" style="display:none"></label>
+  </div>
+  <input accept="image/png,image/jpeg,image/webp" hidden id="hubNewLogo" onchange="eliteHubPreviewLogo(this.files[0])" type="file">
+  <div class="row" style="margin-top:8px"><button class="primary" onclick="eliteHubCreate()">＋ إنشاء وفتح البطولة</button><button class="ghost" onclick="eliteHubClearNew()">مسح</button></div>
 </div>
+<div class="card" style="margin-top:12px">
+  <div class="titleline"><div><div class="title">بطولاتك</div><div class="hint">المفضلة والأحدث تظهر أولًا. اضغط فتح للانتقال إلى مساحة البطولة.</div></div><button class="small ghost" onclick="eliteHubRender()">تحديث</button></div>
+  <div class="homeLibraryV16"><input id="hubSearch" oninput="eliteHubRender()" placeholder="ابحث باسم البطولة…"><button onclick="eliteHubFocusNew()">＋ بطولة جديدة</button></div>
+  <div class="homeLibraryListV16" id="hubTournamentList"></div>
 </div>
-<div class="workspaceCurrentStats" id="hubCurrentStats">
-<div class="workspaceMiniStat"><small>Teams</small><b>0/16</b></div>
-<div class="workspaceMiniStat"><small>Matches</small><b>0</b></div>
-<div class="workspaceMiniStat"><small>Approved</small><b>0</b></div>
-<div class="workspaceMiniStat"><small>Health</small><b>0%</b></div>
+<div class="homeQuickV16" style="margin-top:12px">
+  <div class="card"><div class="homeQuickIcon">👥</div><div class="homeQuickTitle">Teams</div><div class="homeQuickText">إضافة الفرق واللوجوهات واستيراد Slot + Team.</div></div>
+  <div class="card"><div class="homeQuickIcon">🔎</div><div class="homeQuickTitle">Deep OCR</div><div class="homeQuickText">قراءة Lobby متعددة المراحل مع مراجعة الأدلة.</div></div>
+  <div class="card"><div class="homeQuickIcon">🎮</div><div class="homeQuickTitle">Matches</div><div class="homeQuickText">إدخال النتائج، الـKills واعتماد المباريات.</div></div>
+  <div class="card"><div class="homeQuickIcon">📊</div><div class="homeQuickTitle">Analytics</div><div class="homeQuickText">Leaderboard، إحصائيات، تقارير وPDF.</div></div>
 </div>
-<div class="workspaceFlow">
-<span>① اختار / أنشئ</span><span>② أدخل البيانات</span><span>③ احفظ تلقائيًا</span><span>④ ارجع وقتما تريد</span>
-</div>
-<div class="row" style="margin-top:9px">
-<button class="primary" onclick="eliteHubContinue()">متابعة للبطولة الحالية</button>
-<button onclick="elite2OpenSwitcher()">فتح مدير البطولات</button>
-</div>
-</div>
-<div class="workspaceCreate">
-<div class="workspaceCreateTitle">＋ إضافة بطولة جديدة</div>
-<div class="workspaceCreateSub">اكتب اسم البطولة فقط، وأضف اللوجو اختياريًا. بمجرد الإنشاء سيتم فتح البطولة الجديدة تلقائيًا لتبدأ إدخال بياناتها.</div>
-<div class="workspaceCreateRow">
-<input autocomplete="off" id="hubNewName" placeholder="مثال: PMNC KSA 2026 Fall"/>
-<label class="workspaceCreateLogo" for="hubNewLogo"><span id="hubLogoLabel">＋ Logo</span><img alt="" id="hubNewLogoPreview" style="display:none"/></label>
-</div>
-<input accept="image/png,image/jpeg,image/webp" hidden="" id="hubNewLogo" onchange="eliteHubPreviewLogo(this.files[0])" type="file"/>
-<div class="workspaceCreateActions">
-<button class="primary" onclick="eliteHubCreate()">إنشاء وفتح البطولة</button>
-<button class="ghost" onclick="eliteHubClearNew()">مسح</button>
-</div>
-<div class="workspaceReady">✓ بعد الإنشاء لن تحتاج كتابة اسم البطولة مرة أخرى: ستجدها في مكتبة البطولات، ويمكنك فتحها بضغطة واحدة والعودة منها لأي بطولة أخرى.</div>
-<div class="workspaceEdit">
-<div class="workspaceLibraryTitle">بيانات البطولة الحالية</div>
-<div class="workspaceLibrarySub">عدّل اسم البطولة أو شعارها من هنا بدون إنشاء بطولة جديدة.</div>
-<div class="workspaceEditGrid" style="margin-top:7px">
-<input id="hubEditName" placeholder="اسم البطولة الحالية"/>
-<label class="workspaceCreateLogo" for="hubEditLogo"><span id="hubEditLogoLabel">تغيير Logo</span><img alt="" id="hubEditLogoPreview" style="display:none"/></label>
-</div>
-<input accept="image/png,image/jpeg,image/webp" hidden="" id="hubEditLogo" onchange="eliteHubChangeCurrentLogo(this.files[0])" type="file"/>
-<div class="workspaceEditActions"><button class="primary" onclick="eliteHubSaveIdentity()">حفظ التعديلات</button><button class="ghost" onclick="eliteHubClearEdit()">إلغاء</button></div>
-</div>
-</div>
-</div>
-<div class="workspaceLibrary2">
-<div class="workspaceLibraryHead">
-<div><div class="workspaceLibraryTitle">مكتبة البطولات</div><div class="workspaceLibrarySub">الأحدث والمفضلة أولًا — اختر أي بطولة للعودة إليها مباشرة.</div></div>
-<button class="small ghost" onclick="eliteHubRender()">تحديث</button>
-</div>
-<div class="workspaceSearchRow">
-<input id="hubSearch" oninput="eliteHubRender()" placeholder="ابحث باسم البطولة…"/>
-<button class="small" onclick="eliteHubFocusNew()">＋ بطولة جديدة</button>
-</div>
-<div class="workspaceList2" id="hubTournamentList"></div>
-</div>
-</div>
-<div class="card hero cmdHero"><div class="titleline"><div><div class="title">Tournament Command Center</div><div class="hint">إدارة البطولات، حالة المنافسة، النسخ الاحتياطية والتقارير من مكان واحد.</div><div class="eliteBuild">V26 ELITE · Build <span class="buildBadge">2026.10.11.ELITE.03</span> · Data Schema 2</div></div><span class="pill"><span class="statusDot"></span><span id="cmdStatus">Ready</span></span></div>
-<div class="cmdGrid" style="margin-top:12px"><div class="cmdStat cmdMain"><div class="muted">Current Tournament</div><b id="cmdTournament">No tournament selected</b><div class="workspaceMeta" id="cmdTournamentMeta">Create a tournament to begin.</div></div><div class="cmdStat"><div class="muted">Teams</div><b id="cmdTeams">0/16</b></div><div class="cmdStat"><div class="muted">Matches</div><b id="cmdMatches">0</b></div><div class="cmdStat"><div class="muted">Approved</div><b id="cmdApproved">0</b></div><div class="cmdStat"><div class="muted">Health</div><b id="cmdHealth">0%</b></div></div>
-<div class="cmdActions" style="margin-top:12px"><button class="primary" onclick="eliteNewTournament()">＋ New Tournament</button><button onclick="eliteOpenTournamentPicker()">Open Tournament</button><button onclick="eliteDuplicateCurrent()">Duplicate</button><button onclick="eliteBackupCurrent()">Safety Backup</button><button onclick="eliteGo('teams')">Teams &amp; Logos</button><button onclick="eliteGo('matches')">Match Center</button><button onclick="eliteGo('overall')">Leaderboard</button><button onclick="eliteGo('reports')">Reports</button></div></div>
-<div class="card"><div class="titleline"><div><div class="title">Tournament Library</div><div class="hint">كل بطولة محفوظة بشكل مستقل. التبديل لا يخلط الفرق أو المباريات أو النتائج.</div></div><button class="ghost" onclick="eliteRenderLibrary()">Refresh</button></div><div class="reportGrid" id="workspaceLibrary" style="margin-top:10px"></div></div>
-<div class="card">
-<div class="titleline"><div><div class="title">⚡ Smart Tournament Switcher</div><div class="hint">تبديل سريع بين البطولات مع بحث، مفضلة، آخر فتح، وحالة كل بطولة بدون خلط البيانات.</div></div><button class="ghost" onclick="elite2OpenSwitcher()">Open Manager</button></div>
-<div class="modernSwitcher" style="margin-top:10px">
-<div class="switchHero"><div class="switchHeroTop"><img alt="" class="switchLogo" id="swCurrentLogo"/><div><div class="switchName" id="swCurrentName">No tournament selected</div><div class="switchMeta" id="swCurrentMeta">Create or open a tournament</div></div></div>
-<div class="switchStats"><div class="switchStat"><small>Teams</small><b id="swTeams">0/16</b></div><div class="switchStat"><small>Matches</small><b id="swMatches">0</b></div><div class="switchStat"><small>Approved</small><b id="swApproved">0</b></div><div class="switchStat"><small>Health</small><b id="swHealth">0%</b></div></div>
-<div class="switchTools"><button class="primary" onclick="eliteNewTournament()">＋ New</button><button onclick="elite2OpenSwitcher()">Switch</button><button onclick="eliteDuplicateCurrent()">Duplicate</button><button onclick="eliteBackupCurrent()">Backup</button></div>
-</div>
-<div class="switchSearch"><input id="swSearch" oninput="elite2RenderSwitcher()" placeholder="Search tournaments…"/><div class="switchList" id="swList"></div></div>
-</div>
-</div>
-<div class="card"><div class="titleline"><div class="title">Competition Health</div><span class="pill" id="cmdHealthPill">Waiting</span></div><div class="grid3" id="cmdHealthDetails" style="margin-top:10px"></div></div>
+<!-- Compatibility targets retained for the existing workspace engine. -->
+<div style="display:none"><div id="cmdTournament"></div><div id="cmdTeams"></div><div id="cmdMatches"></div><div id="cmdApproved"></div><div id="cmdHealth"></div><div id="cmdStatus"></div><div id="cmdTournamentMeta"></div><div id="cmdHealthPill"></div><div id="cmdHealthDetails"></div><div id="workspaceLibrary"></div><div id="swCurrentLogo"></div><div id="swCurrentName"></div><div id="swCurrentMeta"></div><div id="swTeams"></div><div id="swMatches"></div><div id="swApproved"></div><div id="swHealth"></div><div id="swList"></div></div>
 </section>
-<section class="section" id="teams"><div class="aiShell" id="aiAssistant">
-<div class="aiHead"><div class="aiBrand"><div class="aiOrb">✦</div><div><div class="aiTitle">Tournament AI Assistant</div><div class="aiSub">مساعد ذكي متصل ببيانات البطولة الحالية ويشرح لك النظام ويحلل الأرقام</div></div></div><button class="small ghost" onclick="clearAIChat()">Clear</button></div>
-<div class="aiBody"><div class="aiQuick"><button onclick="aiQuick('ما حالة البطولة الآن؟')">حالة البطولة</button><button onclick="aiQuick('من المتصدر ولماذا؟')">المتصدر</button><button onclick="aiQuick('من أكثر لاعب قتلات؟')">Top Fragger</button><button onclick="aiQuick('هل توجد أخطاء في البيانات؟')">فحص البيانات</button><button onclick="aiQuick('اشرح لي طريقة حساب النقاط')">شرح النقاط</button><button onclick="aiQuick('كيف أضيف مباراة؟')">كيف أضيف مباراة؟</button><button onclick="aiQuick('اعمل تقرير عن آخر 5 مباريات')">آخر 5 مباريات</button><button onclick="aiQuick('قارن بين الفريقين')">مقارنة</button><button onclick="aiQuick('أي فريق يعتمد أكثر على القتلات؟')">Kill Dependence</button></div>
-<div class="aiMessages" id="aiMessages"></div>
-<div class="aiInput"><textarea id="aiInput" placeholder="اسأل عن الفرق، المباريات، النقاط، الوينرز، قتلات اللاعبين، الأخطاء أو طريقة استخدام النظام…"></textarea><button class="primary aiSend" onclick="sendAI()">Send</button></div>
-<div class="aiStatus" id="aiStatus">Live context: connected to the current tournament data.</div><div class="aiContext" id="aiContext"></div></div></div><div class="card hero"><div class="title">Tournament Setup</div><div class="grid"><div><label>Tournament</label><input id="tournament" placeholder="Tournament name"/></div><div><label>Tournament Logo</label><input accept="image/png,image/jpeg,image/webp" id="tournamentLogo" onchange="setTournamentLogo(this.files[0])" type="file"/></div><div><label>Smart Slot + Team Import</label><textarea id="bulk" rows="5" placeholder="3      AlUla Club
+<section class="section" id="teams"><div class="card hero"><div class="title">Tournament Setup</div><div class="grid"><div><label>Tournament</label><input id="tournament" placeholder="Tournament name"/></div><div><label>Tournament Logo</label><input accept="image/png,image/jpeg,image/webp" id="tournamentLogo" onchange="setTournamentLogo(this.files[0])" type="file"/></div><div><label>Smart Slot + Team Import</label><textarea id="bulk" rows="5" placeholder="3      AlUla Club
 4      Xx Team
 5      BATTLE HERO X
 …
@@ -172,13 +139,25 @@
 <div class="slotPipeline"><div><b>01</b><span>Upload</span></div><i></i><div><b>02</b><span>Detect rows</span></div><i></i><div><b>03</b><span>OCR × passes</span></div><i></i><div><b>04</b><span>Cross-check</span></div><i></i><div><b>05</b><span>Review</span></div><i></i><div><b>06</b><span>Commit</span></div></div>
 <div class="slotDropV2" id="slotImportDrop"><div class="slotDropIcon">⇧</div><div><b>اسحب كل Screenshots هنا</b><div class="hint">يمكن رفع 2 أو 5 أو 20 صورة — النظام يدمجها تلقائياً ويمنع التكرار.</div></div><label class="slotPickBtn">Choose Screenshots<input accept="image/png,image/jpeg,image/webp" id="teamSlotImagesV2" multiple="" type="file"/></label></div>
 <div class="slotFileList" id="slotImportFilesV2"></div>
-<div class="slotSettingsV2" style="grid-template-columns:1fr 1fr"><div><label>Detection</label><div class="slotAutoSetting">Automatic PUBG 3×3 Lobby Detection</div></div><div><label>Verification</label><div class="slotAutoSetting">100% Verified Save · Roster Match Required</div></div></div>
+<div class="slotSettingsV2" style="grid-template-columns:1fr 1fr"><div><label>Detection</label><div class="slotAutoSetting">Automatic PUBG 3×3 Lobby Detection</div></div><div><label>Verification</label><div class="slotAutoSetting">100% Verified Save · Roster Match Required</div></div></div><div style="margin-top:8px"><span class="ocrEngineBadgeV16"><i></i> Glyph Fusion OCR · Multi-Channel · Multi-Scale · Cross-Image Evidence</span></div>
 <div class="row" style="margin-top:10px"><button class="primary" onclick="runTeamSlotImportV2()">🔍 Analyze All Screenshots</button><button class="blue" onclick="slotImportAddManualRow()">＋ Add Row Manually</button><button class="ghost" onclick="clearTeamSlotImportV2()">Reset</button></div>
 <div class="slotProgressV2" id="slotImportProgressV2"><i></i></div><div class="hint" id="slotImportStatusV2" style="margin-top:7px">جاهز. ارفع صور الـLobby/Match الأصلية، حتى لو كانت مختلفة في المقاس أو تحتوي على أجزاء من الواجهة.</div>
 <div class="slotSummaryV2" id="slotImportSummaryV2"></div>
 <div class="slotReviewToolsV2"><button class="small ghost" onclick="slotImportFilterV2('all')">All</button><button class="small ghost" onclick="slotImportFilterV2('review')">Needs Review</button><button class="small ghost" onclick="slotImportFilterV2('conflict')">Conflicts</button><button class="small ghost" onclick="slotImportFilterV2('ready')">Ready</button><span class="hint">الأسماء لا يتم تصحيحها أو تغييرها بصمت.</span></div>
 <div class="slotReviewV2" id="slotImportReviewV2"><div class="empty">لم يتم تحليل أي صورة بعد.</div></div>
 </div></section>
+<section class="section" id="ai">
+<div class="card hero aiPageHeroV16"><div class="titleline"><div><div class="title">✦ Tournament Intelligence</div><div class="hint">صفحة مستقلة للمساعد الذكي. يقرأ بيانات البطولة الحالية ويشرحها ويحللها بدون تعديل البيانات تلقائيًا.</div></div><span class="pill">LIVE DATA</span></div></div>
+<div class="aiPageGridV16" style="margin-bottom:10px">
+  <div class="aiFeatureV16"><b>تحليل مباشر</b><span>الفرق، النتائج المعتمدة، الترتيب، Winners وPlayer Stats.</span></div>
+  <div class="aiFeatureV16"><b>بدون تغيير صامت</b><span>المساعد يجيب ويقترح فقط؛ الحفظ والاعتماد يظلان تحت تحكمك.</span></div>
+</div>
+<div class="aiShell" id="aiAssistant">
+<div class="aiHead"><div class="aiBrand"><div class="aiOrb">✦</div><div><div class="aiTitle">Tournament AI Assistant</div><div class="aiSub">مساعد ذكي متصل ببيانات البطولة الحالية ويشرح لك النظام ويحلل الأرقام</div></div></div><button class="small ghost" onclick="clearAIChat()">Clear</button></div>
+<div class="aiBody"><div class="aiQuick"><button onclick="aiQuick('ما حالة البطولة الآن؟')">حالة البطولة</button><button onclick="aiQuick('من المتصدر ولماذا؟')">المتصدر</button><button onclick="aiQuick('من أكثر لاعب قتلات؟')">Top Fragger</button><button onclick="aiQuick('هل توجد أخطاء في البيانات؟')">فحص البيانات</button><button onclick="aiQuick('اشرح لي طريقة حساب النقاط')">شرح النقاط</button><button onclick="aiQuick('كيف أضيف مباراة؟')">كيف أضيف مباراة؟</button><button onclick="aiQuick('اعمل تقرير عن آخر 5 مباريات')">آخر 5 مباريات</button><button onclick="aiQuick('قارن بين الفريقين')">مقارنة</button><button onclick="aiQuick('أي فريق يعتمد أكثر على القتلات؟')">Kill Dependence</button></div>
+<div class="aiMessages" id="aiMessages"></div>
+<div class="aiInput"><textarea id="aiInput" placeholder="اسأل عن الفرق، المباريات، النقاط، الوينرز، قتلات اللاعبين، الأخطاء أو طريقة استخدام النظام…"></textarea><button class="primary aiSend" onclick="sendAI()">Send</button></div>
+<div class="aiStatus" id="aiStatus">Live context: connected to the current tournament data.</div><div class="aiContext" id="aiContext"></div></div></div></section>
 <section class="section" id="matches"><div class="card hero"><div class="title">Match Center</div><div class="grid"><div><label>Match Name</label><input id="mname" placeholder="Match 1"/></div><div><label>Game ID</label><input id="gameid" placeholder="Optional / API GameID"/></div></div><div class="row" style="margin-top:9px"><button class="primary" onclick="newMatch()">Create &amp; Open Match</button><button class="ghost" onclick="focusResults()">Enter Results</button></div><div class="card" style="margin:10px 0 0;background:#0b1017"><div class="title">Add Match Results by Images</div><div class="hint">ارفع حتى صورتين لنتائج المباراة. سيتم دمج القراءة ووضع النتائج في Review قبل الاعتماد.</div><div class="ocrMultiGrid" style="margin-top:9px"><input accept="image/png,image/jpeg,image/webp" id="matchResultImage1" type="file"/><input accept="image/png,image/jpeg,image/webp" id="matchResultImage2" type="file"/></div><button class="blue" onclick="runMatchImageOCRPair()" style="margin-top:9px">Read Result Images</button><div class="hint" id="matchImageOCRStatus" style="margin-top:7px">Ready.</div></div></div><div class="card" id="entryCard"></div><div id="matchList"></div></section>
 <section class="section" id="results"><div class="card hero"><div class="title">Match Results Archive</div><div class="hint">Each approved match is shown separately. This is independent from the tournament leaderboard.</div><div class="row noPrint" style="margin-top:10px"><button class="primary" onclick="printSection('results')">Export Results PDF</button><button onclick="printSection('results')">Print / Save PDF</button></div></div><div id="resultsArchive"></div></section>
 <section class="section" id="rosterocr"><div class="card hero"><div class="title">Slot / Player Roster Reader — Deep Image Intelligence</div><div class="hint">يحلل صورة اللوبي على أكثر من معالجة للصورة، يستخرج أسماء اللاعبين ومواقعهم، ثم يربطهم بالـ Slots. لا يتم اعتماد أي Mapping تلقائيًا بدون مراجعة.</div></div><div class="card"><div class="scanGrid"><div><label>Match</label><select id="rosterMatch"></select></div><div><label>Starting Slot</label><input id="rosterStart" max="18" min="3" type="number" value="3"/></div><div><label>Scan Depth</label><select id="rosterDepth"><option value="1">Fast</option><option selected="" value="2">Deep</option><option value="3">Ultra</option></select></div></div><div class="ocrDrop" style="margin-top:10px"><b>Upload lobby screenshot</b><div class="muted">الأفضل استخدام الصورة الأصلية بأعلى دقة وبدون ضغط.</div><input accept="image/png,image/jpeg,image/webp" id="rosterImage" type="file"/></div><img class="imagePreview" id="rosterPreview" style="display:none"/><div class="ocrProgress"><i id="rosterProgressBar"></i></div><div class="hint" id="rosterStatus" style="margin-top:8px">Waiting for image.</div></div><div class="card"><div class="titleline"><div class="title">Roster Review</div><span class="scanBadge" id="rosterScanBadge">READY</span></div><div class="empty" id="rosterReview">Upload a lobby screenshot to build Slot → Player mappings.</div></div></section>
@@ -192,7 +171,7 @@
 <div class="card"><div class="titleline"><div><div class="title">🧠 Operations Intelligence</div><div class="hint">أدوات متقدمة لإدارة النسخ، سجل العمليات، واختبار جاهزية البطولة قبل البث.</div></div><span class="pill" id="opsBuildBadge">V26 ELITE 2.0</span></div><div class="healthMatrix" id="elite2HealthMatrix" style="margin-top:10px"></div><div class="row" style="margin-top:10px"><button onclick="elite2ValidateNow()">Run Full Validation</button><button onclick="elite2CreateAudit('Manual snapshot created')">Create Snapshot</button><button onclick="elite2Undo()">Undo</button><button onclick="elite2Redo()">Redo</button></div></div>
 <div class="card"><div class="titleline"><div class="title">🧾 Audit Log</div><button class="small ghost" onclick="elite2ClearAudit()">Clear</button></div><div class="auditList empty" id="elite2Audit" style="margin-top:8px">No operations recorded.</div></div>
 </section>
-</main></div><nav class="nav"><button class="active" onclick="tab('home',this)">Command</button><button onclick="tab('teams',this)">Teams</button><button onclick="tab('matches',this)">Matches</button><button onclick="tab('results',this)">Results</button><button onclick="tab('overall',this)">Leaderboard</button><button onclick="tab('analytics',this)">Analytics</button><button onclick="tab('stats',this)">Stats</button><button onclick="tab('reports',this)">Reports</button><button onclick="tab('ocr',this)">OCR</button><button onclick="tab('settings',this)">Settings</button>
+</main></div><nav class="nav"><button class="active" onclick="tab('home',this)">Command</button><button onclick="tab('teams',this)">Teams</button><button onclick="tab('ai',this)">AI</button><button onclick="tab('matches',this)">Matches</button><button onclick="tab('results',this)">Results</button><button onclick="tab('overall',this)">Leaderboard</button><button onclick="tab('analytics',this)">Analytics</button><button onclick="tab('stats',this)">Stats</button><button onclick="tab('reports',this)">Reports</button><button onclick="tab('ocr',this)">OCR</button><button onclick="tab('settings',this)">Settings</button>
 </nav>
 <div class="commandPalette" id="elite2Palette" onclick="if(event.target===this)elite2ClosePalette()"><div class="commandBox"><input id="elite2PaletteInput" oninput="elite2RenderPalette()" placeholder="Search commands, tournaments, teams…"/><div class="commandResults" id="elite2PaletteResults"></div></div></div>
 <script>
@@ -709,13 +688,13 @@ function eliteHubOpen(id){
 }
 function eliteHubCard(w){
   const h=eliteHubHealth(w),meta=eliteHubMetaFor(w.id),active=w.id===workspaceId(),logo=(w.state&&w.state.tournamentLogo)||'';
-  return `<div class="workspaceCard2 ${active?'active':''}">
-    <img class="workspaceCardLogo" src="${esc(logo)}" onerror="this.style.display='none'" alt="">
-    <div style="min-width:0">
+  return `<div class="homeLibraryCardV16 ${active?'active':''}">
+    <img src="${esc(logo)}" onerror="this.style.visibility='hidden'" alt="">
+    <div style="min-width:0;position:relative">
       <button class="workspaceFav ${meta.favorite?'on':''}" title="Favorite" onclick="event.stopPropagation();eliteHubToggleFavorite('${w.id}')">${meta.favorite?'★':'☆'}</button>
-      <div class="workspaceCardName">${esc(w.name||'Untitled Tournament')}</div>
-      <div class="workspaceCardMeta">${h.teams}/16 Teams · ${h.total} Matches · ${h.approved} Approved</div>
-      <div class="workspaceCardActions">
+      <b>${esc(w.name||'Untitled Tournament')}</b>
+      <small>${active?'● الحالية · ':''}${h.teams}/16 Teams · ${h.total} Matches · ${h.approved} Approved · ${h.score}% health</small>
+      <div class="homeLibraryActionsV16">
         <button class="${active?'primary':''}" onclick="eliteHubOpen('${w.id}')">${active?'✓ الحالية':'فتح البطولة'}</button>
         <button onclick="eliteDuplicateTournament('${w.id}')">نسخ</button>
       </div>
@@ -754,7 +733,7 @@ setTimeout(()=>{eliteHubRender();eliteHubClearEdit()},80);
 <script id="slotImportV2Script">
 (()=>{
 'use strict';
-const X={files:[],results:[],filter:'all',scanning:false,worker:null,engine:'PUBG_LOBBY_OCR_V15_DYNAMIC_ROW_OCR_ENGINE'};
+const X={files:[],results:[],filter:'all',scanning:false,worker:null,engine:'PUBG_LOBBY_OCR_V16_GLYPH_FUSION_ENGINE'};
 window._slotImportV2=X;
 const $=id=>document.getElementById(id);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -779,52 +758,48 @@ async function ensureOCR(){
  return X.worker;
 }
 function cropCanvas(img,x,y,w,h,scale=8){const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;const xx=clamp(x,0,iw-1),yy=clamp(y,0,ih-1),ww=clamp(w,2,iw-xx),hh=clamp(h,2,ih-yy);const c=document.createElement('canvas');c.width=Math.max(2,Math.round(ww*scale));c.height=Math.max(2,Math.round(hh*scale));const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,xx,yy,ww,hh,0,0,c.width,c.height);return c;}
+function addOCRBorder(src,pad=10,bg=0){const c=document.createElement('canvas');c.width=src.width+pad*2;c.height=src.height+pad*2;const g=c.getContext('2d');g.fillStyle=`rgb(${bg},${bg},${bg})`;g.fillRect(0,0,c.width,c.height);g.drawImage(src,pad,pad);return c;}
 function preprocess(src,mode='original'){
- if(mode==='original')return src;
+ if(mode==='original')return addOCRBorder(src,10,0);
  const c=document.createElement('canvas');c.width=src.width;c.height=src.height;
  const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(src,0,0);
- const d=g.getImageData(0,0,c.width,c.height),p=d.data,W=c.width,H=c.height;
- const gray=new Uint8ClampedArray(W*H);
- for(let i=0,j=0;i<p.length;i+=4,j++)gray[j]=Math.round(.299*p[i]+.587*p[i+1]+.114*p[i+2]);
+ const d=g.getImageData(0,0,c.width,c.height),p=d.data,W=c.width,H=c.height,N=W*H;
+ const gray=new Uint8ClampedArray(N),red=new Uint8ClampedArray(N),green=new Uint8ClampedArray(N),blue=new Uint8ClampedArray(N);
+ for(let i=0,j=0;i<p.length;i+=4,j++){red[j]=p[i];green[j]=p[i+1];blue[j]=p[i+2];gray[j]=Math.round(.299*p[i]+.587*p[i+1]+.114*p[i+2]);}
  const set=(i,v)=>{p[i*4]=p[i*4+1]=p[i*4+2]=clamp(v,0,255);};
- if(mode==='contrast'||mode==='soft'||mode==='gamma'||mode==='sharpen'||mode==='otsu'||mode==='adaptive'||mode==='invert'||mode==='edge'){
-   let thr=128;
-   if(mode==='otsu'){
-     const hist=new Array(256).fill(0);for(const v of gray)hist[v]++;
-     let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sumB=0,wB=0,max=0;
-     for(let i=0;i<256;i++){wB+=hist[i];if(!wB)continue;const wF=gray.length-wB;if(!wF)break;sumB+=i*hist[i];const mB=sumB/wB,mF=(sum-sumB)/wF,between=wB*wF*(mB-mF)*(mB-mF);if(between>max){max=between;thr=i;}}
-   }
-   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-     const idx=y*W+x,v=gray[idx];let q=v;
-     if(mode==='contrast')q=(v-82)*2.45+82;
-     else if(mode==='soft')q=(v-96)*1.65+96;
-     else if(mode==='gamma')q=255*Math.pow(v/255,.72);
-     else if(mode==='invert')q=255-v;
-     else if(mode==='otsu')q=v>thr?255:0;
-     else if(mode==='adaptive'){
-       // Fast local-threshold approximation using a precomputed integral image.
-       const rad=5, x0=Math.max(0,x-rad), x1=Math.min(W-1,x+rad), y0=Math.max(0,y-rad), y1=Math.min(H-1,y+rad);
-       const stride=W+1;
-       if(!window.__pubgIntegral||window.__pubgIntegral.W!==W||window.__pubgIntegral.H!==H){
-         const ii=new Float64Array((W+1)*(H+1));
-         for(let yy=1;yy<=H;yy++){let rs=0;for(let xx=1;xx<=W;xx++){rs+=gray[(yy-1)*W+(xx-1)];ii[yy*stride+xx]=ii[(yy-1)*stride+xx]+rs;}}
-         window.__pubgIntegral={W,H,ii};
-       }
-       const ii=window.__pubgIntegral.ii, A=ii[y0*stride+x0],B=ii[y0*stride+(x1+1)],C=ii[(y1+1)*stride+x0],D=ii[(y1+1)*stride+(x1+1)];
-       const mean=(D-B-C+A)/((x1-x0+1)*(y1-y0+1));q=v>(mean-8)?255:0;
-     } else if(mode==='sharpen'){
-       const l=gray[y*W+Math.max(0,x-1)],r=gray[y*W+Math.min(W-1,x+1)],u=gray[Math.max(0,y-1)*W+x],dn=gray[Math.min(H-1,y+1)*W+x];q=v*1.9-(l+r+u+dn)*.225;
-     } else if(mode==='edge'){
-       const l=gray[y*W+Math.max(0,x-1)],r=gray[y*W+Math.min(W-1,x+1)],u=gray[Math.max(0,y-1)*W+x],dn=gray[Math.min(H-1,y+1)*W+x];q=Math.abs((r-l)+(dn-u))*2.2;
-     }
-     set(idx,q);
-   }
+ const hist=new Uint32Array(256);for(const v of gray)hist[v]++;
+ let thr=128,sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sb=0,wb=0,best=0;for(let i=0;i<256;i++){wb+=hist[i];if(!wb)continue;const wf=N-wb;if(!wf)break;sb+=i*hist[i];const mb=sb/wb,mf=(sum-sb)/wf,between=wb*wf*(mb-mf)*(mb-mf);if(between>best){best=between;thr=i;}}
+ let ii=null;
+ const needIntegral=['adaptive','localcontrast','blackhat','whitehat'].includes(mode);
+ if(needIntegral){const stride=W+1;ii=new Float64Array((W+1)*(H+1));for(let y=1;y<=H;y++){let rs=0;for(let x=1;x<=W;x++){rs+=gray[(y-1)*W+x-1];ii[y*stride+x]=ii[(y-1)*stride+x]+rs;}}}
+ const meanAt=(x,y,r=6)=>{if(!ii)return gray[y*W+x];const x0=Math.max(0,x-r),x1=Math.min(W-1,x+r),y0=Math.max(0,y-r),y1=Math.min(H-1,y+r),st=W+1,A=ii[y0*st+x0],B=ii[y0*st+x1+1],C=ii[(y1+1)*st+x0],D=ii[(y1+1)*st+x1+1];return(D-B-C+A)/((x1-x0+1)*(y1-y0+1));};
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+   const idx=y*W+x,v=gray[idx];let q=v;
+   if(mode==='contrast')q=(v-86)*2.7+86;
+   else if(mode==='soft')q=(v-96)*1.65+96;
+   else if(mode==='gamma')q=255*Math.pow(v/255,.70);
+   else if(mode==='invert')q=255-v;
+   else if(mode==='otsu')q=v>thr?255:0;
+   else if(mode==='adaptive')q=v>(meanAt(x,y,6)-10)?255:0;
+   else if(mode==='localcontrast')q=clamp(128+(v-meanAt(x,y,8))*3.2,0,255);
+   else if(mode==='blackhat'){const m=meanAt(x,y,8);q=clamp(128+(m-v)*3.5,0,255);}
+   else if(mode==='whitehat'){const m=meanAt(x,y,8);q=clamp(128+(v-m)*3.5,0,255);}
+   else if(mode==='red')q=red[idx];
+   else if(mode==='green')q=green[idx];
+   else if(mode==='blue')q=blue[idx];
+   else if(mode==='luma')q=Math.round(.2126*red[idx]+.7152*green[idx]+.0722*blue[idx]);
+   else if(mode==='sharpen'){const l=gray[y*W+Math.max(0,x-1)],r=gray[y*W+Math.min(W-1,x+1)],u=gray[Math.max(0,y-1)*W+x],dn=gray[Math.min(H-1,y+1)*W+x];q=v*2.1-(l+r+u+dn)*.275;}
+   else if(mode==='edge'){const l=gray[y*W+Math.max(0,x-1)],r=gray[y*W+Math.min(W-1,x+1)],u=gray[Math.max(0,y-1)*W+x],dn=gray[Math.min(H-1,y+1)*W+x];q=Math.abs((r-l)+(dn-u))*2.3;}
+   set(idx,q);
  }
- g.putImageData(d,0,0);return c;
+ g.putImageData(d,0,0);
+ // White text on a dark PUBG card benefits from a small dark border. For binary/whitehat
+ // keep the border white so Tesseract does not touch the crop edge.
+ return addOCRBorder(c,mode==='otsu'||mode==='adaptive'?14:10,(mode==='otsu'||mode==='adaptive')?255:0);
 }
 async function recognize(canvas,mode='original',psm='7',extra={}){
  const w=await ensureOCR();
- await w.setParameters({tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1',user_defined_dpi:'300',load_system_dawg:'0',load_freq_dawg:'0',...extra});
+ await w.setParameters({tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1',user_defined_dpi:'320',load_system_dawg:'0',load_freq_dawg:'0',load_unambig_dawg:'0',load_punc_dawg:'0',load_number_dawg:'0',segment_penalty_garbage:0,segment_penalty_dict_nonword:0,language_model_penalty_non_dict_word:0,...extra});
  const r=await w.recognize(preprocess(canvas,mode),{}, {tsv:true,text:true});return r?.data||{text:'',tsv:''};
 }
 function ocrWords(data,scale=1){const tsv=String(data?.tsv||'');if(!tsv)return[];const out=[];for(const line of tsv.split(/\r?\n/).slice(1)){const p=line.split('\t');if(p.length<12)continue;const t=clean(p.slice(11).join('\t')),conf=Number(p[10]),x=Number(p[6]),y=Number(p[7]),w=Number(p[8]),h=Number(p[9]);if(!t||![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)continue;out.push({t,confidence:Number.isFinite(conf)?conf:0,x0:x/scale,y0:y/scale,x1:(x+w)/scale,y1:(y+h)/scale,cx:(x+w/2)/scale,cy:(y+h/2)/scale});}return out;}
@@ -924,7 +899,7 @@ function detectPlayerBands(img,card){
  return null;
 }
 function effectiveRowBands(img,card){return detectPlayerBands(img,card)||[0,1,2,3].map(i=>rowBand(card,i));}
-function normalizeFirstPlayer(s){let t=normalizePlayer(s);t=t.replace(/^\s*(?:0?[3-9]|1[0-8])\s+/,'');return clean(t);}
+function normalizeFirstPlayer(s){let t=normalizePlayer(s);t=t.replace(/^\s*(?:0?[3-9]|1[0-8])(?:\s*[,.:;|/\-]\s*|\s+)/,'');return clean(t);}
 function addUniqueCandidate(arr,text,confidence,source){text=clean(text);if(!text)return;const n=normalizePlayer(text);if(!n)return;arr.push({text:n,confidence:Number.isFinite(Number(confidence))?Number(confidence):0,source});}
 async function playerPass(img,card,i,mode,psm,tag,padX=.018,padY=.035,scale=12,bandOverride=null){
  const b=bandOverride||rowBand(card,i),px=card.w*padX,py=card.h*padY;
@@ -937,57 +912,54 @@ async function playerPass(img,card,i,mode,psm,tag,padX=.018,padY=.035,scale=12,b
 }
 async function targetedPlayerCandidates(img,card,i,seed=[]){
  const candidates=[...(seed||[])];
- const variants=[
-  ['original','7','raw-line',.018,.035,12],
-  ['contrast','7','contrast-line',.018,.035,12],
-  ['soft','13','soft-raw',.012,.025,12],
-  ['gamma','7','gamma-line',.018,.035,12],
-  ['sharpen','7','sharpen-line',.018,.035,12],
-  ['adaptive','7','adaptive-line',.018,.035,12],
-  ['otsu','13','otsu-raw',.012,.025,12],
-  ['invert','7','invert-line',.018,.035,12]
+ const detected=effectiveRowBands(img,card),base=detected[i]||rowBand(card,i),dy=card.h*.028;
+ const bands=[base,{...base,y:base.y-dy,h:base.h+dy*1.35},{...base,y:base.y+dy*.55,h:base.h+dy*1.35},{...base,y:base.y-dy*.65,h:base.h+dy*2.2}];
+ const primary=[
+  ['original','7','raw-line',.018,.035,12],['contrast','7','contrast-line',.018,.035,12],
+  ['localcontrast','7','local-contrast',.014,.030,12],['sharpen','7','sharpen-line',.018,.035,12],
+  ['blackhat','7','blackhat',.012,.030,12],['whitehat','7','whitehat',.012,.030,12],
+  ['red','7','red-channel',.014,.030,12],['green','7','green-channel',.014,.030,12],
+  ['blue','7','blue-channel',.014,.030,12],['soft','13','soft-raw',.012,.025,12],
+  ['otsu','13','otsu-raw',.012,.025,12],['adaptive','7','adaptive-line',.012,.030,12]
  ];
- // Read each expected row through several slightly shifted vertical windows.
- // This is deliberately redundant: the lobby font can sit a few pixels above
- // or below the nominal line, especially on resized screenshots.
- const detected=effectiveRowBands(img,card);
- const base=detected[i]||rowBand(card,i),dy=card.h*.028;
- const bands=[
-   base,
-   {...base,y:base.y-dy,h:base.h+dy*1.35},
-   {...base,y:base.y+dy*.55,h:base.h+dy*1.35},
-   {...base,y:base.y-dy*.65,h:base.h+dy*2.2}
- ];
- for(let bi=0;bi<bands.length;bi++){
-   const band=bands[bi];
-   // Full multi-pass on the main band; lighter rescue passes on shifted bands.
-   const use=bi===0?variants:variants.filter((_,k)=>k===0||k===1||k===4||k===6);
-   for(const v of use){try{candidates.push(...await playerPass(img,card,i,...v,band));}catch(e){console.warn('player pass',v,e);}}
+ for(const v of primary){try{candidates.push(...await playerPass(img,card,i,...v,bands[0]));}catch(e){console.warn('primary player pass',v,e);}}
+ let ranked=rankPlayerCandidates(candidates);
+ // Only difficult rows pay the cost of shifted windows and 16x glyph rescue.
+ if(!ranked[0]||ranked[0].quality<.70||ranked[0].confidence<62){
+   for(const bi of [1,2,3])for(const v of [primary[0],primary[1],primary[4],primary[6],primary[7],primary[8]]){
+     try{candidates.push(...await playerPass(img,card,i,...v,bands[bi]));}catch(e){console.warn('shifted player pass',e);}
+   }
+   ranked=rankPlayerCandidates(candidates);
  }
- // High-resolution rescue is intentionally limited to the main detected line.
- // It is slower, but it gives difficult gamer tags a second chance without
- // multiplying the expensive OCR work across all shifted windows.
- if((candidates[0]?.confidence||0)<72){
+ if(!ranked[0]||ranked[0].score<4.5||ranked[0].confidence<76){
    for(const v of [
-     ['original','7','hi-original',.012,.045,16],
-     ['contrast','7','hi-contrast',.012,.045,16],
-     ['otsu','13','hi-otsu',.010,.035,16]
-   ]){try{candidates.push(...await playerPass(img,card,i,...v,base));}catch(e){console.warn('hi player pass',e);}}
+    ['original','7','hi-original',.010,.050,16],['contrast','7','hi-contrast',.010,.050,16],
+    ['localcontrast','7','hi-local',.008,.045,16],['blackhat','7','hi-blackhat',.008,.045,16],
+    ['red','7','hi-red',.010,.045,16],['blue','7','hi-blue',.010,.045,16],['original','6','hi-psm6',.008,.050,16],['original','8','hi-psm8',.008,.050,16],['otsu','13','hi-otsu',.008,.040,16]
+   ]){try{candidates.push(...await playerPass(img,card,i,...v,bands[0]));}catch(e){console.warn('hi player pass',e);}}
  }
- return rankPlayerCandidates(candidates).slice(0,16);
+ return rankPlayerCandidates(candidates).slice(0,20);
 }
 function playerShapeScore(t){
  const s=clean(t);if(!s)return 0;let q=0;if(s.length>=3&&s.length<=20)q+=.25;if(/[A-Za-z0-9]/.test(s))q+=.25;if(!/Eliminations/i.test(s))q+=.25;if(!/^\d+$/.test(s))q+=.15;if(!/^[^A-Za-z0-9]+$/.test(s))q+=.10;return q;
+}
+function characterConsensusScore(text,candidates){
+ const t=clean(text);if(!t)return 0;let support=0,total=0;
+ for(const c of candidates||[]){const u=clean(c.text);if(!u)continue;total++;const a=normKey(t),b=normKey(u);if(!a||!b)continue;const sim=similarity(a,b);if(sim>=.90)support+=1;else if(sim>=.82)support+=.55;}
+ return total?Math.min(1,support/Math.max(2,total*.55)):0;
 }
 function rankPlayerCandidates(candidates){
  const groups=[];
  for(const c of candidates||[]){let text=normalizePlayer(c.text);if(!text)continue;text=text.replace(/\s*\/\s*\d+.*$/,'').trim();if(text.length<2||text.length>28)continue;
    let g=groups.find(z=>similarity(z.text,text)>=.92 || (similarity(z.text,text)>=.84&&Math.abs(z.text.length-text.length)<=1));
    if(!g){g={text,confidence:Number(c.confidence)||0,votes:0,sources:[],score:0};groups.push(g);}
-   g.votes++;const cc=Number(c.confidence)||0;const oldConf=g.confidence;g.confidence=Math.max(g.confidence,cc);g.sources.push(c.source||'ocr');
-   if(cc>oldConf)g.text=text;
+   g.votes++;const cc=Number(c.confidence)||0;if(cc>g.confidence){g.confidence=cc;g.text=text;}g.sources.push(c.source||'ocr');
  }
- for(const g of groups)g.score=(g.votes*2.2)+(Math.max(0,g.confidence)/100)+playerShapeScore(g.text);
+ for(const g of groups){
+   const shape=playerShapeScore(g.text),cons=characterConsensusScore(g.text,candidates),diversity=new Set(g.sources).size;
+   const quality=Math.min(1,(g.confidence/100)*.45+Math.min(1,g.votes/7)*.25+shape*.12+cons*.14+Math.min(1,diversity/5)*.04);
+   g.quality=quality;g.consensus=cons;g.score=(g.votes*2.35)+(g.confidence/100)+shape+cons*1.7+Math.min(1,diversity/6);
+ }
  return groups.sort((a,b)=>b.score-a.score);
 }
 async function readPlayers(img,card){
@@ -1003,7 +975,7 @@ async function readPlayers(img,card){
  // Pass B: card-level OCR rescue, assigned only to the nearest detected row.
  try{
    const r=nameRegion(card),c=cropCanvas(img,r.x,r.y,r.w,r.h,10);
-   for(const [mode,psm,tag] of [['original','4','card-lines'],['contrast','6','card-contrast'],['sharpen','11','card-sharpen'],['threshold','11','card-threshold']]){
+   for(const [mode,psm,tag] of [['original','4','card-lines'],['contrast','6','card-contrast'],['localcontrast','6','card-local'],['blackhat','11','card-blackhat'],['sharpen','11','card-sharpen'],['red','11','card-red'],['blue','11','card-blue'],['threshold','11','card-threshold']]){
      const d=await recognize(c,mode,psm),lines=ocrLines(d,10);
      for(const ln of lines){
        const cy=r.y+ln.cy;let best=-1,dist=1e9;
@@ -1027,7 +999,19 @@ function rowsToPlayers(obs,a){return a.rows.map(r=>({name:r.canonical,raw:r.obs.
 function applyRoster(r){const ro=rosterForSlot(r.slot);r.team=ro.team||'';if(ro.players.length===4){const obs=(r.players||[]).map((p,i)=>({...p,text:p.name||'',cy:p.cy||i})),a=bestAssignment(obs,ro.players);r.players=rowsToPlayers(obs,a);r.verified=a.verified;}return r;}
 async function analyzeImage(file,index){const img=await loadImg(file),cards=inferGrid(img);if(!cards.length)throw new Error(`الصورة ${index+1}: لم يتم اكتشاف كروت PUBG`);setStatus(`الصورة ${index+1}/${X.files.length} — ${cards.length} كروت مكتشفة`,12+index*35);const cands=[];for(const card of cards)cands.push(await slotCandidates(img,card));const slots=assignSlots(cards,cands),out=[];for(let i=0;i<cards.length;i++){const card=cards[i],a=slots[i];setStatus(`الصورة ${index+1}/${X.files.length} — الكارت ${i+1}/${cards.length} — Slot ${String(a.slot).padStart(2,'0')}`,20+index*35+i*(25/Math.max(cards.length,1)));const players=await readPlayers(img,card);out.push({slot:a.slot,slotCandidates:a.slotCandidates,team:rosterForSlot(a.slot).team||'',players:players.map(p=>({name:p.text,raw:p.text,confidence:p.confidence,verified:false,matched:false,cy:p.cy,candidates:p.candidates})),verified:false,needsReview:true,conflict:false,sourceImage:index,card:i+1,row:card.row+1,column:card.col+1,file:file.name,evidence:cropCanvas(img,card.x,card.y,card.w,card.h,3).toDataURL('image/jpeg',.92)});}return out;}
 function samePlayers(a,b){const x=(a.players||[]).map(p=>normKey(p.name)),y=(b.players||[]).map(p=>normKey(p.name));return x.length===4&&y.length===4&&x.every((v,i)=>v&&v===y[i]);}
-function mergeResults(rows){const map=new Map();for(const r of rows){applyRoster(r);const old=map.get(r.slot);if(!old){map.set(r.slot,r);continue;}const conflict=old.verified&&r.verified&&!samePlayers(old,r);const base=old.verified&&!r.verified?old:(r.verified&&!old.verified?r:old);base.sources=[...(old.sources||[]),r];base.conflict=!!old.conflict||!!r.conflict||conflict;base.verified=!!base.verified&&!base.conflict;base.needsReview=!base.verified||base.conflict;map.set(r.slot,base);}return[...map.values()].sort((a,b)=>a.slot-b.slot);}
+function mergePlayerEvidence(a,b){const merged=[];for(const p of [...(a?.candidates||[]),...(b?.candidates||[])])merged.push(p);const ranked=rankPlayerCandidates(merged);const top=ranked[0]||{};return {...a,name:top.text||a.name||b.name||'',raw:top.text||a.raw||b.raw||'',confidence:top.confidence||Math.max(a.confidence||0,b.confidence||0),candidates:ranked.slice(0,20),evidenceCount:merged.length};}
+function mergeResults(rows){
+ const map=new Map();
+ for(const r of rows){applyRoster(r);const old=map.get(r.slot);if(!old){map.set(r.slot,r);continue;}
+   const mergedPlayers=[];for(let i=0;i<4;i++)mergedPlayers.push(mergePlayerEvidence(old.players?.[i]||{name:''},r.players?.[i]||{name:''}));
+   const next={...old,players:mergedPlayers,sources:[...(old.sources||[]),r],conflict:false};
+   // If two screenshots disagree strongly on a player, keep both pieces of evidence for review.
+   for(let i=0;i<4;i++){const x=old.players?.[i]?.name||'',y=r.players?.[i]?.name||'';if(x&&y&&similarity(x,y)<.55)next.conflict=true;}
+   if(rosterForSlot(next.slot).players.length===4)applyRoster(next);
+   next.verified=!!next.verified&&!next.conflict;next.needsReview=!next.verified||next.conflict;map.set(r.slot,next);
+ }
+ return[...map.values()].sort((a,b)=>a.slot-b.slot);
+}
 window.runTeamSlotImportV2=async()=>{if(X.scanning)return;if(!X.files.length)return toast('ارفع صور الـLobby أولاً');X.scanning=true;X.results=[];renderReview();try{setStatus('بدء التحليل…',1);await ensureOCR();const all=[];for(let i=0;i<X.files.length;i++)all.push(...await analyzeImage(X.files[i],i));X.results=mergeResults(all);renderReview();setStatus(`اكتمل التحليل — ${X.results.length} Slot مكتشف.`,100);}catch(e){console.error('PUBG OCR V13',e);X.results=[];renderReview();setStatus(`فشل التحليل: ${String(e?.message||e)}`,0);toast('فشل التحليل — لم يتم تعديل بيانات البطولة');}finally{X.scanning=false;}};
 window.clearTeamSlotImportV2=()=>{X.files=[];X.results=[];renderFiles();renderReview();setStatus('جاهز — التحليل تلقائي بالكامل',0);};
 window.slotImportFilterV2=f=>{X.filter=f;renderReview();};
