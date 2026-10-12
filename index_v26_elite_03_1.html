@@ -3,7 +3,7 @@
 <style>
 :root{--bg:#080a0f;--panel:#11151d;--panel2:#171d27;--panel3:#0d1118;--line:#27303d;--txt:#f4f6f8;--muted:#98a3b3;--accent:#9cf052;--gold:#f5c451;--red:#ff6868;--blue:#70a7ff;--cyan:#57d6d1;--shadow:0 14px 40px #0007}*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:radial-gradient(circle at 50% -10%,#1a2434 0,#080a0f 38%);color:var(--txt);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:82px}.wrap{max-width:1100px;margin:auto;padding:14px}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.brand{font-size:20px;font-weight:950;letter-spacing:-.3px}.sub{color:var(--muted);font-size:11px;margin-top:2px}.topActions{display:flex;gap:6px}.iconbtn{padding:9px 10px;background:var(--panel);border:1px solid var(--line)}button,input,select,textarea{font:inherit}button{border:1px solid transparent;border-radius:12px;padding:11px 13px;background:var(--panel2);color:var(--txt);font-weight:800;cursor:pointer}button:active{transform:scale(.98)}button.primary{background:var(--accent);color:#071006}button.blue{background:#1a3359;color:#a9cbff;border-color:#28558d}button.danger{background:#36191d;color:#ff9a9a}button.ghost{background:transparent;border-color:var(--line)}button.small{padding:7px 9px;font-size:11px}.card{background:linear-gradient(180deg,#131821,#10141b);border:1px solid var(--line);border-radius:18px;padding:14px;margin:10px 0;box-shadow:0 5px 20px #0002}.hero{padding:18px;background:linear-gradient(135deg,#151d27,#10141b 60%,#17210f);border-color:#33412b}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}label{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}input,select,textarea{width:100%;background:#0a0e14;border:1px solid var(--line);border-radius:11px;color:var(--txt);padding:11px;outline:none}input:focus,select:focus,textarea:focus{border-color:#56713e;box-shadow:0 0 0 3px #9cf05215}textarea{min-height:120px;resize:vertical}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.title{font-size:16px;font-weight:950;margin-bottom:9px}.titleline{display:flex;justify-content:space-between;align-items:center;gap:8px}.pill{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;background:#202733;color:var(--muted);font-size:10px;font-weight:800}.ok{color:var(--accent)}.bad{color:var(--red)}.warn{color:var(--gold)}.muted{color:var(--muted)}.scroll{overflow:auto}.empty{text-align:center;color:var(--muted);padding:25px}.nav{position:fixed;left:0;right:0;overflow-x:auto;bottom:0;background:#0b0e14ed;backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(10,minmax(76px,1fr));padding:7px max(7px,env(safe-area-inset-left)) max(7px,env(safe-area-inset-bottom));z-index:30}.nav button{background:transparent;padding:8px 3px;font-size:10px;color:var(--muted)}.nav button.active{color:var(--accent)}.section{display:none}.section.active{display:block}.kpi{font-size:24px;font-weight:950}.kpiLabel{font-size:10px;color:var(--muted);margin-top:2px}.kpiGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.kpiBox{background:#0d1219;border:1px solid var(--line);border-radius:14px;padding:12px}.hint{color:var(--muted);font-size:12px;line-height:1.5}.matchitem{display:flex;justify-content:space-between;align-items:center;gap:10px}.meta{color:var(--muted);font-size:11px;margin-top:3px}.badge{font-size:10px;font-weight:900;padding:5px 8px;border-radius:999px}.badge.ok{background:#19321a}.badge.review{background:#352a12;color:#ffd67a}.badge.bad{background:#381a1f}.review{border-color:#735b26;background:#18140b}.table{width:100%;border-collapse:collapse;font-size:12px}.table th,.table td{padding:9px 7px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.table th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}.rank{font-weight:950}.gold{color:var(--gold)}.chartWrap{height:250px;display:flex;align-items:end;gap:6px;padding:16px 6px 8px;background:#0c1118;border:1px solid var(--line);border-radius:14px;overflow:hidden}.barCol{flex:1;min-width:12px;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px}.bar{width:70%;max-width:32px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#b4f66f,#5f9d35);min-height:3px;box-shadow:0 3px 12px #9cf05222}.bar.secondary{background:linear-gradient(180deg,#79b8ff,#3f6fa8)}.barLabel{font-size:9px;color:var(--muted);max-width:48px;overflow:hidden;text-overflow:ellipsis}.barValue{font-size:9px;font-weight:900}.lineChart{position:relative;height:210px;background:#0c1118;border:1px solid var(--line);border-radius:14px;padding:12px;overflow:hidden}.lineSvg{width:100%;height:100%}.legend{display:flex;gap:12px;font-size:10px;color:var(--muted);margin-top:7px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:4px}.dot.blue{background:var(--blue)}.resultRow{display:grid;grid-template-columns:38px minmax(100px,1.4fr) 100px 110px 90px;gap:7px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.resultRow.head{color:var(--muted);font-size:10px;text-transform:uppercase}.placeSelect{font-weight:900;text-align:center}.killControl{display:grid;grid-template-columns:34px minmax(40px,1fr) 34px;gap:4px;align-items:center}.killInput{text-align:center;font-weight:950;min-width:0;padding:9px 5px}.killBtn{padding:8px 0;min-height:40px;font-size:17px;line-height:1}.killInput::-webkit-inner-spin-button,.killInput::-webkit-outer-spin-button{appearance:none;margin:0}.ptsCell{text-align:center;font-weight:950}.totalCell{text-align:right;font-weight:950}.scorePreview{background:#0b1016;border:1px solid var(--line);border-radius:14px;padding:10px}.scoreBig{font-size:22px;font-weight:950}.progress{height:7px;background:#242b35;border-radius:20px;overflow:hidden}.progress i{display:block;height:100%;background:var(--accent);border-radius:20px}.compareGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.teamCard{background:#0c1118;border:1px solid var(--line);border-radius:15px;padding:13px}.teamName{font-weight:950;font-size:15px}.delta{font-weight:950}.filterbar{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px}.callout{border-left:3px solid var(--accent);padding:9px 11px;background:#0c1210;border-radius:0 10px 10px 0;color:#dce7d7;font-size:12px;line-height:1.5}.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#1e2631;border:1px solid var(--line);padding:10px 14px;border-radius:12px;z-index:50;display:none;box-shadow:var(--shadow)}@media(max-width:620px){.grid3,.grid4{grid-template-columns:1fr 1fr}.kpiGrid{grid-template-columns:repeat(2,1fr)}.resultRow{grid-template-columns:30px minmax(95px,1fr) 78px 86px 70px;font-size:11px}.resultRow.head{font-size:9px}.filterbar{grid-template-columns:1fr}.compareGrid{grid-template-columns:1fr}.top .sub{display:none}}@media(min-width:760px){body{padding-bottom:20px}.nav{position:sticky;top:0;bottom:auto;margin:0 auto 15px;max-width:1100px;border:1px solid var(--line);border-radius:14px}.wrap{padding-top:16px}}
 
-/* ===== V26 ELITE 2.1 — Tournament Workspace Hub ===== */
+/* ===== V26 ELITE 3.2 — Visual Roster Intelligence ===== */
 .workspaceHub{position:relative;overflow:hidden;background:linear-gradient(135deg,#111a25 0%,#10151d 52%,#17220f 100%);border-color:#3a4b31}
 .workspaceHub:before{content:"";position:absolute;inset:-40% auto auto 55%;width:300px;height:300px;background:#9cf05210;border-radius:50%;filter:blur(12px);pointer-events:none}
 .workspaceHubGrid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:12px;position:relative}
@@ -140,7 +140,7 @@
     <div id="hubTournamentList" class="workspaceList2"></div>
   </div>
 </div>
-<div class="card hero cmdHero"><div class="titleline"><div><div class="title">Tournament Command Center</div><div class="hint">إدارة البطولات، حالة المنافسة، النسخ الاحتياطية والتقارير من مكان واحد.</div><div class="eliteBuild">V26 ELITE · Build <span class="buildBadge">2026.10.11.ELITE.03</span> · Data Schema 2</div></div><span class="pill"><span class="statusDot"></span><span id="cmdStatus">Ready</span></span></div>
+<div class="card hero cmdHero"><div class="titleline"><div><div class="title">Tournament Command Center</div><div class="hint">إدارة البطولات، حالة المنافسة، النسخ الاحتياطية والتقارير من مكان واحد.</div><div class="eliteBuild">V26 ELITE · Build <span class="buildBadge">2026.10.12.ELITE.04</span> · Data Schema 2</div></div><span class="pill"><span class="statusDot"></span><span id="cmdStatus">Ready</span></span></div>
 <div class="cmdGrid" style="margin-top:12px"><div class="cmdStat cmdMain"><div class="muted">Current Tournament</div><b id="cmdTournament">No tournament selected</b><div class="workspaceMeta" id="cmdTournamentMeta">Create a tournament to begin.</div></div><div class="cmdStat"><div class="muted">Teams</div><b id="cmdTeams">0/16</b></div><div class="cmdStat"><div class="muted">Matches</div><b id="cmdMatches">0</b></div><div class="cmdStat"><div class="muted">Approved</div><b id="cmdApproved">0</b></div><div class="cmdStat"><div class="muted">Health</div><b id="cmdHealth">0%</b></div></div>
 <div class="cmdActions" style="margin-top:12px"><button class="primary" onclick="eliteNewTournament()">＋ New Tournament</button><button onclick="eliteOpenTournamentPicker()">Open Tournament</button><button onclick="eliteDuplicateCurrent()">Duplicate</button><button onclick="eliteBackupCurrent()">Safety Backup</button><button onclick="eliteGo('teams')">Teams & Logos</button><button onclick="eliteGo('matches')">Match Center</button><button onclick="eliteGo('overall')">Leaderboard</button><button onclick="eliteGo('reports')">Reports</button></div></div>
 <div class="card"><div class="titleline"><div><div class="title">Tournament Library</div><div class="hint">كل بطولة محفوظة بشكل مستقل. التبديل لا يخلط الفرق أو المباريات أو النتائج.</div></div><button class="ghost" onclick="eliteRenderLibrary()">Refresh</button></div><div id="workspaceLibrary" class="reportGrid" style="margin-top:10px"></div></div>
@@ -162,7 +162,7 @@
 <div class="aiBody"><div class="aiQuick"><button onclick="aiQuick('ما حالة البطولة الآن؟')">حالة البطولة</button><button onclick="aiQuick('من المتصدر ولماذا؟')">المتصدر</button><button onclick="aiQuick('من أكثر لاعب قتلات؟')">Top Fragger</button><button onclick="aiQuick('هل توجد أخطاء في البيانات؟')">فحص البيانات</button><button onclick="aiQuick('اشرح لي طريقة حساب النقاط')">شرح النقاط</button><button onclick="aiQuick('كيف أضيف مباراة؟')">كيف أضيف مباراة؟</button><button onclick="aiQuick('اعمل تقرير عن آخر 5 مباريات')">آخر 5 مباريات</button><button onclick="aiQuick('قارن بين الفريقين')">مقارنة</button><button onclick="aiQuick('أي فريق يعتمد أكثر على القتلات؟')">Kill Dependence</button></div>
 <div id="aiMessages" class="aiMessages"></div>
 <div class="aiInput"><textarea id="aiInput" placeholder="اسأل عن الفرق، المباريات، النقاط، الوينرز، قتلات اللاعبين، الأخطاء أو طريقة استخدام النظام…"></textarea><button class="primary aiSend" onclick="sendAI()">Send</button></div>
-<div class="aiStatus" id="aiStatus">Live context: connected to the current tournament data.</div><div class="aiContext" id="aiContext"></div></div></div><div class="card hero"><div class="title">Tournament Setup</div><div class="grid"><div><label>Tournament</label><input id="tournament" placeholder="Tournament name"></div><div><label>Tournament Logo</label><input id="tournamentLogo" type="file" accept="image/png,image/jpeg,image/webp" onchange="setTournamentLogo(this.files[0])"></div><div><label>Bulk Team Import</label><input id="bulk" placeholder="One team per line • 16 teams"></div><div><label>Current Logo</label><div class="tournamentBrand"><img id="tournamentLogoPreview" class="tournamentLogo" alt=""><span class="hint">يظهر في التقارير والتصاميم والـPDF.</span></div></div></div><div class="row" style="margin-top:9px"><button class="primary" onclick="importTeams()">Import 16 Teams</button><button onclick="exportCSV()">Export Teams CSV</button></div></div><div class="card"><div class="titleline"><div class="title">Team List</div><span class="pill">16 fixed slots • 3–18</span></div><div id="teamTable"></div></div><div class="card"><div class="titleline"><div><div class="title">🎮 Link In‑Game Roster to Team Slots</div><div class="hint">النظام يعرف شكل Screenshot الـLobby الثابت: الصورة الأولى = Slots 03–11، الصورة الثانية = Slots 12–18. لن نحاول تخمين رقم الـSlot من OCR؛ سنستخدم مكان الخانة في الصورة كمرجع ثابت، ثم نستخرج أسماء اللاعبين فقط.</div></div><span class="pill">Fixed 16-Team Layout</span></div>
+<div class="aiStatus" id="aiStatus">Live context: connected to the current tournament data.</div><div class="aiContext" id="aiContext"></div></div></div><div class="card hero"><div class="title">Tournament Setup</div><div class="grid"><div><label>Tournament</label><input id="tournament" placeholder="Tournament name"></div><div><label>Tournament Logo</label><input id="tournamentLogo" type="file" accept="image/png,image/jpeg,image/webp" onchange="setTournamentLogo(this.files[0])"></div><div><label>Bulk Team Import</label><input id="bulk" placeholder="One team per line • 16 teams"></div><div><label>Current Logo</label><div class="tournamentBrand"><img id="tournamentLogoPreview" class="tournamentLogo" alt=""><span class="hint">يظهر في التقارير والتصاميم والـPDF.</span></div></div></div><div class="row" style="margin-top:9px"><button class="primary" onclick="importTeams()">Import 16 Teams</button><button onclick="exportCSV()">Export Teams CSV</button></div></div><div class="card"><div class="titleline"><div class="title">Team List</div><span class="pill">16 fixed slots • 3–18</span></div><div id="teamTable"></div></div><div class="card"><div class="titleline"><div><div class="title">🎮 Link In‑Game Roster to Team Slots</div><div class="hint">النظام يفهم الـLobby بصريًا: الصورة الأولى تحتوي Slots 03–11 والثانية Slots 12–18. رقم الـSlot لا يُستخرج من OCR؛ موقع مربع الفريق هو الـSlot نفسه، ثم يتم OCR لأسماء اللاعبين داخل منطقة الأسماء فقط وربطها مباشرةً بالفريق الذي أدخلته في نفس الـSlot.</div></div><span class="pill">Fixed 16-Team Layout</span></div>
 <div class="rosterExplain">
   <div><b>كيف يعمل؟</b><span>1) ارفع Screenshot 1 و Screenshot 2 من نفس المباراة.</span><span>2) النظام يقسم الصورة تلقائيًا إلى خانات PUBG.</span><span>3) Slot 03 مثلًا يرتبط مباشرةً بالفريق الموجود في Slot 03 عندك.</span><span>4) يستخرج أسماء اللاعبين الأربعة من داخل الخانة.</span><span>5) تراجع الأسماء ثم تحفظها كـ <b>Canonical In‑Game Names</b>.</span>
 </div>
@@ -179,7 +179,7 @@
 <section id="stats" class="section"><div class="card"><div class="titleline"><div><div class="title">Player Statistics</div><div class="hint">Player kill totals are calculated by summing each player's kills across approved matches.</div></div><span class="pill">Kills = player eliminations</span></div><div class="grid"><div><label>Tournament</label><select id="statsTournament"></select></div><div><label>Match</label><select id="statsMatch"></select></div></div><div id="statsTable" style="margin-top:10px"></div></div></section>
 <section id="reports" class="section"><div class="card hero"><div class="title">Professional Report Center</div><div class="hint">تقارير متعددة الصفحات مبنية من بيانات البطولة الحالية. استخدم Print / Save as PDF للحصول على ملف PDF موثوق من Chrome.</div><div class="grid" style="margin-top:10px"><div><label>Report</label><select id="reportType" onchange="eliteRenderReport()"><option value="full">Full Tournament Report</option><option value="leaderboard">Leaderboard Report</option><option value="results">Match Results Report</option><option value="teams">Teams & Logos Report</option><option value="players">Player Statistics Report</option></select></div><div><label>Window</label><select id="reportWindow" onchange="eliteRenderReport()"><option value="all">All Approved Matches</option><option value="5">Last 5 Approved Matches</option><option value="3">Last 3 Approved Matches</option></select></div></div><div class="row noPrint" style="margin-top:10px"><button class="primary" onclick="exportProfessionalPDF()">Download PDF</button><button onclick="elitePrintReport()">Print / Save PDF</button><button onclick="eliteDownloadReportHTML()">Download Report HTML</button></div></div><div id="reportPreview" class="card"></div></section>
 <section id="settings" class="section"><div class="card"><div class="title">Rules & Data</div><div class="grid4"><div><label>1st</label><input id="p1" type="number" value="10"></div><div><label>2nd</label><input id="p2" type="number" value="6"></div><div><label>3rd</label><input id="p3" type="number" value="5"></div><div><label>Kill</label><input id="pk" type="number" value="1"></div></div><div class="hint" style="margin-top:9px">Default: 1st 10, 2nd 6, 3rd 5, 4th 4, 5th 3, 6th 2, 7th 1, 8th 1, 9th–16th 0. Kill = 1.</div><div class="row" style="margin-top:10px"><button class="primary" onclick="saveRules()">Save Rules</button><button onclick="backup()">Backup</button><button onclick="restore()">Restore</button><button class="danger" onclick="resetAll()">Reset All</button></div><input id="file" type="file" accept="application/json" style="display:none" onchange="loadBackup(event)"></div><div class="card"><div class="title">Data Integrity</div><div class="hint">Matches are approved only when all required team results are mapped, placements are unique, values are valid and no duplicate Game ID is used. Unresolved data stays in Review.</div></div>
-<div class="card"><div class="titleline"><div><div class="title">🧠 Operations Intelligence</div><div class="hint">أدوات متقدمة لإدارة النسخ، سجل العمليات، واختبار جاهزية البطولة قبل البث.</div></div><span id="opsBuildBadge" class="pill">V26 ELITE 2.0</span></div><div class="healthMatrix" id="elite2HealthMatrix" style="margin-top:10px"></div><div class="row" style="margin-top:10px"><button onclick="elite2ValidateNow()">Run Full Validation</button><button onclick="elite2CreateAudit('Manual snapshot created')">Create Snapshot</button><button onclick="elite2Undo()">Undo</button><button onclick="elite2Redo()">Redo</button></div></div>
+<div class="card"><div class="titleline"><div><div class="title">🧠 Operations Intelligence</div><div class="hint">أدوات متقدمة لإدارة النسخ، سجل العمليات، واختبار جاهزية البطولة قبل البث.</div></div><span id="opsBuildBadge" class="pill">V26 ELITE 3.2</span></div><div class="healthMatrix" id="elite2HealthMatrix" style="margin-top:10px"></div><div class="row" style="margin-top:10px"><button onclick="elite2ValidateNow()">Run Full Validation</button><button onclick="elite2CreateAudit('Manual snapshot created')">Create Snapshot</button><button onclick="elite2Undo()">Undo</button><button onclick="elite2Redo()">Redo</button></div></div>
 <div class="card"><div class="titleline"><div class="title">🧾 Audit Log</div><button class="small ghost" onclick="elite2ClearAudit()">Clear</button></div><div id="elite2Audit" class="auditList empty" style="margin-top:8px">No operations recorded.</div></div>
 </section>
 </main></div><nav class="nav"><button class="active" onclick="tab('home',this)">Command</button><button onclick="tab('teams',this)">Teams</button><button onclick="tab('matches',this)">Matches</button><button onclick="tab('results',this)">Results</button><button onclick="tab('overall',this)">Leaderboard</button><button onclick="tab('analytics',this)">Analytics</button><button onclick="tab('stats',this)">Stats</button><button onclick="tab('reports',this)">Reports</button><button onclick="tab('ocr',this)">OCR</button><button onclick="tab('settings',this)">Settings</button>
@@ -251,10 +251,94 @@ function eliteCanvasCrop(img,x0,y0,x1,y1,scale=3){
   return c;
 }
 function eliteLobbyLayouts(){
+  // PUBG MOBILE lobby screenshots used by this tournament format are positional.
+  // We do NOT OCR the slot number. The visual position is the slot identity.
   return [
-    {slots:[3,4,5,6,7,8,9,10,11],ys:[[.088,.385],[.390,.695],[.700,1]],xs:[[.004,.308],[.320,.630],[.643,.952]]},
-    {slots:[12,13,14,15,16,17,18],ys:[[.190,.465],[.470,.745],[.748,1]],xs:[[.004,.308],[.320,.630],[.643,.952]]}
+    {image:1,slots:[3,4,5,6,7,8,9,10,11],cols:[.035,.365,.695],colEnd:[.235,.555,.86],rows:[
+      [.135,.200,.265,.330],[.455,.520,.585,.650],[.772,.837,.902,.967]
+    ]},
+    {image:2,slots:[12,13,14,15,16,17,18],cols:[.035,.365,.695],colEnd:[.235,.555,.86],rows:[
+      [.150,.211,.273,.335],[.455,.517,.579,.641],[.754,.816,.878,.940]
+    ]}
   ];
+}
+function eliteNormalizeRosterName(s){
+  s=String(s||'').replace(/\s+/g,' ').trim();
+  s=s.replace(/(?:\/\s*[0Oo]\s*)?(?:eliminations?|eliminatons?|eliminaions?|elim(?:inations?)?)/ig,'').trim();
+  s=s.replace(/[|¦]+/g,' ').replace(/\s+/g,' ').trim();
+  // OCR frequently adds one isolated digit/symbol immediately before the name.
+  s=s.replace(/^(?:[|:;,.\/\\~`]+\s*)/,'').trim();
+  if(/^[0Oo]$/.test(s)||/^\d{1,2}$/.test(s))return '';
+  return s.replace(/^[\-_.]+|[\-_.]+$/g,'').trim();
+}
+function eliteRosterLineWords(words,layout,imgW,imgH){
+  const out=[];
+  for(let r=0;r<layout.rows.length;r++){
+    for(let c=0;c<3;c++){
+      const slot=layout.slots[r*3+c]; if(!slot)continue;
+      for(let p=0;p<4;p++){
+        const cy=layout.rows[r][p]*imgH;
+        const x0=layout.cols[c]*imgW, x1=layout.colEnd[c]*imgW;
+        const yTol=Math.max(10,imgH*.022);
+        const picked=words.filter(w=>{
+          const bx=(Number(w.bbox?.x0||0)+Number(w.bbox?.x1||0))/2;
+          const by=(Number(w.bbox?.y0||0)+Number(w.bbox?.y1||0))/2;
+          const t=String(w.text||'').trim();
+          if(!t||bx<x0||bx>x1||Math.abs(by-cy)>yTol)return false;
+          if(/elimin|remaining|^team$|^\/\s*[0Oo]$/i.test(t))return false;
+          return Number(w.confidence||0)>=18;
+        }).sort((a,b)=>a.bbox.x0-b.bbox.x0);
+        const raw=picked.map(w=>w.text).join(' ');
+        const name=eliteNormalizeRosterName(raw);
+        out.push({slot,playerIndex:p+1,name,confidence:picked.length?Math.round(picked.reduce((a,w)=>a+Number(w.confidence||0),0)/picked.length):0,words:picked.length});
+      }
+    }
+  }
+  return out;
+}
+async function eliteOCRPlayerCrop(img,layout,slot,playerIndex){
+  const slotIndex=layout.slots.indexOf(slot),r=Math.floor(slotIndex/3),c=slotIndex%3;
+  if(slotIndex<0)return {name:'',confidence:0};
+  const cy=layout.rows[r][playerIndex-1],imgW=img.width,imgH=img.height;
+  const x0=Math.round(imgW*layout.cols[c]),x1=Math.round(imgW*layout.colEnd[c]);
+  const y0=Math.max(0,Math.round(imgH*(cy-.027))),y1=Math.min(imgH,Math.round(imgH*(cy+.027)));
+  const canvas=document.createElement('canvas');canvas.width=(x1-x0)*5;canvas.height=Math.max(1,(y1-y0)*5);
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(img,x0,y0,x1-x0,y1-y0,0,0,canvas.width,canvas.height);
+  const variants=[canvas];
+  const g=document.createElement('canvas');g.width=canvas.width;g.height=canvas.height;const gx=g.getContext('2d',{willReadFrequently:true});gx.drawImage(canvas,0,0);const id=gx.getImageData(0,0,g.width,g.height),px=id.data;
+  for(let i=0;i<px.length;i+=4){const v=.299*px[i]+.587*px[i+1]+.114*px[i+2];const q=Math.max(0,Math.min(255,(v-32)*1.75+18));px[i]=px[i+1]=px[i+2]=q}gx.putImageData(id,0,0);variants.push(g);
+  let best={name:'',confidence:0};
+  for(const v of variants){
+    const r0=await Tesseract.recognize(v,'eng',{config:{tessedit_pageseg_mode:7},logger:()=>{}});
+    const txt=eliteNormalizeRosterName(r0.data.text||'');
+    const conf=Number(r0.data.confidence||0);
+    if(txt && (!best.name||conf>best.confidence))best={name:txt,confidence:Math.round(conf)};
+  }
+  return best;
+}
+async function eliteReadRosterImage(img,layout,imageIndex,progress){
+  // Primary pass: one full-image OCR preserves spatial information and is fast.
+  const prep=document.createElement('canvas');prep.width=img.width*2;prep.height=img.height*2;
+  const pc=prep.getContext('2d',{willReadFrequently:true});pc.imageSmoothingEnabled=true;pc.imageSmoothingQuality='high';pc.drawImage(img,0,0,prep.width,prep.height);
+  const gray=pc.getImageData(0,0,prep.width,prep.height),px=gray.data;
+  for(let i=0;i<px.length;i+=4){const v=.299*px[i]+.587*px[i+1]+.114*px[i+2];const q=Math.max(0,Math.min(255,(v-30)*1.6+20));px[i]=px[i+1]=px[i+2]=q}pc.putImageData(gray,0,0);
+  const ocr=await Tesseract.recognize(prep,'eng',{logger:m=>{if(m.status==='recognizing text'&&progress)progress(Math.round((m.progress||0)*100))},config:{tessedit_pageseg_mode:11}});
+  const words=(ocr.data.words||[]).map(w=>({text:w.text,confidence:Number(w.confidence||0),bbox:{x0:w.bbox.x0/2,y0:w.bbox.y0/2,x1:w.bbox.x1/2,y1:w.bbox.y1/2}}));
+  const lines=eliteRosterLineWords(words,layout,img.width,img.height);
+  const rows=[];
+  for(const slot of layout.slots){
+    const players=[];
+    for(let p=1;p<=4;p++){
+      const hit=lines.find(x=>x.slot===slot&&x.playerIndex===p);
+      let name=hit?.name||'',confidence=hit?.confidence||0;
+      // Fallback only for weak/missing cells. This makes the reader robust against
+      // one bad OCR line without turning every slot into a heavy 64-call OCR job.
+      if(!name||confidence<42){const fb=await eliteOCRPlayerCrop(img,layout,slot,p);if(fb.name&&(fb.confidence>confidence||!name)){name=fb.name;confidence=fb.confidence}}
+      players.push({name,confidence});
+    }
+    rows.push({slot,players});
+  }
+  return rows;
 }
 function eliteCleanPlayerLine(s){
   s=String(s||'').replace(/\s+/g,' ').trim();
@@ -308,50 +392,29 @@ async function eliteOCRLobbyBlock(canvas,progressLabel){
   return best||{names:[],score:0,raw:''};
 }
 async function runTeamSlotOCRPair(){
-  const files=[
-    document.getElementById('teamSlotImage1')?.files?.[0],
-    document.getElementById('teamSlotImage2')?.files?.[0]
-  ];
+  const files=[document.getElementById('teamSlotImage1')?.files?.[0],document.getElementById('teamSlotImage2')?.files?.[0]];
   if(!files[0]||!files[1])return toast('Please upload both match screenshots');
-  const review=document.getElementById('teamSlotOCRReview');
-  if(!review)return;
-  review.innerHTML='<div class="hint">Analyzing the fixed PUBG MOBILE 16-team layout…</div>';
+  const review=document.getElementById('teamSlotOCRReview');if(!review)return;
+  review.innerHTML='<div class="notice"><b>Visual Slot Intelligence is running…</b><div class="ocrLive" style="margin-top:4px">The system is reading player names from their fixed PUBG MOBILE grid positions.</div></div>';
   try{
-    const imgs=[await eliteLoadImage(files[0]),await eliteLoadImage(files[1])], layouts=eliteLobbyLayouts(), detected=[];
-    let done=0,total=16;
+    const imgs=[await eliteLoadImage(files[0]),await eliteLoadImage(files[1])],layouts=eliteLobbyLayouts(),all=[];
     for(let imageIndex=0;imageIndex<2;imageIndex++){
-      const img=imgs[imageIndex],layout=layouts[imageIndex];
-      for(let r=0;r<layout.ys.length;r++){
-        for(let c=0;c<layout.xs.length;c++){
-          const slot=layout.slots[r*3+c]; if(!slot)continue;
-          const [x0,x1]=layout.xs[c],[y0,y1]=layout.ys[r];
-          const canvas=eliteCanvasCrop(img,x0,y0,x1,y1,3);
-          const result=await eliteOCRLobbyBlock(canvas,p=>{review.querySelector('.ocrLive')?.replaceChildren(document.createTextNode(`Reading Slot ${slot} · ${p}%`))});
-          const team=S.teams.find(t=>Number(t.slot)===slot);
-          detected.push({slot,teamName:team?.name||'',players:result.names.slice(0,4),score:result.score,raw:result.raw});
-          done++; 
-          review.innerHTML=`<div class="notice"><b>Reading fixed slots 3–18</b><div class="ocrLive" style="margin-top:4px">Completed ${done}/${total} · Slot ${slot}</div></div>`;
-        }
-      }
+      const rows=await eliteReadRosterImage(imgs[imageIndex],layouts[imageIndex],imageIndex,p=>{
+        const pct=Math.round(p/2+(imageIndex*50));
+        const live=review.querySelector('.ocrLive');if(live)live.textContent=`Reading screenshot ${imageIndex+1}/2 · ${Math.min(100,pct)}%`;
+      });
+      rows.forEach(r=>all.push(r));
     }
-    const withPlayers=detected.filter(x=>x.players.length);
-    review.innerHTML=`<div class="notice"><b>تم التعرف على ${withPlayers.length} من 16 Slot.</b> النظام لم يعد يبحث عن رقم الـSlot داخل الصورة؛ هو يعرف ترتيب الشاشة مسبقًا: الصورة الأولى = 03–11، الصورة الثانية = 12–18. لذلك يتم ربط اللاعبين مباشرةً بخانة الفريق الموجودة في النظام.</div>
-    <div class="scroll" style="margin-top:10px"><table class="table rosterLinkTable"><tr><th>Slot</th><th>Team in System</th><th>Detected In-Game Players</th><th>Status</th></tr>
-    ${detected.map((x,i)=>`<tr>
-      <td class="rank">${x.slot}</td>
-      <td><b>${esc(x.teamName||'Team not entered')}</b><div class="meta">Slot ${x.slot} is the source of truth</div></td>
-      <td>${[0,1,2,3].map(j=>`<input id="rosterPlayer-${i}-${j}" value="${esc(x.players[j]||'')}" placeholder="Player ${j+1}" style="margin:3px 0">`).join('')}</td>
-      <td><span class="confidence ${x.players.length===4?'good':x.players.length>=2?'warn':'bad'}">${x.players.length===4?'4/4 detected':x.players.length+' detected'}</span></td>
-    </tr>`).join('')}</table></div>
-    <div class="row noPrint" style="margin-top:10px">
-      <button class="primary" onclick='eliteApplyFixedRoster(${JSON.stringify(detected).replaceAll("'","\\'")})'>Save Players to Team Slots</button>
-      <button class="ghost" onclick="runTeamSlotOCRPair()">Re-read Screenshots</button>
-    </div>
-    <div class="callout" style="margin-top:10px">بعد الحفظ، الأسماء تصبح <b>Canonical In-Game Names</b> للبطولة. سيستخدمها قارئ نتائج المباريات لاحقًا لمطابقة الاسم الظاهر في Screenshot مع Slot الفريق بدل التخمين بالاسم أو المركز فقط.</div>`;
-  }catch(e){
-    console.error(e);review.innerHTML='<div class="callout">لم أستطع تحليل الصورتين. تأكد من استخدام Screenshot الأصلي للـLobby/Match وبنفس ترتيب 16 Team (03–11 ثم 12–18). لم يتم تغيير أي بيانات.</div>';
-  }
+    const detected=all.map((x,i)=>({slot:x.slot,teamName:S.teams.find(t=>Number(t.slot)===Number(x.slot))?.name||'',players:x.players.map(p=>p.name),confidence:x.players.map(p=>p.confidence),score:x.players.filter(p=>p.name).length}));
+    const linkedCount=detected.filter(x=>x.score>=3).length;
+    review.innerHTML=`<div class="notice"><b>تم تحليل ${linkedCount}/16 Slot بنجاح.</b> <span class="meta">هوية الفريق لا تعتمد على OCR: Slot 03 في الصورة = Slot 03 في بياناتك، Slot 04 = Slot 04 … حتى Slot 18.</span><div class="ocrLive" style="margin-top:5px">كل اسم تم قراءته من منطقة اللاعبين الخاصة بالـSlot، وليس من نص عشوائي في الصورة.</div></div>
+    <div class="scroll" style="margin-top:10px"><table class="table rosterLinkTable"><tr><th>Slot</th><th>Team in System</th><th>In‑Game Players</th><th>OCR Quality</th></tr>
+    ${detected.map((x,i)=>`<tr><td class="rank">${x.slot}</td><td><b>${esc(x.teamName||'Team not entered')}</b><div class="meta">Fixed visual mapping · Slot ${x.slot}</div></td><td>${[0,1,2,3].map(j=>`<input id="rosterPlayer-${i}-${j}" value="${esc(x.players[j]||'')}" placeholder="Player ${j+1}" style="margin:3px 0">`).join('')}</td><td><span class="confidence ${x.score===4?'good':x.score>=2?'warn':'bad'}">${x.score}/4 names · ${Math.round(x.confidence.filter(Boolean).reduce((a,b)=>a+b,0)/(x.confidence.filter(Boolean).length||1))}% avg</span></td></tr>`).join('')}</table></div>
+    <div class="row noPrint" style="margin-top:10px"><button class="primary" onclick='eliteApplyFixedRoster(${JSON.stringify(detected).replaceAll("'","\\'")})'>Save Canonical In‑Game Roster</button><button class="ghost" onclick="runTeamSlotOCRPair()">Re-read with Deep OCR</button></div>
+    <div class="callout" style="margin-top:10px"><b>المرجع الأساسي:</b> اسم الفريق الذي أدخلته أنت + رقم الـSlot. <b>المرجع الثاني:</b> أسماء اللاعبين الصحيحة من داخل اللعبة. هذه الأسماء ستصبح المصدر الذي يعتمد عليه قارئ نتائج المباريات لاحقًا لربط اللاعب بالفريق والـSlot ثم جمع Kills وPlacement.</div>`;
+  }catch(e){console.error(e);review.innerHTML='<div class="callout">حدث خطأ أثناء تحليل الصور. لم يتم تغيير أي بيانات. استخدم Screenshots أصلية من نفس شاشة الـLobby وبنفس ترتيب الـSlots 03–18.</div>';toast('Roster image analysis failed')}
 }
+
 function eliteApplyFixedRoster(rows){
   let changed=0;
   rows.forEach((x,i)=>{
@@ -512,7 +575,7 @@ function aiWelcome(){aiAdd('bot','مرحبًا 👋 أنا مساعد البطو
 function renderAIContext(){const e=document.getElementById('aiContext');if(!e)return;const h=aiDataHealth(),p=aiPlayerKills();e.innerHTML=`<span class="pill">Teams ${h.teams}/16</span><span class="pill">Approved ${h.approved}</span><span class="pill">Review ${h.review}</span><span class="pill">Players ${p.length}</span>`}
 
 /* ===== V26 ELITE EXTENSIONS ===== */
-const ELITE_BUILD='2026.10.11.ELITE.03',ELITE_SCHEMA=2,WORKSPACE_KEY='pubg_tm_v26_workspaces',SNAPSHOT_KEY='pubg_tm_v26_snapshots';
+const ELITE_BUILD='2026.10.12.ELITE.04',ELITE_SCHEMA=2,WORKSPACE_KEY='pubg_tm_v26_workspaces',SNAPSHOT_KEY='pubg_tm_v26_snapshots';
 function safeJSON(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'null')??fallback}catch{return fallback}}
 function workspaceMap(){let x=safeJSON(WORKSPACE_KEY,{});return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}
 function saveWorkspaceMap(x){try{localStorage.setItem(WORKSPACE_KEY,JSON.stringify(x))}catch(e){toast('Workspace storage is full — export a backup')}}
@@ -560,8 +623,8 @@ document.getElementById('statsMatch').addEventListener('change',renderStats);doc
 eliteRenderCommand();
 aiWelcome();
 
-/* ===== V26 ELITE 2.0 — Command Center / Navigation / Intelligence ===== */
-const ELITE2_BUILD='2026.10.11.ELITE.03',ELITE2_META_KEY='pubg_tm_v26_meta',ELITE2_AUDIT_KEY='pubg_tm_v26_audit',ELITE2_HISTORY_KEY='pubg_tm_v26_history';
+/* ===== V26 ELITE 3.2 — Command Center / Navigation / Intelligence ===== */
+const ELITE2_BUILD='2026.10.12.ELITE.04',ELITE2_META_KEY='pubg_tm_v26_meta',ELITE2_AUDIT_KEY='pubg_tm_v26_audit',ELITE2_HISTORY_KEY='pubg_tm_v26_history';
 function elite2Meta(){let x=safeJSON(ELITE2_META_KEY,{});return x&&typeof x==='object'?x:{}}
 function elite2SaveMeta(x){try{localStorage.setItem(ELITE2_META_KEY,JSON.stringify(x))}catch(e){}}
 function elite2RecordMeta(id,patch){let m=elite2Meta();m[id]=Object.assign({},m[id],patch);elite2SaveMeta(m);return m[id]}
@@ -606,7 +669,7 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCa
 // Update build labels and initial advanced views.
 setTimeout(()=>{document.querySelectorAll('.buildBadge').forEach(e=>e.textContent=ELITE2_BUILD);let b=document.getElementById('opsBuildBadge');if(b)b.textContent=ELITE2_BUILD;elite2RenderCurrent();elite2RenderHealth();elite2RenderAudit();elite2VisualCharts()},0);
 
-/* ===== V26 ELITE 2.1 — Tournament Workspace Hub Logic ===== */
+/* ===== V26 ELITE 3.2 — Visual Roster Intelligence Logic ===== */
 function eliteHubFileToData(file,cb){if(!file){cb('');return}const r=new FileReader();r.onload=()=>cb(r.result||'');r.readAsDataURL(file)}
 function eliteHubMetaFor(id){const m=elite2Meta();return m[id]||{}}
 function eliteHubHealth(w){try{return workspaceHealth(normalizeTournamentState(w.state))}catch(e){return {teams:0,approved:0,total:0,score:0}}}
