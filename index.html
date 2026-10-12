@@ -802,9 +802,16 @@ function preprocess(src,mode='original'){
      else if(mode==='invert')q=255-v;
      else if(mode==='otsu')q=v>thr?255:0;
      else if(mode==='adaptive'){
-       let sum=0,count=0;const rad=5;
-       for(let yy=Math.max(0,y-rad);yy<=Math.min(H-1,y+rad);yy++)for(let xx=Math.max(0,x-rad);xx<=Math.min(W-1,x+rad);xx++){sum+=gray[yy*W+xx];count++;}
-       q=v>(sum/count-8)?255:0;
+       // Fast local-threshold approximation using a precomputed integral image.
+       const rad=5, x0=Math.max(0,x-rad), x1=Math.min(W-1,x+rad), y0=Math.max(0,y-rad), y1=Math.min(H-1,y+rad);
+       const stride=W+1;
+       if(!window.__pubgIntegral||window.__pubgIntegral.W!==W||window.__pubgIntegral.H!==H){
+         const ii=new Float64Array((W+1)*(H+1));
+         for(let yy=1;yy<=H;yy++){let rs=0;for(let xx=1;xx<=W;xx++){rs+=gray[(yy-1)*W+(xx-1)];ii[yy*stride+xx]=ii[(yy-1)*stride+xx]+rs;}}
+         window.__pubgIntegral={W,H,ii};
+       }
+       const ii=window.__pubgIntegral.ii, A=ii[y0*stride+x0],B=ii[y0*stride+(x1+1)],C=ii[(y1+1)*stride+x0],D=ii[(y1+1)*stride+(x1+1)];
+       const mean=(D-B-C+A)/((x1-x0+1)*(y1-y0+1));q=v>(mean-8)?255:0;
      } else if(mode==='sharpen'){
        const l=gray[y*W+Math.max(0,x-1)],r=gray[y*W+Math.min(W-1,x+1)],u=gray[Math.max(0,y-1)*W+x],dn=gray[Math.min(H-1,y+1)*W+x];q=v*1.9-(l+r+u+dn)*.225;
      } else if(mode==='edge'){
@@ -845,16 +852,29 @@ function candidateCluster(candidates){const groups=[];for(const c of(candidates|
 function normalizePlayer(s){let t=clean(s).replace(/[“”‘’]/g,'').replace(/\s*\/\s*[0-9]+\s*Eliminations.*$/i,'').replace(/\s*Eliminations.*$/i,'');return clean(t.replace(/^\s*[|\/\\:;]+\s*/,''));}
 function nameRegion(card){
  const padX=card.w*.145;
- return{x:card.x+padX,y:card.y+card.h*.115,w:card.w*.64,h:card.h*.80};
+ // PUBG Mobile lobby cards place the four roster lines from roughly 18% to 84%
+ // of the card height. Keep the complete vertical name area so the last player
+ // is never clipped out by the OCR crop.
+ return{x:card.x+padX,y:card.y+card.h*.065,w:card.w*.64,h:card.h*.875};
 }
 function rowBand(card,i){
- const r=nameRegion(card),centers=[.085,.315,.545,.775];
- return{x:r.x,y:r.y+r.h*centers[i]-r.h*.075,w:r.w,h:r.h*.15};
+ const r=nameRegion(card),centers=[.132,.383,.634,.885];
+ // These centers map back to approximately 18%, 40%, 62%, 84% of the card.
+ return{x:r.x,y:r.y+r.h*centers[i]-r.h*.072,w:r.w,h:r.h*.144};
+}
+function rowBandVariants(card,i){
+ const b=rowBand(card,i),dy=card.h*.025;
+ return [
+  b,
+  {...b,y:b.y-dy,h:b.h+dy*1.2},
+  {...b,y:b.y+dy*.55,h:b.h+dy*1.2},
+  {...b,y:b.y-dy*.5,h:b.h+dy*2}
+ ];
 }
 function normalizeFirstPlayer(s){let t=normalizePlayer(s);t=t.replace(/^\s*(?:0?[3-9]|1[0-8])\s+/,'');return clean(t);}
 function addUniqueCandidate(arr,text,confidence,source){text=clean(text);if(!text)return;const n=normalizePlayer(text);if(!n)return;arr.push({text:n,confidence:Number.isFinite(Number(confidence))?Number(confidence):0,source});}
-async function playerPass(img,card,i,mode,psm,tag,padX=.018,padY=.035,scale=12){
- const b=rowBand(card,i),px=card.w*padX,py=card.h*padY;
+async function playerPass(img,card,i,mode,psm,tag,padX=.018,padY=.035,scale=12,bandOverride=null){
+ const b=bandOverride||rowBand(card,i),px=card.w*padX,py=card.h*padY;
  const c=cropCanvas(img,b.x-px,b.y-py,b.w+px*2,b.h+py*2,scale);
  const d=await recognize(c,mode,psm);
  const out=[];let raw=normalizePlayer(d?.text||'');if(i===0)raw=normalizeFirstPlayer(raw);addUniqueCandidate(out,raw,d?.confidence,tag);
@@ -874,8 +894,17 @@ async function targetedPlayerCandidates(img,card,i,seed=[]){
   ['otsu','13','otsu-raw',.012,.025,12],
   ['invert','7','invert-line',.018,.035,12]
  ];
- for(const v of variants){try{candidates.push(...await playerPass(img,card,i,...v));}catch(e){console.warn('player pass',v,e);}}
- return rankPlayerCandidates(candidates).slice(0,12);
+ // Read each expected row through several slightly shifted vertical windows.
+ // This is deliberately redundant: the lobby font can sit a few pixels above
+ // or below the nominal line, especially on resized screenshots.
+ const bands=rowBandVariants(card,i);
+ for(let bi=0;bi<bands.length;bi++){
+   const band=bi===0?bands[0]:bands[bi];
+   // Full multi-pass on the main band; lighter rescue passes on shifted bands.
+   const use=bi===0?variants:variants.filter((_,k)=>k===0||k===1||k===4||k===6);
+   for(const v of use){try{candidates.push(...await playerPass(img,card,i,...v,band));}catch(e){console.warn('player pass',v,e);}}
+ }
+ return rankPlayerCandidates(candidates).slice(0,16);
 }
 function playerShapeScore(t){
  const s=clean(t);if(!s)return 0;let q=0;if(s.length>=3&&s.length<=20)q+=.25;if(/[A-Za-z0-9]/.test(s))q+=.25;if(!/Eliminations/i.test(s))q+=.25;if(!/^\d+$/.test(s))q+=.15;if(!/^[^A-Za-z0-9]+$/.test(s))q+=.10;return q;
@@ -885,8 +914,8 @@ function rankPlayerCandidates(candidates){
  for(const c of candidates||[]){let text=normalizePlayer(c.text);if(!text)continue;text=text.replace(/\s*\/\s*\d+.*$/,'').trim();if(text.length<2||text.length>28)continue;
    let g=groups.find(z=>similarity(z.text,text)>=.92 || (similarity(z.text,text)>=.84&&Math.abs(z.text.length-text.length)<=1));
    if(!g){g={text,confidence:Number(c.confidence)||0,votes:0,sources:[],score:0};groups.push(g);}
-   g.votes++;g.confidence=Math.max(g.confidence,Number(c.confidence)||0);g.sources.push(c.source||'ocr');
-   if((Number(c.confidence)||0)>g.confidence)g.text=text;
+   g.votes++;const cc=Number(c.confidence)||0;const oldConf=g.confidence;g.confidence=Math.max(g.confidence,cc);g.sources.push(c.source||'ocr');
+   if(cc>oldConf)g.text=text;
  }
  for(const g of groups)g.score=(g.votes*2.2)+(Math.max(0,g.confidence)/100)+playerShapeScore(g.text);
  return groups.sort((a,b)=>b.score-a.score);
