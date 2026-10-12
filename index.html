@@ -49,7 +49,7 @@
 @media(max-width:760px){.workspaceHubGrid{grid-template-columns:1fr}.workspaceList2{grid-template-columns:1fr}.workspaceCreateRow{grid-template-columns:minmax(0,1fr) 92px}.workspaceHeroTitle{font-size:21px}}
 
 .rosterIntelligenceCard{border-color:#35462f}.rosterUploadGrid,.rosterControlGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rosterControlGrid{grid-template-columns:1fr 1fr 1.2fr}.rosterUpload{background:#0b1017;border:1px solid var(--line);border-radius:13px;padding:10px}.rosterUpload input{margin-top:4px}.lockedRule{height:42px;display:flex;align-items:center;padding:0 11px;border:1px solid #394352;border-radius:11px;background:#0a0e14;color:#bfc8d4;font-size:11px}.rosterSummary{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.rosterStat{background:#0b1017;border:1px solid var(--line);border-radius:12px;padding:9px}.rosterStat b{display:block;font-size:18px}.rosterStat small{color:var(--muted);font-size:9px}.rosterReviewRow{border:1px solid var(--line);border-radius:15px;background:#0b1017;margin:8px 0;padding:10px}.rosterReviewRow.ready{border-color:#315e37}.rosterReviewRow.review{border-color:#6a5520;background:#15120b}.rosterReviewRow.bad{border-color:#6d3030;background:#160d0d}.rosterPlayerGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.playerEvidence{display:flex;gap:7px;align-items:center;margin-top:6px}.playerCrop{width:150px;height:38px;object-fit:contain;background:#070b10;border:1px solid #303947;border-radius:8px}.playerMeta{font-size:9px;color:var(--muted);line-height:1.4}.playerStatus{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900}.playerStatus.ready{background:#17301c;color:#b9efad;border:1px solid #315e37}.playerStatus.review{background:#30270f;color:#f3d47b;border:1px solid #6a5520}.playerStatus.bad{background:#351a1a;color:#f5aaaa;border:1px solid #6d3030}.ocrCandidate{margin-top:5px;padding:6px 7px;border-radius:8px;background:#0a0f15;border:1px solid #27303d;font-size:10px}.ocrCandidate b{color:#dfe7ef}.rosterToolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}.rosterToolbar button{padding:7px 9px;font-size:10px}@media(max-width:760px){.rosterUploadGrid,.rosterControlGrid,.rosterPlayerGrid{grid-template-columns:1fr}.rosterSummary{grid-template-columns:repeat(2,1fr)}.playerCrop{width:120px}}
-</style><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><style id="aiAssistantStyle">
+</style><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.min.js"></script><style id="aiAssistantStyle">
 .aiShell{margin:10px 0 14px;border:1px solid #33412b;border-radius:18px;background:linear-gradient(145deg,#11191a,#10141b 60%,#16200f);box-shadow:0 10px 30px #0003;overflow:hidden}.aiHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px;border-bottom:1px solid var(--line)}.aiBrand{display:flex;align-items:center;gap:10px}.aiOrb{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#9cf052,#5f9d35);color:#071006;font-weight:1000;font-size:18px;box-shadow:0 0 20px #9cf05225}.aiTitle{font-weight:950}.aiSub{font-size:10px;color:var(--muted);margin-top:2px}.aiBody{padding:12px}.aiQuick{display:flex;gap:6px;overflow:auto;padding-bottom:9px}.aiQuick button{white-space:nowrap;font-size:10px;padding:8px 10px}.aiMessages{height:245px;overflow:auto;padding:4px 2px 10px;display:flex;flex-direction:column;gap:8px}.aiMsg{max-width:92%;padding:10px 11px;border-radius:13px;border:1px solid var(--line);font-size:12px;line-height:1.55;white-space:normal}.aiMsg.bot{align-self:flex-start;background:#0c1218}.aiMsg.user{align-self:flex-end;background:#172416;border-color:#33412b}.aiMsg b{font-weight:950}.aiInput{display:grid;grid-template-columns:1fr auto;gap:7px}.aiInput textarea{min-height:48px;max-height:110px;resize:none;padding:10px}.aiSend{min-width:74px}.aiStatus{font-size:10px;color:var(--muted);margin-top:7px}.aiContext{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.aiContext .pill{font-size:9px}
 @media(max-width:620px){.aiMessages{height:285px}.aiInput{grid-template-columns:1fr}.aiSend{width:100%}}
 </style><style id="v26Advanced">
@@ -765,16 +765,43 @@ async function ensureOCR(){
  if(X.worker)return X.worker;
  if(!window.Tesseract)throw new Error('محرك OCR غير متاح');
  setStatus('تهيئة محرك القراءة مرة واحدة…',3);
- X.worker=await Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='loading tesseract core')setStatus('تحميل محرك القراءة…',3);else if(m.status==='loading language traineddata')setStatus('تحميل قاموس القراءة…',7);}});
- await X.worker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});
+ X.worker=await Tesseract.createWorker('eng',1,{logger:m=>{
+   if(m.status==='loading tesseract core')setStatus('تحميل محرك القراءة…',3);
+   else if(m.status==='loading language traineddata')setStatus('تحميل قاموس القراءة…',7);
+   else if(m.status==='recognizing text')setStatus(`قراءة النص… ${Math.round((Number(m.progress)||0)*100)}%`,8);
+ }});
  return X.worker;
 }
 function makeCanvas(img,scale=2){const w=img.naturalWidth||img.width,h=img.naturalHeight||img.height,c=document.createElement('canvas');c.width=Math.round(w*scale);c.height=Math.round(h*scale);const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,0,0,c.width,c.height);return c;}
 function cropCanvas(img,x,y,w,h,scale=4){const c=document.createElement('canvas');c.width=Math.max(2,Math.round(w*scale));c.height=Math.max(2,Math.round(h*scale));const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,x,y,w,h,0,0,c.width,c.height);return c;}
 function preprocess(src,mode='original'){if(mode==='original')return src;const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(src,0,0);const d=g.getImageData(0,0,c.width,c.height),p=d.data;for(let i=0;i<p.length;i+=4){let v=.299*p[i]+.587*p[i+1]+.114*p[i+2];if(mode==='contrast')v=clamp((v-55)*1.75+55,0,255);else if(mode==='gray'){}else if(mode==='threshold')v=v>145?255:0;p[i]=p[i+1]=p[i+2]=v;}g.putImageData(d,0,0);return c;}
-async function recognize(canvas,mode='original'){const w=await ensureOCR();try{return(await w.recognize(preprocess(canvas,mode))).data||{text:'',words:[]};}catch(e){console.warn('OCR pass failed',e);return{error:String(e?.message||e),text:'',words:[]};}}
-function box(w){const b=w?.bbox||{};const x0=Number(b.x0??w.left??0),y0=Number(b.y0??w.top??0),x1=Number(b.x1??((w.left||0)+(w.width||0))),y1=Number(b.y1??((w.top||0)+(w.height||0)));return{x0,y0,x1,y1,cx:(x0+x1)/2,cy:(y0+y1)/2};}
-function ocrWords(data,scale=1){return(data?.words||[]).map(w=>{const b=box(w);return{t:clean(w?.text),confidence:Number(w?.confidence||0),x0:b.x0/scale,y0:b.y0/scale,x1:b.x1/scale,y1:b.y1/scale,cx:b.cx/scale,cy:b.cy/scale};}).filter(w=>w.t);}
+async function recognize(canvas,mode='original'){
+ const w=await ensureOCR();
+ try{
+   // TSV is deliberately requested instead of relying on Tesseract's mutable word objects.
+   // This is more stable on Safari/iOS and gives us exact word coordinates for card parsing.
+   return (await w.recognize(preprocess(canvas,mode),{}, {tsv:true,text:true})).data||{text:'',tsv:''};
+ }catch(e){
+   console.warn('OCR pass failed',e);
+   throw new Error(`OCR engine: ${String(e?.message||e)}`);
+ }
+}
+function ocrWords(data,scale=1){
+ const tsv=String(data?.tsv||'');
+ if(!tsv)return[];
+ const lines=tsv.split(/\r?\n/);const out=[];
+ for(let i=1;i<lines.length;i++){
+   const parts=lines[i].split('\t');
+   if(parts.length<12)continue;
+   const text=clean(parts.slice(11).join('\t'));
+   const conf=Number(parts[10]);
+   if(!text||!Number.isFinite(conf)||conf<0)continue;
+   const left=Number(parts[6]),top=Number(parts[7]),width=Number(parts[8]),height=Number(parts[9]);
+   if(![left,top,width,height].every(Number.isFinite)||width<=0||height<=0)continue;
+   out.push({t:text,confidence:conf,x0:left/scale,y0:top/scale,x1:(left+width)/scale,y1:(top+height)/scale,cx:(left+width/2)/scale,cy:(top+height/2)/scale});
+ }
+ return out;
+}
 function detectAnchors(img){
  const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0);const d=g.getImageData(0,0,W,H).data,xp=new Int32Array(W),yp=new Int32Array(H);
  for(let y=Math.floor(H*.07);y<Math.floor(H*.96);y++)for(let x=0;x<W;x++){const i=(y*W+x)*4,r=d[i],gg=d[i+1],b=d[i+2],mx=Math.max(r,gg,b),mn=Math.min(r,gg,b);if(mx-mn>24&&mx>70){xp[x]++;yp[y]++;}}
@@ -785,7 +812,7 @@ function detectAnchors(img){
 function inferGrid(img){
  const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,a=detectAnchors(img);
  let xs=a.x.map(z=>z.a).filter(x=>x<W*.9).sort((m,n)=>m-n);let ys=a.y.map(z=>z.a).filter(y=>y>H*.06&&y<H*.88).sort((m,n)=>m-n);
- const cluster=(arr,limit)=>{const o=[];for(const v of arr){const q=o[o.length-1];if(q&&Math.abs(v-q)<W*.06){q=(q);q.push(v);}else o.push([v]);}return o.map(g=>Math.round(g.reduce((a,b)=>a+b,0)/g.length)).slice(0,limit);};
+ const cluster=(arr,limit)=>{const o=[];for(const v of arr){const q=o[o.length-1];if(q&&Math.abs(v-q[q.length-1])<W*.06)q.push(v);else o.push([v]);}return o.map(g=>Math.round(g.reduce((a,b)=>a+b,0)/g.length)).slice(0,limit);};
  xs=cluster(xs,3);ys=cluster(ys,3);
  const fx1=Math.round(W*.006),fx2=Math.round(W*.321),fxPitch=fx2-fx1,fx=[fx1,fx2,fx1+fxPitch*2],fy=[Math.round(H*.108),Math.round(H*.410),Math.round(H*.714)];
  if(xs.length!==3||xs[1]-xs[0]<W*.20||xs[2]-xs[1]<W*.20)xs=fx;else {const p=xs[1]-xs[0];xs=[xs[0],xs[1],xs[0]+2*p];}
@@ -828,12 +855,12 @@ async function analyzeImage(file,index){
  setStatus(`الصورة ${index+1}/${X.files.length} — قراءة الصورة بالكامل…`,10+index*(55/Math.max(1,X.files.length)));
  const scale=2,full=makeCanvas(img,scale),data=await recognize(full,'original'),words=ocrWords(data,scale),out=[];
  const visibleCards=cards.filter(card=>{const xl=card.x+card.w*.10,xr=card.x+card.w*.70,yl=card.y+card.h*.04,yr=card.y+card.h*.98;const n=words.filter(w=>w.x1>=xl&&w.x0<=xr&&w.cy>=yl&&w.cy<=yr).length;const p=words.filter(w=>w.x1>=card.x+card.w*.135&&w.x0<=card.x+card.w*.68&&w.cy>=card.y+card.h*.06&&w.cy<=card.y+card.h*.98).length;return n>=5&&p>=3;});
- cards.length=0;cards.push(...visibleCards);
- if(!cards.length)throw new Error('لم يتم العثور على كروت Lobby قابلة للقراءة');
- for(let i=0;i<cards.length;i++){
-   const card=cards[i];let observed=groupPlayerLines(words,card).slice(0,4);let identified=identifySlot(observed);let retry=false;
+ const detectedCards=visibleCards;
+ if(!detectedCards.length)throw new Error('لم يتم العثور على كروت Lobby قابلة للقراءة');
+ for(let i=0;i<detectedCards.length;i++){
+   const card=detectedCards[i];let observed=groupPlayerLines(words,card).slice(0,4);let identified=identifySlot(observed);let retry=false;
    const good=identified?.assignment?.verified&&identified.unique&&observed.length===4;
-   if(!good){retry=true;setStatus(`الصورة ${index+1}/${X.files.length} — تحقق دقيق للكارت ${i+1}/${cards.length}…`,45+index*(45/Math.max(1,X.files.length)));const retryRows=await targetedCardRead(img,card);if(retryRows.length===4){const ri=identifySlot(retryRows);if(ri&&(!identified||ri.assignment.score>identified.assignment.score)) {observed=retryRows;identified=ri;}}}
+   if(!good){retry=true;setStatus(`الصورة ${index+1}/${X.files.length} — تحقق دقيق للكارت ${i+1}/${detectedCards.length}…`,45+index*(45/Math.max(1,X.files.length)));const retryRows=await targetedCardRead(img,card);if(retryRows.length===4){const ri=identifySlot(retryRows);if(ri&&(!identified||ri.assignment.score>identified.assignment.score)) {observed=retryRows;identified=ri;}}}
    const slot=identified?.slot||0,team=identified?.team||'',verified=!!(identified?.assignment?.verified&&identified.unique&&observed.length===4);
    const players=verified?rowsToPlayers(observed,identified.assignment):observed.map(g=>({name:g.text,raw:g.text,confidence:g.confidence,verified:false,matched:false}));
    while(players.length<4)players.push({name:'',raw:'',confidence:0,verified:false,matched:false,missing:true});
