@@ -817,16 +817,83 @@ async function candidateReads(src,type,deep=true){const modes=type==='player'?['
 function knownCandidates(text,type,slot){const out=[];const t=S.teams?.find(x=>Number(x.slot)===Number(slot));if(type==='team'){for(const x of S.teams||[]){if(x.name)out.push({value:x.name,score:sim(text,x.name)})}}else if(type==='player'&&t?.players){for(const p of t.players){const n=typeof p==='string'?p:p?.name;if(n)out.push({value:n,score:sim(text,n)})}}
  return out.sort((a,b)=>b.score-a.score).slice(0,3)}
 function smartMatch(text,type,slot){const a=knownCandidates(text,type,slot)[0];if(!a||a.score<.68)return null;return {value:a.value,score:Math.round(a.score*100)} }
-async function readSlot(img,row,col){const band=row.bands[0];const x0=col.x,cw=col.w;const crop=canvasCrop(img,x0+2,Math.max(0,band[0]-5),Math.min(cw*.19,70),Math.max(24,band[1]-band[0]+12),8);const r=await candidateReads(crop,'slot');const n=r.best?Number(r.best.text):null;return {value:Number.isFinite(n)?n:null,confidence:r.best?Math.round(r.best.items.reduce((s,x)=>s+x.confidence,0)/r.best.items.length):0,raw:r.groups.slice(0,4).map(g=>g.text).join(' | ')} }
-async function readTeam(img,row,col,slot){const b=row.bands[0],x0=col.x,cw=col.w;const crop=canvasCrop(img,x0+cw*.145,Math.max(0,b[0]-3),cw*.55,Math.max(20,b[1]-b[0]+8),8);const r=await candidateReads(crop,'team');let best=r.best;const smart=best?smartMatch(best.text,'team',slot):null;let text=best?.text||'';if(smart&&smart.score>=92)text=smart.value;return {value:text,raw:r.groups.slice(0,5).map(g=>g.text).join(' | '),confidence:best?Math.round(best.items.reduce((s,x)=>s+x.confidence,0)/best.items.length):0,groups:r.groups.slice(0,5).map(g=>({text:g.text,confidence:Math.round(g.items.reduce((s,x)=>s+x.confidence,0)/g.items.length),reads:g.items.length})),smart}}
-async function readPlayerLine(img,band,col,slot){const x0=col.x,cw=col.w;const crop=canvasCrop(img,x0+cw*.11,Math.max(0,band[0]-4),cw*.57,Math.max(17,band[1]-band[0]+8),8);const r=await candidateReads(crop,'player');let best=r.best;const smart=best?smartMatch(best.text,'player',slot):null;let text=best?.text||'';if(smart&&smart.score>=94)text=smart.value;return {name:text,confidence:best?Math.round(best.items.reduce((s,x)=>s+x.confidence,0)/best.items.length):0,reads:r.groups.slice(0,5).map(g=>({name:g.text,confidence:Math.round(g.items.reduce((s,x)=>s+x.confidence,0)/g.items.length),reads:g.items.length})),smart,band:[band[0],band[1]]}}
-async function analyzeCard(img,row,col,rowIndex,colIndex,globalFallback){const slotRead=await readSlot(img,row,col);let slot=slotRead.value;let sequenceInferred=false;if(!slot&&globalFallback){slot=globalFallback;sequenceInferred=true}
- const teamRead=await readTeam(img,row,col,slot);const players=[];for(let i=1;i<row.bands.length;i++){const p=await readPlayerLine(img,row.bands[i],col,slot);if(p.name&&p.name.length>=2&&!/^\d+$/.test(p.name))players.push(p)}
- const evidence=canvasCrop(img,col.x+2,row.top,col.w-4,row.bottom-row.top,1.5).toDataURL('image/jpeg',.9);
- const slotConf=slotRead.confidence+(sequenceInferred?-20:0);const playerAvg=players.length?players.reduce((s,p)=>s+p.confidence,0)/players.length:0;const conf=Math.round(clamp(slotConf*.25+teamRead.confidence*.45+playerAvg*.30,0,100));
- return {slot,team:teamRead.value,players,confidence:conf,slotConfidence:Math.round(slotConf),teamConfidence:teamRead.confidence,sequenceInferred,file:'',sourceImage:0,row:rowIndex+1,column:colIndex+1,evidence,rawTeam:teamRead.raw,teamCandidates:teamRead.groups,slotRaw:slotRead.raw,teamSmart:teamRead.smart,needsReview:!slot||!teamRead.value||conf<Number($('slotImportThreshold')?.value||86)||players.some(p=>p.confidence<72)} }
-function orderCards(rows){const out=[];for(const r of rows)for(let c=0;c<3;c++){const col=r.cols.find(x=>x.col===c);if(col)out.push({r:col,col,rowIndex:r.row})}return out}
-async function analyzeImage(file,index,globalSlots){const img=await loadImg(file);const rows=buildRows(img);if(!rows.length)throw Error('No PUBG card rows detected');const cards=orderCards(rows);const fallbackList=globalSlots||[];const out=[];for(let i=0;i<cards.length;i++){const {r,col,rowIndex}=cards[i];const fallback=fallbackList.length?fallbackList.shift():null;setStatus(`تحليل ${file.name} · Card ${i+1}/${cards.length} · ${Math.round((i/cards.length)*100)}%`,index*100/X.files.length+(i/Math.max(1,cards.length))*(100/X.files.length));const d=await analyzeCard(img,r,col,rowIndex,col.col,fallback);d.file=file.name;d.sourceImage=index;d.card=i+1;out.push(d)}return {out,rows,cards}}
+function safeBands(card){
+ const b=Array.isArray(card?.bands)?card.bands.filter(x=>Array.isArray(x)&&x.length>=2):[];
+ return b.map(x=>[Number(x[0]),Number(x[1])]).filter(x=>Number.isFinite(x[0])&&Number.isFinite(x[1])&&x[1]>=x[0]);
+}
+function normalizeCardContext(card,col){
+ const source=card||{};
+ const bands=safeBands(source);
+ const c=col||source;
+ if(!c||!Number.isFinite(Number(c.x))||!Number.isFinite(Number(c.w))) throw new Error('Card geometry is invalid');
+ if(!bands.length) throw new Error(`Card ${source.col!=null?Number(source.col)+1:'?'} has no readable text bands`);
+ return {bands,x:Number(c.x),w:Number(c.w),top:Number(source.top||bands[0][0]),bottom:Number(source.bottom||bands[bands.length-1][1]),col:Number(source.col??c.col??0)};
+}
+async function readSlot(img,card,col){
+ const ctx=normalizeCardContext(card,col), band=ctx.bands[0], x0=ctx.x,cw=ctx.w;
+ const crop=canvasCrop(img,x0+2,Math.max(0,band[0]-7),Math.min(cw*.20,74),Math.max(28,band[1]-band[0]+16),8);
+ const r=await candidateReads(crop,'slot');
+ const n=r.best?Number((r.best.text||'').match(/\d{1,2}/)?.[0]):null;
+ return {value:Number.isFinite(n)?n:null,confidence:r.best?Math.round(r.best.items.reduce((s,x)=>s+x.confidence,0)/r.best.items.length):0,raw:r.groups.slice(0,4).map(g=>g.text).join(' | ')};
+}
+async function readTeam(img,card,col,slot){
+ const ctx=normalizeCardContext(card,col),b=ctx.bands[0],x0=ctx.x,cw=ctx.w;
+ const crop=canvasCrop(img,x0+cw*.13,Math.max(0,b[0]-5),cw*.60,Math.max(24,b[1]-b[0]+14),8);
+ const r=await candidateReads(crop,'team');let best=r.best;const smart=best?smartMatch(best.text,'team',slot):null;
+ let text=best?.text||'';if(smart&&smart.score>=92)text=smart.value;
+ return {value:text,raw:r.groups.slice(0,5).map(g=>g.text).join(' | '),confidence:best?Math.round(best.items.reduce((s,x)=>s+x.confidence,0)/best.items.length):0,groups:r.groups.slice(0,5).map(g=>({text:g.text,confidence:Math.round(g.items.reduce((s,x)=>s+x.confidence,0)/g.items.length),reads:g.items.length})),smart};
+}
+async function readPlayerLine(img,band,col,slot){
+ if(!Array.isArray(band)||band.length<2) return {name:'',confidence:0,reads:[],smart:null,band:[0,0]};
+ const x0=col.x,cw=col.w;
+ const crop=canvasCrop(img,x0+cw*.10,Math.max(0,band[0]-5),cw*.62,Math.max(20,band[1]-band[0]+12),8);
+ const r=await candidateReads(crop,'player');let best=r.best;const smart=best?smartMatch(best.text,'player',slot):null;
+ let text=best?.text||'';if(smart&&smart.score>=94)text=smart.value;
+ return {name:text,confidence:best?Math.round(best.items.reduce((s,x)=>s+x.confidence,0)/best.items.length):0,reads:r.groups.slice(0,5).map(g=>({name:g.text,confidence:Math.round(g.items.reduce((s,x)=>s+x.confidence,0)/g.items.length),reads:g.items.length})),smart,band:[band[0],band[1]]};
+}
+async function analyzeCard(img,card,col,rowIndex,colIndex,globalFallback){
+ const ctx=normalizeCardContext(card,col);
+ const slotRead=await readSlot(img,ctx,ctx);let slot=slotRead.value;let sequenceInferred=false;
+ if(!slot&&globalFallback){slot=globalFallback;sequenceInferred=true;}
+ const teamRead=await readTeam(img,ctx,ctx,slot);const players=[];
+ for(let i=1;i<ctx.bands.length;i++){
+   const p=await readPlayerLine(img,ctx.bands[i],ctx,slot);
+   if(p.name&&p.name.length>=2&&!/^\d+$/.test(p.name))players.push(p);
+ }
+ const evidence=canvasCrop(img,ctx.x+2,ctx.top,ctx.w-4,Math.max(20,ctx.bottom-ctx.top),1.5).toDataURL('image/jpeg',.9);
+ const slotConf=slotRead.confidence+(sequenceInferred?-20:0);const playerAvg=players.length?players.reduce((s,p)=>s+p.confidence,0)/players.length:0;
+ const conf=Math.round(clamp(slotConf*.25+teamRead.confidence*.45+playerAvg*.30,0,100));
+ return {slot,team:teamRead.value,players,confidence:conf,slotConfidence:Math.round(slotConf),teamConfidence:teamRead.confidence,sequenceInferred,file:'',sourceImage:0,row:rowIndex+1,column:colIndex+1,evidence,rawTeam:teamRead.raw,teamCandidates:teamRead.groups,slotRaw:slotRead.raw,teamSmart:teamRead.smart,needsReview:!slot||!teamRead.value||conf<Number($('slotImportThreshold')?.value||86)||players.some(p=>p.confidence<72)};
+}
+function orderCards(rows){
+ const out=[];
+ for(const gridRow of (Array.isArray(rows)?rows:[])){
+   const cols=Array.isArray(gridRow?.cols)?gridRow.cols:[];
+   for(let c=0;c<3;c++){
+     const card=cols.find(x=>Number(x?.col)===c);
+     if(card&&safeBands(card).length){
+       out.push({card,geometry:card,rowIndex:Number(gridRow.row||0)});
+     }
+   }
+ }
+ return out;
+}
+async function analyzeImage(file,index,globalSlots){
+ const img=await loadImg(file);const rows=buildRows(img);if(!rows.length)throw Error('لم يتم اكتشاف أي صفوف Cards في صورة PUBG');
+ const cards=orderCards(rows);if(!cards.length)throw Error('تم اكتشاف الصورة لكن لم يتم العثور على Cards قابلة للقراءة');
+ const fallbackList=Array.isArray(globalSlots)?globalSlots.slice():[];const out=[];
+ for(let i=0;i<cards.length;i++){
+   const {card,geometry,rowIndex}=cards[i];const fallback=fallbackList.length?fallbackList.shift():null;
+   setStatus(`تحليل ${file.name} · Card ${i+1}/${cards.length} · ${Math.round((i/cards.length)*100)}%`,index*100/X.files.length+(i/Math.max(1,cards.length))*(100/X.files.length));
+   try{
+     const d=await analyzeCard(img,card,geometry,rowIndex,Number(card.col)||0,fallback);d.file=file.name;d.sourceImage=index;d.card=i+1;out.push(d);
+   }catch(cardErr){
+     console.warn('Card analysis skipped',i+1,cardErr);
+     out.push({slot:null,team:'',players:[],confidence:0,slotConfidence:0,teamConfidence:0,sequenceInferred:false,file:file.name,sourceImage:index,row:rowIndex+1,column:Number(card.col||0)+1,evidence:'',rawTeam:'',teamCandidates:[],slotRaw:'',needsReview:true,missingCard:true,error:String(cardErr?.message||cardErr)});
+   }
+ }
+ return {out,rows,cards};
+}
 function merge(all){const map=new Map();for(const d of all){if(!d.slot)continue;if(!map.has(d.slot))map.set(d.slot,[]);map.get(d.slot).push(d)}return [...map.entries()].map(([slot,arr])=>{const groups=[];for(const d of arr){let g=groups.find(x=>sim(x.team,d.team)>=.78);if(!g)groups.push(g={team:d.team,items:[]});g.items.push(d)}groups.sort((a,b)=>b.items.length*35+b.items.reduce((s,x)=>s+x.confidence,0)-a.items.length*35-a.items.reduce((s,x)=>s+x.confidence,0));const best=groups[0];const consensus=best?best.items.length/arr.length*100:0;const sources=best?.items||[];const players=[];const maxPlayers=Math.max(0,...sources.map(x=>(x.players||[]).length));for(let pi=0;pi<maxPlayers;pi++){const ps=sources.map(x=>x.players?.[pi]).filter(Boolean);const pg=[];for(const p of ps){let g=pg.find(x=>sim(x.name,p.name)>=.84);if(!g)pg.push(g={name:p.name,items:[]});g.items.push(p)}pg.sort((a,b)=>b.items.length*30+b.items.reduce((s,x)=>s+x.confidence,0)-a.items.length*30-a.items.reduce((s,x)=>s+x.confidence,0));if(pg[0]){const z=pg[0];players.push({name:z.name,confidence:Math.round(z.items.reduce((s,x)=>s+x.confidence,0)/z.items.length),reads:z.items.length,alternatives:z.items.slice(1).map(x=>x.name)})}}
  const conf=Math.round(clamp((sources.reduce((s,x)=>s+x.confidence,0)/Math.max(1,sources.length))*.65+consensus*.35,0,100));const conflict=groups.length>1;const playerReview=players.some(p=>p.confidence<72);return {slot:Number(slot),team:best?.team||'',confidence:conf,consensus:Math.round(consensus),conflict,alternatives:groups.slice(1).map(g=>({team:g.team,confidence:Math.round(g.items.reduce((s,x)=>s+x.confidence,0)/g.items.length)})),players:players.slice(0,4),sources,needsReview:conflict||conf<Number($('slotImportThreshold')?.value||86)||playerReview,missing:false,manual:false}})}
 function assignSequentialFallback(all,min,max){const missing=[];const used=new Set(all.map(x=>x.slot).filter(Boolean));for(let s=min;s<=max;s++)if(!used.has(s))missing.push(s);const noSlot=all.filter(x=>!x.slot);if(!noSlot.length)return;const canUse=noSlot.length<=missing.length; if(canUse)noSlot.forEach((x,i)=>{x.slot=missing[i];x.sequenceInferred=true;x.needsReview=true;x.confidence=Math.min(x.confidence||60,72)});}
