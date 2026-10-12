@@ -806,10 +806,11 @@ async function recognize(c,psm=7,extra={}){
    return {text:'',words:[],error:String(e?.message||e)};
  }
 }
-function avgConf(data){const ws=(data.words||[]).filter(w=>clean(w.text));return ws.length?ws.reduce((s,w)=>s+Number(w.confidence||0),0)/ws.length:0}
+function avgConf(data){const ws=(data.words||[]).filter(w=>clean(w.text));const ss=(data.symbols||[]).filter(w=>clean(w.text));const wc=ws.length?ws.reduce((s,w)=>s+Number(w.confidence||0),0)/ws.length:0;const sc=ss.length?ss.reduce((s,w)=>s+Number(w.confidence||0),0)/ss.length:0;return Math.round(ss.length?wc*.45+sc*.55:wc)}
 function normalizeCandidate(s,type){
- s=clean(s).replace(/[|¦]+/g,'').trim();
+ s=String(s||'').replace(/[\r\n]+/g,' ').replace(/[|¦]+/g,' ').replace(/\s+/g,' ').trim();
  if(type==='slot'){const m=s.match(/(?:^|\D)(\d{1,2})(?=\D|$)/);return m?m[1]:'';}
+ if(type==='player'){s=s.replace(/^[\s:;,]+|[\s:;,]+$/g,'').trim();return s;}
  s=s.replace(/^[^A-Za-z0-9_\-\u0600-\u06FF]+/,'').replace(/[^A-Za-z0-9_\-\u0600-\u06FF\s×x乂丨ツ々丶〆\.]+$/g,'').trim();
  if(type==='team')s=s.replace(/(?:\/\s*0|0\s*(?:eliminations?|eliminatons?).*)$/i,'').trim();return s;
 }
@@ -819,7 +820,7 @@ function isolateColoredSlot(src){
 }
 async function candidateReads(src,type,deep=true){
  const modes=type==='player'?['original','contrast','soft','threshold','sharpen']:type==='slot'?['original','contrast','threshold','sharpen']:['original','contrast','soft','threshold'];
- const psms=type==='slot'?[10,7,8,13]:[7,8];const out=[];
+ const psms=type==='slot'?[10,7,8,13]:[7,8,13];const out=[];
  for(const mode of modes){let p=preprocess(src,mode==='sharpen'?'original':mode);if(mode==='sharpen')p=sharpen(p);for(const psm of psms){const d=await recognize(p,psm,type==='slot'?{tessedit_char_whitelist:'0123456789'}:{});const t=normalizeCandidate(d.text||'',type);if(t.length>=(type==='slot'?1:2))out.push({text:t,confidence:avgConf(d),mode,psm});}}
  const groups=[];for(const r of out){let g=groups.find(x=>sim(x.text,r.text)>=.82);if(!g)groups.push(g={text:r.text,items:[]});g.items.push(r)}
  groups.sort((a,b)=>{const aa=a.items.reduce((s,x)=>s+x.confidence,0)/a.items.length+Math.min(24,(a.items.length-1)*9),bb=b.items.reduce((s,x)=>s+x.confidence,0)/b.items.length+Math.min(24,(b.items.length-1)*9);return bb-aa});return {best:groups[0]||null,groups};
@@ -833,28 +834,110 @@ function safeBands(card){
  const b=Array.isArray(card?.bands)?card.bands.filter(x=>Array.isArray(x)&&x.length>=2):[];
  return b.map(x=>[Number(x[0]),Number(x[1])]).filter(x=>Number.isFinite(x[0])&&Number.isFinite(x[1])&&x[1]>=x[0]);
 }
+function detectTextBands(img,card){
+ const x=Math.max(0,Math.round(card.x+card.w*.13)),y=Math.max(0,Math.round(card.y+card.h*.06));
+ const w=Math.max(20,Math.round(card.w*.64)),h=Math.max(20,Math.round(card.h*.90));
+ const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,x,y,w,h,0,0,w,h);
+ const d=g.getImageData(0,0,w,h).data,proj=new Float32Array(h);
+ for(let yy=0;yy<h;yy++){
+   let hits=0;
+   for(let xx=0;xx<w;xx++){
+     const i=(yy*w+xx)*4,r=d[i],gg=d[i+1],b=d[i+2],lum=.299*r+.587*gg+.114*b,sat=Math.max(r,gg,b)-Math.min(r,gg,b);
+     if(lum>92 && sat<125) hits++;
+   }
+   proj[yy]=hits/w;
+ }
+ const active=new Array(h).fill(false);for(let i=0;i<h;i++)active[i]=proj[i]>.006;
+ // close tiny vertical gaps so anti-aliased characters stay in one text band
+ for(let i=1;i<h-1;i++)if(!active[i]&&active[i-1]&&active[i+1])active[i]=true;
+ const groups=[];let st=-1;
+ for(let i=0;i<=h;i++){
+   const on=i<h&&active[i];
+   if(on&&st<0)st=i;
+   if(!on&&st>=0){
+     const en=i-1;if(en-st+1>=4){
+       let a=st,bn=en;
+       // Trim low-density edges.
+       while(a<bn&&proj[a]<.01)a++;
+       while(bn>a&&proj[bn]<.01)bn--;
+       if(bn-a+1>=3)groups.push([y+a,y+bn]);
+     }
+     st=-1;
+   }
+ }
+ // PUBG lobby cards have one header line followed by 1–4 player lines.
+ // If detection is noisy, keep the strongest/most regularly spaced groups.
+ if(groups.length>5){
+   groups.sort((a,b)=>a[0]-b[0]);
+   const keep=[groups[0]],rest=groups.slice(1).sort((a,b)=>((b[1]-b[0])-(a[1]-a[0])));
+   keep.push(...rest.slice(0,4));groups.length=0;keep.sort((a,b)=>a[0]-b[0]).forEach(x=>groups.push(x));
+ }
+ return groups;
+}
+function detectColoredAnchors(img){
+ const w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;
+ const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0,w,h);
+ const d=g.getImageData(0,0,w,h).data,xp=new Int32Array(w),yp=new Int32Array(h);
+ for(let y=Math.floor(h*.09);y<Math.floor(h*.94);y++)for(let x=0;x<w;x++){
+   const i=(y*w+x)*4,r=d[i],gg=d[i+1],b=d[i+2],mx=Math.max(r,gg,b),mn=Math.min(r,gg,b),sat=mx-mn;
+   if(sat>18&&mx>55){xp[x]++;yp[y]++;}
+ }
+ function groups(arr,minCount,minLen){const out=[];let st=-1;for(let i=0;i<=arr.length;i++){const on=i<arr.length&&arr[i]>=minCount;if(on&&st<0)st=i;if(!on&&st>=0){const en=i-1;if(en-st+1>=minLen)out.push({a:st,b:en,peak:Math.max(...Array.from(arr.slice(st,en+1)))});st=-1}}return out}
+ const xg=groups(xp,3,2).filter(g=>g.peak>10),yg=groups(yp,3,2).filter(g=>g.peak>10);
+ // Adjacent digit components belong to the same slot label. Merge groups that are close.
+ function mergeClose(gs,gap){const out=[];for(const g of gs){const last=out[out.length-1];if(last&&g.a-last.b<=gap){last.b=g.b;last.peak=Math.max(last.peak,g.peak)}else out.push({...g})}return out}
+ return {x:mergeClose(xg,20),y:mergeClose(yg,8)};
+}
+function inferGrid(img){
+ const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,anc=detectColoredAnchors(img);
+ let colGroups=anc.x.filter(g=>g.a>W*.005&&g.a<W*.98);let cols=colGroups.map(g=>Math.round((g.a+g.b)/2));
+ // The colored slot labels occur once per visible card column. Collapse accidental extras by spacing.
+ cols=cols.sort((a,b)=>a-b).reduce((o,x)=>{if(!o.length||x-o[o.length-1]>W*.12)o.push(x);return o},[]);
+ if(cols.length>3)cols=cols.slice(0,3);
+ if(cols.length<2){const gap=W/3;cols=[Math.round(W*.025),Math.round(gap+W*.025),Math.round(gap*2+W*.025)];}
+ let colStarts=colGroups.map(g=>Math.max(0,Math.round(g.a-W*.014)));if(colStarts.length<2)colStarts=cols.map(x=>Math.max(0,Math.round(x-W*.014)));let gaps=[];for(let i=1;i<colStarts.length;i++)gaps.push(colStarts[i]-colStarts[i-1]);const pitchX=gaps.length?gaps.reduce((a,b)=>a+b,0)/gaps.length:W/3;const cardW=Math.max(120,Math.round(Math.min(W*.31,pitchX-14)));
+ while(colStarts.length<3)colStarts.push(Math.round(colStarts[colStarts.length-1]+pitchX));
+ colStarts=colStarts.slice(0,3);
+ let rowGroups=anc.y.filter(g=>g.a>H*.10&&g.a<H*.96);let rows=rowGroups.map(g=>Math.round((g.a+g.b)/2)).sort((a,b)=>a-b).reduce((o,y)=>{if(!o.length||y-o[o.length-1]>H*.10)o.push(y);return o},[]);
+ if(rows.length<2){const pitch=H*.317;rows=[Math.round(H*.11),Math.round(H*.11+pitch),Math.round(H*.11+pitch*2)];}
+ if(rows.length>3)rows=rows.slice(0,3);
+ let rowStarts=rowGroups.length>=2?rowGroups.slice(0,3).map(g=>Math.max(0,Math.round(g.a-H*.024))):rows.map(y=>Math.max(0,Math.round(y-H*.024)));let rowGaps=[];for(let i=1;i<rowStarts.length;i++)rowGaps.push(rowStarts[i]-rowStarts[i-1]);const pitchY=rowGaps.length?rowGaps.reduce((a,b)=>a+b,0)/rowGaps.length:H*.317;const cardH=Math.max(85,Math.round(Math.min(H*.30,pitchY-13)));
+ while(rowStarts.length<3)rowStarts.push(Math.round(rowStarts[rowStarts.length-1]+pitchY));rowStarts=rowStarts.slice(0,3);
+ const out=[];for(let r=0;r<3;r++){const row={row:r,cols:[]};for(let c=0;c<3;c++){const card={x:colStarts[c],y:rowStarts[r],w:cardW,h:Math.min(cardH,H-rowStarts[r]),col:c,row:r};card.top=card.y;card.bottom=card.y+card.h;card.bands=detectTextBands(img,card);if(card.bands.length>=2)row.cols.push(card)}if(row.cols.length)out.push(row)}
+ return {rows:out,anchors:anc,geometry:{W,H,colStarts,rowStarts,cardW,cardH,pitchX,pitchY}};
+}
+function buildRows(img){
+ const grid=inferGrid(img);return grid.rows;
+}
 function normalizeCardContext(card,col){
- const source=card||{};
- const bands=safeBands(source);
- const c=col||source;
- if(!c||!Number.isFinite(Number(c.x))||!Number.isFinite(Number(c.w))) throw new Error('Card geometry is invalid');
- if(!bands.length) throw new Error(`Card ${source.col!=null?Number(source.col)+1:'?'} has no readable text bands`);
- return {bands,x:Number(c.x),w:Number(c.w),top:Number(source.top||bands[0][0]),bottom:Number(source.bottom||bands[bands.length-1][1]),col:Number(source.col??c.col??0)};
+ const source=card||{},c=col||source,bands=safeBands(source);
+ if(!c||!Number.isFinite(Number(c.x))||!Number.isFinite(Number(c.w)))throw new Error('Card geometry is invalid');
+ if(!bands.length)throw new Error(`Card ${source.col!=null?Number(source.col)+1:'?'} has no readable text bands`);
+ return {bands,x:Number(c.x),y:Number(c.y??source.y??0),w:Number(c.w),h:Number(c.h??source.h??0),top:Number(source.top??c.y??bands[0][0]),bottom:Number(source.bottom??((c.y??0)+(c.h??0))),col:Number(source.col??c.col??0)};
+}
+function extractColoredSlotCrop(img,ctx){
+ // The slot is visually distinct and always sits immediately left of the team name.
+ // Use a fixed geometry first; color isolation is only an enhancement, never the source of truth.
+ const x=ctx.x,y=ctx.y,w=Math.max(28,Math.min(ctx.w*.16,58)),h=Math.max(30,Math.min(ctx.h*.32,48));
+ const base=canvasCrop(img,x,y,w,h,14),g=base.getContext('2d',{willReadFrequently:true}),d=g.getImageData(0,0,base.width,base.height).data;
+ let minX=base.width,minY=base.height,maxX=-1,maxY=-1,count=0;
+ for(let yy=0;yy<base.height;yy++)for(let xx=0;xx<base.width;xx++){const i=(yy*base.width+xx)*4,r=d[i],gg=d[i+1],b=d[i+2],mx=Math.max(r,gg,b),mn=Math.min(r,gg,b);if(mx-mn>16&&mx>50){minX=Math.min(minX,xx);minY=Math.min(minY,yy);maxX=Math.max(maxX,xx);maxY=Math.max(maxY,yy);count++}}
+ if(count<8)return base;
+ const pad=18;return canvasCrop(base,Math.max(0,minX-pad),Math.max(0,minY-pad),Math.min(base.width-minX+pad*2,maxX-minX+pad*2),Math.min(base.height-minY+pad*2,maxY-minY+pad*2),12);
 }
 async function readSlot(img,card,col,expectedSlot=null){
- const ctx=normalizeCardContext(card,col),b=ctx.bands[0];const y=Math.max(0,b[0]-9),h=Math.max(30,b[1]-b[0]+20);const raw=canvasCrop(img,ctx.x+3,y,Math.min(ctx.w*.20,58),h,10),colored=isolateColoredSlot(raw),reads=[];
- for(const src of [colored,raw]){const r=await candidateReads(src,'slot');for(const g of r.groups)for(const it of g.items){const n=Number(g.text);if(n>=1&&n<=18)reads.push({n,confidence:it.confidence,mode:it.mode,psm:it.psm,raw:g.text});}}
- const by=new Map();for(const r of reads){const a=by.get(r.n)||{n:r.n,items:[]};a.items.push(r);by.set(r.n,a)}const ranked=[...by.values()].map(g=>{const avg=g.items.reduce((s,x)=>s+x.confidence,0)/g.items.length,support=g.items.length,bonus=expectedSlot&&g.n===Number(expectedSlot)?10:0;return {...g,avg,support,score:avg+Math.min(20,(support-1)*5)+bonus}}).sort((a,b)=>b.score-a.score);const best=ranked[0];return {value:best?.n||null,confidence:best?Math.round(clamp(best.avg+Math.min(18,(best.support-1)*5),0,100)):0,raw:ranked.slice(0,5).map(x=>`${x.n} (${Math.round(x.avg)}%, ${x.support}x)`).join(' | '),alternatives:ranked.slice(1,4).map(x=>x.n),visual:true};
+ const ctx=normalizeCardContext(card,col),visual=extractColoredSlotCrop(img,ctx),fixed=canvasCrop(img,ctx.x,ctx.y,Math.max(32,Math.min(ctx.w*.18,64)),Math.max(30,Math.min(ctx.h*.34,50)),14),sources=[visual,fixed].filter(Boolean),reads=[];
+ for(const src of sources){for(const mode of ['original','contrast','gray','threshold','sharpen']){let p=preprocess(src,mode==='sharpen'?'original':mode);if(mode==='sharpen')p=sharpen(p);for(const psm of [10,7,8,13]){const d=await recognize(p,psm,{tessedit_char_whitelist:'0123456789'}),text=normalizeCandidate(d.text||'','slot'),nums=(text.match(/\d{1,2}/g)||[]).map(Number).filter(n=>n>=1&&n<=99);for(const n of nums)reads.push({n,confidence:avgConf(d),mode,psm,visual:src===visual,raw:String(d.text||'')})}}}
+ const by=new Map();for(const r of reads){const a=by.get(r.n)||{n:r.n,items:[]};a.items.push(r);by.set(r.n,a)}
+ const ranked=[...by.values()].map(g=>{const avg=g.items.reduce((s,x)=>s+x.confidence,0)/g.items.length,visualSupport=g.items.filter(x=>x.visual).length,diversity=new Set(g.items.map(x=>x.mode+'-'+x.psm)).size,expectedBonus=expectedSlot&&g.n===Number(expectedSlot)?18:0;return {...g,avg,support:g.items.length,score:avg+Math.min(22,(g.items.length-1)*3)+Math.min(12,visualSupport*2)+Math.min(10,diversity)+expectedBonus}}).sort((a,b)=>b.score-a.score);
+ const best=ranked[0],second=ranked[1],ambiguous=!!(best&&second&&best.n!==second.n&&(best.score-second.score)<12);
+ return {value:best?.n??null,confidence:best?Math.round(Math.min(100,best.score)):0,raw:ranked.slice(0,6).map(x=>`${String(x.n).padStart(2,'0')} · ${Math.round(x.avg)}% · ${x.support}x`).join(' | '),candidates:ranked.slice(0,6).map(x=>({value:x.n,confidence:Math.round(Math.min(100,x.score)),reads:x.support,visualReads:x.items.filter(i=>i.visual).length})),ambiguous,visualDetected:true};
 }
 async function readTeam(img,card,col,slot){
- const ctx=normalizeCardContext(card,col),b=ctx.bands[0],x0=ctx.x,cw=ctx.w;
- const crop=canvasCrop(img,x0+cw*.13,Math.max(0,b[0]-5),cw*.60,Math.max(24,b[1]-b[0]+14),8);
- const r=await candidateReads(crop,'team');let best=r.best;const smart=best?smartMatch(best.text,'team',slot):null;
- let text=best?.text||'';if(smart&&smart.score>=92)text=smart.value;
- return {value:text,raw:r.groups.slice(0,5).map(g=>g.text).join(' | '),confidence:best?Math.round(best.items.reduce((s,x)=>s+x.confidence,0)/best.items.length):0,groups:r.groups.slice(0,5).map(g=>({text:g.text,confidence:Math.round(g.items.reduce((s,x)=>s+x.confidence,0)/g.items.length),reads:g.items.length})),smart};
+ const ctx=normalizeCardContext(card,col),b=ctx.bands[0],crop=canvasCrop(img,ctx.x+ctx.w*.13,Math.max(0,b[0]-5),ctx.w*.56,Math.max(24,b[1]-b[0]+16),10),r=await candidateReads(crop,'team');let best=r.best,smart=best?smartMatch(best.text,'team',slot):null,text=best?.text||'';if(smart&&smart.score>=92)text=smart.value;return {value:text,raw:r.groups.slice(0,6).map(g=>g.text).join(' | '),confidence:best?Math.round(best.items.reduce((s,x)=>s+x.confidence,0)/best.items.length):0,groups:r.groups.slice(0,6).map(g=>({text:g.text,confidence:Math.round(g.items.reduce((s,x)=>s+x.confidence,0)/g.items.length),reads:g.items.length})),smart};
 }
 async function readPlayerLine(img,band,col,slot){
- if(!Array.isArray(band)||band.length<2)return {name:'',confidence:0,reads:[],smart:null,band:[0,0]};const x0=col.x,cw=col.w;const crop=canvasCrop(img,x0+cw*.165,Math.max(0,band[0]-5),cw*.64,Math.max(22,band[1]-band[0]+14),10);const r=await candidateReads(crop,'player');let best=r.best;const smart=best?smartMatch(best.text,'player',slot):null;let text=best?.text||'',corrected=false;if(smart&&((smart.corrected&&smart.score>=80)||(smart.score>=94))){text=smart.value;corrected=!!smart.corrected;}return {name:text,confidence:best?Math.round(best.items.reduce((s,x)=>s+x.confidence,0)/best.items.length):0,reads:r.groups.slice(0,6).map(g=>({name:g.text,confidence:Math.round(g.items.reduce((s,x)=>s+x.confidence,0)/g.items.length),reads:g.items.length})),smart,corrected,band:[band[0],band[1]]};
+ if(!Array.isArray(band)||band.length<2)return {name:'',confidence:0,reads:[],smart:null,band:[0,0]};const x0=col.x,cw=col.w,crop=canvasCrop(img,x0+cw*.13,Math.max(0,band[0]-5),cw*.56,Math.max(22,band[1]-band[0]+16),11),r=await candidateReads(crop,'player');let best=r.best,smart=best?smartMatch(best.text,'player',slot):null,text=best?.text||'',corrected=false;if(smart&&((smart.corrected&&smart.score>=80)||(smart.score>=94))){text=smart.value;corrected=!!smart.corrected}return {name:text,confidence:best?Math.round(best.items.reduce((s,x)=>s+x.confidence,0)/best.items.length):0,reads:r.groups.slice(0,8).map(g=>({name:g.text,confidence:Math.round(g.items.reduce((s,x)=>s+x.confidence,0)/g.items.length),reads:g.items.length})),smart,corrected,band:[band[0],band[1]]};
 }
 async function analyzeCard(img,card,col,rowIndex,colIndex,globalFallback,expectedSlot=null){
  const ctx=normalizeCardContext(card,col);
@@ -868,7 +951,7 @@ async function analyzeCard(img,card,col,rowIndex,colIndex,globalFallback,expecte
  const evidence=canvasCrop(img,ctx.x+2,ctx.top,ctx.w-4,Math.max(20,ctx.bottom-ctx.top),1.5).toDataURL('image/jpeg',.9);
  const slotConf=slotRead.confidence+(sequenceInferred?-20:0);const playerAvg=players.length?players.reduce((s,p)=>s+p.confidence,0)/players.length:0;
  const conf=Math.round(clamp(slotConf*.25+teamRead.confidence*.45+playerAvg*.30,0,100));
- return {slot,team:teamRead.value,players,confidence:conf,slotConfidence:Math.round(slotConf),teamConfidence:teamRead.confidence,sequenceInferred,file:'',sourceImage:0,row:rowIndex+1,column:colIndex+1,evidence,rawTeam:teamRead.raw,teamCandidates:teamRead.groups,slotRaw:slotRead.raw,teamSmart:teamRead.smart,needsReview:!slot||!teamRead.value||conf<Number($('slotImportThreshold')?.value||86)||players.some(p=>p.confidence<72)};
+ return {slot,team:teamRead.value,players,confidence:conf,slotConfidence:Math.round(slotConf),teamConfidence:teamRead.confidence,sequenceInferred,file:'',sourceImage:0,row:rowIndex+1,column:colIndex+1,evidence,rawTeam:teamRead.raw,teamCandidates:teamRead.groups,slotRaw:slotRead.raw,slotCandidates:slotRead.candidates||[],slotAmbiguous:!!slotRead.ambiguous,slotVisualDetected:!!slotRead.visualDetected,teamSmart:teamRead.smart,needsReview:!slot||!!slotRead.ambiguous||!teamRead.value||conf<Number($('slotImportThreshold')?.value||86)||players.some(p=>p.confidence<78)};
 }
 function orderCards(rows){
  const out=[];
@@ -932,16 +1015,17 @@ window.runTeamSlotImportV2=async()=>{
    toast('فشل تشغيل محرك التحليل — لم يتم تعديل بيانات البطولة');
  }finally{X.scanning=false}
 };
-window.clearTeamSlotImportV2=async()=>{X.files=[];X.results=[];renderFiles();renderReview();setStatus('جاهز — PUBG Precision Image Engine V4',0)};
+window.clearTeamSlotImportV2=async()=>{X.files=[];X.results=[];renderFiles();renderReview();setStatus('جاهز — PUBG Vision Engine V7',0)};
 window.slotImportFilterV2=f=>{X.filter=f;renderReview()};
 window.slotImportAddManualRow=()=>{X.results.push({slot:0,team:'',players:[],confidence:100,consensus:100,conflict:false,alternatives:[],sources:[],needsReview:true,manual:true});renderReview()};
-window.slotImportSetSlot=(i,v)=>{X.results[i].slot=Number(v)||0;X.results[i].manual=true;X.results[i].needsReview=true;renderReview()};
-window.slotImportSetTeam=(i,v)=>{X.results[i].team=clean(v);X.results[i].manual=true;X.results[i].confidence=100;X.results[i].consensus=100;X.results[i].conflict=false;X.results[i].needsReview=false;renderReview()};
+function refreshResultReview(r){if(!r)return;r.team=clean(r.team);const threshold=Number($('slotImportThreshold')?.value||86);const playerReview=!Array.isArray(r.players)||!r.players.length||r.players.some(p=>!clean(p?.name)||Number(p?.confidence||0)<78);r.needsReview=!!(r.missing||!r.slot||!r.team||r.conflict||r.slotAmbiguous||Number(r.confidence||0)<threshold||playerReview)}
+window.slotImportSetSlot=(i,v)=>{if(!X.results[i])return;X.results[i].slot=Number(v)||0;X.results[i].manual=true;X.results[i].missing=!X.results[i].slot;refreshResultReview(X.results[i]);renderReview()};
+window.slotImportSetTeam=(i,v)=>{if(!X.results[i])return;X.results[i].team=clean(v);X.results[i].manual=true;X.results[i].teamConfidence=100;X.results[i].confidence=Math.max(Number(X.results[i].confidence||0),86);X.results[i].consensus=100;X.results[i].conflict=false;refreshResultReview(X.results[i]);renderReview()};
 window.slotImportUseCandidate=(i,v)=>slotImportSetTeam(i,v);
-window.slotImportSetPlayer=(i,j,v)=>{if(!X.results[i])return;if(!X.results[i].players)X.results[i].players=[];X.results[i].players[j]={name:clean(v),confidence:100,reads:1,manual:true};X.results[i].manual=true;X.results[i].needsReview=false;renderReview()};
+window.slotImportSetPlayer=(i,j,v)=>{if(!X.results[i])return;if(!X.results[i].players)X.results[i].players=[];X.results[i].players[j]={name:clean(v),confidence:100,reads:1,manual:true};X.results[i].manual=true;refreshResultReview(X.results[i]);renderReview()};
 function renderReview(){const el=$('slotImportReviewV2');if(!el)return;const list=X.results.filter(r=>X.filter==='all'||(X.filter==='review'&&(r.needsReview||r.missing))||(X.filter==='conflict'&&r.conflict)||(X.filter==='ready'&&!r.needsReview&&!r.missing));const ready=X.results.filter(r=>!r.needsReview&&!r.missing).length,review=X.results.filter(r=>r.needsReview||r.missing).length,conf=X.results.filter(r=>r.conflict).length,found=X.results.filter(r=>!r.missing).length;const sum=$('slotImportSummaryV2');if(sum)sum.innerHTML=`<div class="slotStatV2"><small>Slots found</small><b>${found}</b></div><div class="slotStatV2"><small>Ready</small><b>${ready}</b></div><div class="slotStatV2"><small>Review</small><b>${review}</b></div><div class="slotStatV2"><small>Conflicts</small><b>${conf}</b></div><div class="slotStatV2"><small>Engine</small><b>V7 Precision</b></div>`;if(!X.results.length){el.innerHTML='<div class="empty">لم يتم تحليل أي صورة بعد.</div>';return}
- el.innerHTML=list.map(r=>{const i=X.results.indexOf(r),state=r.conflict?'conflict':(r.needsReview||r.missing?'review':'ready'),src=r.sources?.[0];return `<div class="slotRowV2 ${state}"><div class="slotRowHeadV2"><div class="slotBadgeV2">${r.slot||'—'}</div><div class="slotTeamEditV2"><input value="${escv(r.team)}" placeholder="Exact team name" onchange="slotImportSetTeam(${i},this.value)"><div class="slotMetaV2">${r.missing?'Slot غير مقروء — يحتاج إدخال':`${r.confidence}% confidence · ${r.consensus}% agreement · ${r.players?.length||0} player lines`}</div></div><span class="slotStateV2 ${state}">${state==='ready'?'✓ READY':state==='conflict'?'⚠ CONFLICT':'REVIEW'}</span></div>${r.alternatives?.length?`<div class="slotConflictV2"><b>Alternative team reads:</b> ${r.alternatives.map(a=>`<button class="slotCandV2" onclick="slotImportUseCandidate(${i},'${String(a.team).replace(/'/g,"\\'")}')">${escv(a.team)} · ${a.confidence}%</button>`).join(' ')}</div>`:''}<div class="slotEvidenceV2">${src?.evidence?`<img src="${src.evidence}" alt="PUBG source card">`:'<div class="empty">No evidence</div>'}<div class="evidenceText"><b>PUBG Precision Evidence</b><br>${escv(src?.rawTeam||'No OCR header')}<br><span>${escv(src?.file||'—')} · Card ${src?.card||'—'} · Column ${src?.column||'—'}${r.sources?.some(s=>s.sequenceInferred)?' · sequence fallback':''}</span><div class="slotCandidatesV2">${(r.players||[]).map((p,j)=>`<span class="slotCandV2" style="display:block;margin:4px 0">P${j+1}: <input value="${escv(p.name)}" style="width:65%;padding:4px" onchange="slotImportSetPlayer(${i},${j},this.value)"> · ${p.confidence}%</span>`).join('')}</div></div></div><div class="slotManualV2"><input type="number" min="1" max="99" value="${r.slot||''}" onchange="slotImportSetSlot(${i},this.value)"><input value="${escv(r.team)}" placeholder="Exact team name" onchange="slotImportSetTeam(${i},this.value)"><button class="small ${state==='ready'?'ghost':'primary'}" onclick="slotImportSetTeam(${i},this.previousElementSibling.value)">${state==='ready'?'Re-verify':'Accept'}</button></div></div>`}).join('')+`<div class="slotCommitBarV2"><div><b>${review?'الحفظ محجوب حتى مراجعة البيانات':'كل البيانات جاهزة للاعتماد'}</b><div class="hint">Precision V4 يحتفظ بالقراءة الأصلية والـEvidence ولا يغير الاسم تلقائياً إلا عند تطابق قوي جدًا مع Roster موجود.</div></div><button class="primary" ${review?'disabled':''} onclick="commitTeamSlotImportV2()">✓ Confirm & Save ${ready} Slots</button></div>`}
-window.commitTeamSlotImportV2=()=>{const min=Number($('slotImportMin')?.value||3),max=Number($('slotImportMax')?.value||18),rows=X.results.filter(r=>r.slot>=min&&r.slot<=max),bad=rows.filter(r=>!r.team||r.needsReview||r.conflict||!r.players?.length);if(bad.length)return toast(`Save blocked — ${bad.length} slot(s) still need review`);const seen=new Set();for(const r of rows){if(seen.has(r.slot))return toast(`Duplicate Slot ${r.slot}`);seen.add(r.slot);const t=S.teams.find(t=>Number(t.slot)===Number(r.slot));if(!t)return toast(`Slot ${r.slot} does not exist`)}let changed=0;for(const r of rows){const t=S.teams.find(t=>Number(t.slot)===Number(r.slot));if(t&&r.team&&t.name!==r.team){t.name=r.team;changed++}if(t){t.players=(r.players||[]).map(p=>({name:p.name,confidence:p.confidence,source:p.manual?'manual_correction':'screenshot_auto_detect_v7'}));t.slotImportAudit={engine:'PUBG_LAYOUT_V7_PRECISION',source:'PUBG lobby screenshot',verifiedAt:new Date().toISOString(),confidence:r.confidence,consensus:r.consensus,manual:!!r.manual,evidence:(r.sources||[]).map(s=>({file:s.file,card:s.card,column:s.column,raw:s.rawTeam,slotRaw:s.slotRaw,confidence:s.confidence,sequenceInferred:!!s.sequenceInferred}))}}}save();render();toast(`${changed} team slot(s) saved — Precision V4`)};
+ el.innerHTML=list.map(r=>{const i=X.results.indexOf(r),state=r.conflict?'conflict':(r.needsReview||r.missing?'review':'ready'),src=r.sources?.[0];return `<div class="slotRowV2 ${state}"><div class="slotRowHeadV2"><div class="slotBadgeV2">${r.slot||'—'}</div><div class="slotTeamEditV2"><input value="${escv(r.team)}" placeholder="Exact team name" onchange="slotImportSetTeam(${i},this.value)"><div class="slotMetaV2">${r.missing?'Slot غير مقروء — يحتاج إدخال':`${r.confidence}% confidence · ${r.consensus}% agreement · ${r.players?.length||0} player lines`}</div></div><span class="slotStateV2 ${state}">${state==='ready'?'✓ READY':state==='conflict'?'⚠ CONFLICT':'REVIEW'}</span></div>${r.alternatives?.length?`<div class="slotConflictV2"><b>Alternative team reads:</b> ${r.alternatives.map(a=>`<button class="slotCandV2" onclick="slotImportUseCandidate(${i},'${String(a.team).replace(/'/g,"\\'")}')">${escv(a.team)} · ${a.confidence}%</button>`).join(' ')}</div>`:''}<div class="slotEvidenceV2">${src?.evidence?`<img src="${src.evidence}" alt="PUBG source card">`:'<div class="empty">No evidence</div>'}<div class="evidenceText"><b>PUBG Precision Evidence</b><br>${escv(src?.rawTeam||'No OCR header')}<br><span>${escv(src?.file||'—')} · Card ${src?.card||'—'} · Column ${src?.column||'—'}${r.sources?.some(s=>s.sequenceInferred)?' · sequence fallback':''}</span><div class="slotCandidatesV2">${(r.players||[]).map((p,j)=>`<span class="slotCandV2" style="display:block;margin:4px 0">P${j+1}: <input value="${escv(p.name)}" style="width:65%;padding:4px" onchange="slotImportSetPlayer(${i},${j},this.value)"> · ${p.confidence}%</span>`).join('')}</div></div></div><div class="slotManualV2"><input type="number" min="1" max="99" value="${r.slot||''}" onchange="slotImportSetSlot(${i},this.value)"><input value="${escv(r.team)}" placeholder="Exact team name" onchange="slotImportSetTeam(${i},this.value)"><button class="small ${state==='ready'?'ghost':'primary'}" onclick="slotImportSetTeam(${i},this.previousElementSibling.value)">${state==='ready'?'Re-verify':'Accept'}</button></div></div>`}).join('')+`<div class="slotCommitBarV2"><div><b>${review?'الحفظ محجوب حتى مراجعة البيانات':'كل البيانات جاهزة للاعتماد'}</b><div class="hint">V7 يحتفظ بالقراءة الأصلية والـEvidence ولا يغير الاسم تلقائياً إلا عند تطابق قوي جدًا مع Roster موجود.</div></div><button class="primary" ${review?'disabled':''} onclick="commitTeamSlotImportV2()">✓ Confirm & Save ${ready} Slots</button></div>`}
+window.commitTeamSlotImportV2=()=>{const min=Number($('slotImportMin')?.value||3),max=Number($('slotImportMax')?.value||18),rows=X.results.filter(r=>r.slot>=min&&r.slot<=max);rows.forEach(refreshResultReview);const bad=rows.filter(r=>!r.team||r.needsReview||r.conflict||!r.players?.length||r.players.some(p=>!clean(p?.name)));if(bad.length)return toast(`Save blocked — ${bad.length} slot(s) still need review`);const seen=new Set();for(const r of rows){if(seen.has(r.slot))return toast(`Duplicate Slot ${r.slot}`);seen.add(r.slot);const t=S.teams.find(t=>Number(t.slot)===Number(r.slot));if(!t)return toast(`Slot ${r.slot} does not exist`)}let changed=0;for(const r of rows){const t=S.teams.find(t=>Number(t.slot)===Number(r.slot));if(t&&r.team&&t.name!==r.team){t.name=r.team;changed++}if(t){t.players=(r.players||[]).map(p=>({name:p.name,confidence:p.confidence,source:p.manual?'manual_correction':'screenshot_auto_detect_v7'}));t.slotImportAudit={engine:'PUBG_LAYOUT_V7_PRECISION',source:'PUBG lobby screenshot',verifiedAt:new Date().toISOString(),confidence:r.confidence,consensus:r.consensus,manual:!!r.manual,evidence:(r.sources||[]).map(s=>({file:s.file,card:s.card,column:s.column,raw:s.rawTeam,slotRaw:s.slotRaw,confidence:s.confidence,sequenceInferred:!!s.sequenceInferred}))}}}save();render();toast(`${changed} team slot(s) saved — Precision V4`)};
 const input=$('teamSlotImagesV2'),drop=$('slotImportDrop');if(input)input.addEventListener('change',e=>addFiles(e.target.files));if(drop){['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files))}renderFiles();renderReview();
 })();
 </script>
