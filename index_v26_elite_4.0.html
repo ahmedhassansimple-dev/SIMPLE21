@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#090b10"><title>PUBG Tournament Manager V26 ELITE</title>
+<style>
+:root{--bg:#080a0f;--panel:#11151d;--panel2:#171d27;--panel3:#0d1118;--line:#27303d;--txt:#f4f6f8;--muted:#98a3b3;--accent:#9cf052;--gold:#f5c451;--red:#ff6868;--blue:#70a7ff;--cyan:#57d6d1;--shadow:0 14px 40px #0007}*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:radial-gradient(circle at 50% -10%,#1a2434 0,#080a0f 38%);color:var(--txt);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:82px}.wrap{max-width:1100px;margin:auto;padding:14px}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.brand{font-size:20px;font-weight:950;letter-spacing:-.3px}.sub{color:var(--muted);font-size:11px;margin-top:2px}.topActions{display:flex;gap:6px}.iconbtn{padding:9px 10px;background:var(--panel);border:1px solid var(--line)}button,input,select,textarea{font:inherit}button{border:1px solid transparent;border-radius:12px;padding:11px 13px;background:var(--panel2);color:var(--txt);font-weight:800;cursor:pointer}button:active{transform:scale(.98)}button.primary{background:var(--accent);color:#071006}button.blue{background:#1a3359;color:#a9cbff;border-color:#28558d}button.danger{background:#36191d;color:#ff9a9a}button.ghost{background:transparent;border-color:var(--line)}button.small{padding:7px 9px;font-size:11px}.card{background:linear-gradient(180deg,#131821,#10141b);border:1px solid var(--line);border-radius:18px;padding:14px;margin:10px 0;box-shadow:0 5px 20px #0002}.hero{padding:18px;background:linear-gradient(135deg,#151d27,#10141b 60%,#17210f);border-color:#33412b}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}label{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}input,select,textarea{width:100%;background:#0a0e14;border:1px solid var(--line);border-radius:11px;color:var(--txt);padding:11px;outline:none}input:focus,select:focus,textarea:focus{border-color:#56713e;box-shadow:0 0 0 3px #9cf05215}textarea{min-height:120px;resize:vertical}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.title{font-size:16px;font-weight:950;margin-bottom:9px}.titleline{display:flex;justify-content:space-between;align-items:center;gap:8px}.pill{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;background:#202733;color:var(--muted);font-size:10px;font-weight:800}.ok{color:var(--accent)}.bad{color:var(--red)}.warn{color:var(--gold)}.muted{color:var(--muted)}.scroll{overflow:auto}.empty{text-align:center;color:var(--muted);padding:25px}.nav{position:fixed;left:0;right:0;overflow-x:auto;bottom:0;background:#0b0e14ed;backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(10,minmax(76px,1fr));padding:7px max(7px,env(safe-area-inset-left)) max(7px,env(safe-area-inset-bottom));z-index:30}.nav button{background:transparent;padding:8px 3px;font-size:10px;color:var(--muted)}.nav button.active{color:var(--accent)}.section{display:none}.section.active{display:block}.kpi{font-size:24px;font-weight:950}.kpiLabel{font-size:10px;color:var(--muted);margin-top:2px}.kpiGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.kpiBox{background:#0d1219;border:1px solid var(--line);border-radius:14px;padding:12px}.hint{color:var(--muted);font-size:12px;line-height:1.5}.matchitem{display:flex;justify-content:space-between;align-items:center;gap:10px}.meta{color:var(--muted);font-size:11px;margin-top:3px}.badge{font-size:10px;font-weight:900;padding:5px 8px;border-radius:999px}.badge.ok{background:#19321a}.badge.review{background:#352a12;color:#ffd67a}.badge.bad{background:#381a1f}.review{border-color:#735b26;background:#18140b}.table{width:100%;border-collapse:collapse;font-size:12px}.table th,.table td{padding:9px 7px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.table th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}.rank{font-weight:950}.gold{color:var(--gold)}.chartWrap{height:250px;display:flex;align-items:end;gap:6px;padding:16px 6px 8px;background:#0c1118;border:1px solid var(--line);border-radius:14px;overflow:hidden}.barCol{flex:1;min-width:12px;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px}.bar{width:70%;max-width:32px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#b4f66f,#5f9d35);min-height:3px;box-shadow:0 3px 12px #9cf05222}.bar.secondary{background:linear-gradient(180deg,#79b8ff,#3f6fa8)}.barLabel{font-size:9px;color:var(--muted);max-width:48px;overflow:hidden;text-overflow:ellipsis}.barValue{font-size:9px;font-weight:900}.lineChart{position:relative;height:210px;background:#0c1118;border:1px solid var(--line);border-radius:14px;padding:12px;overflow:hidden}.lineSvg{width:100%;height:100%}.legend{display:flex;gap:12px;font-size:10px;color:var(--muted);margin-top:7px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:4px}.dot.blue{background:var(--blue)}.resultRow{display:grid;grid-template-columns:38px minmax(100px,1.4fr) 100px 110px 90px;gap:7px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.resultRow.head{color:var(--muted);font-size:10px;text-transform:uppercase}.placeSelect{font-weight:900;text-align:center}.killControl{display:grid;grid-template-columns:34px minmax(40px,1fr) 34px;gap:4px;align-items:center}.killInput{text-align:center;font-weight:950;min-width:0;padding:9px 5px}.killBtn{padding:8px 0;min-height:40px;font-size:17px;line-height:1}.killInput::-webkit-inner-spin-button,.killInput::-webkit-outer-spin-button{appearance:none;margin:0}.ptsCell{text-align:center;font-weight:950}.totalCell{text-align:right;font-weight:950}.scorePreview{background:#0b1016;border:1px solid var(--line);border-radius:14px;padding:10px}.scoreBig{font-size:22px;font-weight:950}.progress{height:7px;background:#242b35;border-radius:20px;overflow:hidden}.progress i{display:block;height:100%;background:var(--accent);border-radius:20px}.compareGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.teamCard{background:#0c1118;border:1px solid var(--line);border-radius:15px;padding:13px}.teamName{font-weight:950;font-size:15px}.delta{font-weight:950}.filterbar{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px}.callout{border-left:3px solid var(--accent);padding:9px 11px;background:#0c1210;border-radius:0 10px 10px 0;color:#dce7d7;font-size:12px;line-height:1.5}.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#1e2631;border:1px solid var(--line);padding:10px 14px;border-radius:12px;z-index:50;display:none;box-shadow:var(--shadow)}@media(max-width:620px){.grid3,.grid4{grid-template-columns:1fr 1fr}.kpiGrid{grid-template-columns:repeat(2,1fr)}.resultRow{grid-template-columns:30px minmax(95px,1fr) 78px 86px 70px;font-size:11px}.resultRow.head{font-size:9px}.filterbar{grid-template-columns:1fr}.compareGrid{grid-template-columns:1fr}.top .sub{display:none}}@media(min-width:760px){body{padding-bottom:20px}.nav{position:sticky;top:0;bottom:auto;margin:0 auto 15px;max-width:1100px;border:1px solid var(--line);border-radius:14px}.wrap{padding-top:16px}}
+
+/* ===== V26 ELITE 2.1 — Tournament Workspace Hub ===== */
+.workspaceHub{position:relative;overflow:hidden;background:linear-gradient(135deg,#111a25 0%,#10151d 52%,#17220f 100%);border-color:#3a4b31}
+.workspaceHub:before{content:"";position:absolute;inset:-40% auto auto 55%;width:300px;height:300px;background:#9cf05210;border-radius:50%;filter:blur(12px);pointer-events:none}
+.workspaceHubGrid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:12px;position:relative}
+.workspaceHero{background:#0b1017;border:1px solid #303b48;border-radius:18px;padding:14px}
+.workspaceKicker{font-size:10px;color:var(--accent);font-weight:950;letter-spacing:.9px;text-transform:uppercase}
+.workspaceHeroTitle{font-size:23px;font-weight:1000;letter-spacing:-.5px;margin-top:5px}
+.workspaceHeroSub{font-size:11px;color:var(--muted);line-height:1.55;margin-top:5px}
+.workspaceCurrent{display:grid;grid-template-columns:64px minmax(0,1fr);gap:11px;align-items:center;margin-top:14px;padding:11px;border:1px solid var(--line);border-radius:15px;background:#0e141c}
+.workspaceCurrentLogo{width:64px;height:64px;border-radius:16px;object-fit:contain;background:#070b10;border:1px solid #344050;padding:6px}
+.workspaceCurrentName{font-size:17px;font-weight:1000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.workspaceCurrentMeta{font-size:10px;color:var(--muted);margin-top:3px}
+.workspaceCurrentStats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}
+.workspaceMiniStat{padding:8px;border:1px solid var(--line);border-radius:10px;background:#0a0f15;text-align:center}
+.workspaceMiniStat small{display:block;color:var(--muted);font-size:9px}.workspaceMiniStat b{display:block;margin-top:2px;font-size:13px}
+.workspaceCreate{background:#0b1017;border:1px solid #303b48;border-radius:18px;padding:14px}
+.workspaceCreateTitle{font-size:14px;font-weight:1000}.workspaceCreateSub{font-size:10px;color:var(--muted);line-height:1.5;margin:4px 0 10px}
+.workspaceCreateRow{display:grid;grid-template-columns:minmax(0,1fr) 105px;gap:7px}.workspaceCreate input{height:43px}
+.workspaceCreateLogo{height:43px;display:flex;align-items:center;justify-content:center;border:1px dashed #465362;border-radius:11px;background:#0a0e14;color:var(--muted);font-size:10px;cursor:pointer;overflow:hidden}
+.workspaceCreateLogo img{width:100%;height:100%;object-fit:contain;padding:5px}
+.workspaceCreateActions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.workspaceCreateActions button{width:100%}
+.workspaceFlow{display:flex;gap:5px;flex-wrap:wrap;margin-top:11px}
+.workspaceFlow span{padding:5px 8px;border-radius:999px;background:#18202b;border:1px solid var(--line);color:#b9c3cf;font-size:9px;font-weight:850}
+.workspaceLibrary2{margin-top:12px}
+.workspaceLibraryHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.workspaceLibraryTitle{font-size:14px;font-weight:1000}.workspaceLibrarySub{font-size:10px;color:var(--muted);margin-top:2px}
+.workspaceSearchRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;margin-top:9px}
+.workspaceList2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}
+.workspaceCard2{position:relative;display:grid;grid-template-columns:42px minmax(0,1fr);gap:9px;padding:10px;border:1px solid var(--line);border-radius:14px;background:#0b1017;transition:.15s}
+.workspaceCard2:hover{border-color:#526579;transform:translateY(-1px)}
+.workspaceCard2.active{border-color:#708c4d;box-shadow:0 0 0 1px #9cf05218 inset;background:linear-gradient(180deg,#101a13,#0b1017)}
+.workspaceCardLogo{width:42px;height:42px;border-radius:11px;object-fit:contain;background:#070b10;border:1px solid #303947;padding:4px}
+.workspaceCardName{font-weight:950;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:20px}
+.workspaceCardMeta{font-size:9px;color:var(--muted);margin-top:3px}
+.workspaceCardActions{display:flex;gap:4px;margin-top:7px}.workspaceCardActions button{padding:5px 7px;font-size:9px;border-radius:8px}
+.workspaceFav{position:absolute;right:8px;top:7px;border:0!important;background:transparent!important;padding:2px!important;font-size:14px!important;color:#596573}.workspaceFav.on{color:var(--gold)}
+.workspaceEmpty2{padding:18px;text-align:center;color:var(--muted);border:1px dashed #344050;border-radius:13px;background:#0b1017;font-size:11px}
+.workspaceEdit{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:13px;background:#0a0f15}
+.workspaceEditGrid{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:7px}
+.workspaceEditActions{display:flex;gap:6px;margin-top:7px}.workspaceEditActions button{flex:1}
+.workspaceReady{margin-top:10px;padding:9px 10px;border-radius:11px;background:#102015;border:1px solid #29452b;color:#bfe5b6;font-size:10px;line-height:1.45}
+@media(max-width:760px){.workspaceHubGrid{grid-template-columns:1fr}.workspaceList2{grid-template-columns:1fr}.workspaceCreateRow{grid-template-columns:minmax(0,1fr) 92px}.workspaceHeroTitle{font-size:21px}}
+</style><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><style id="aiAssistantStyle">
+.aiShell{margin:10px 0 14px;border:1px solid #33412b;border-radius:18px;background:linear-gradient(145deg,#11191a,#10141b 60%,#16200f);box-shadow:0 10px 30px #0003;overflow:hidden}.aiHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px;border-bottom:1px solid var(--line)}.aiBrand{display:flex;align-items:center;gap:10px}.aiOrb{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#9cf052,#5f9d35);color:#071006;font-weight:1000;font-size:18px;box-shadow:0 0 20px #9cf05225}.aiTitle{font-weight:950}.aiSub{font-size:10px;color:var(--muted);margin-top:2px}.aiBody{padding:12px}.aiQuick{display:flex;gap:6px;overflow:auto;padding-bottom:9px}.aiQuick button{white-space:nowrap;font-size:10px;padding:8px 10px}.aiMessages{height:245px;overflow:auto;padding:4px 2px 10px;display:flex;flex-direction:column;gap:8px}.aiMsg{max-width:92%;padding:10px 11px;border-radius:13px;border:1px solid var(--line);font-size:12px;line-height:1.55;white-space:normal}.aiMsg.bot{align-self:flex-start;background:#0c1218}.aiMsg.user{align-self:flex-end;background:#172416;border-color:#33412b}.aiMsg b{font-weight:950}.aiInput{display:grid;grid-template-columns:1fr auto;gap:7px}.aiInput textarea{min-height:48px;max-height:110px;resize:none;padding:10px}.aiSend{min-width:74px}.aiStatus{font-size:10px;color:var(--muted);margin-top:7px}.aiContext{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.aiContext .pill{font-size:9px}
+@media(max-width:620px){.aiMessages{height:285px}.aiInput{grid-template-columns:1fr}.aiSend{width:100%}}
+</style><style id="v26Advanced">
+.ocrDrop{background:#0b1016;border:1px dashed #3b4656;border-radius:14px;padding:14px}.ocrProgress{height:7px;background:#232b35;border-radius:20px;overflow:hidden;margin-top:10px}.ocrProgress i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}.notice{background:#101922;border:1px solid #29445b;border-radius:12px;padding:10px 11px;font-size:11px;line-height:1.5}.confidence{font-weight:900}.confidence.good{color:var(--accent)}.confidence.warn{color:var(--gold)}.scanGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.imagePreview{width:100%;max-height:360px;object-fit:contain;background:#080b10;border:1px solid var(--line);border-radius:14px;margin-top:9px}.aiInsight{background:#0c1218;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:11px;line-height:1.55}.aiMetric{font-size:18px;font-weight:950}.miniGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.miniBox{background:#0b1016;border:1px solid var(--line);border-radius:11px;padding:9px}.scanBadge{font-size:9px;padding:4px 7px;border-radius:999px;background:#1d2a20;color:#b9ef95;font-weight:900}.ocrRaw{max-height:190px;overflow:auto;white-space:pre-wrap;background:#080b10;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:10px;color:#b8c1ce}@media(max-width:620px){.scanGrid,.miniGrid{grid-template-columns:1fr 1fr}}
+</style><style id="proUpgrade">
+.logoThumb{width:34px;height:34px;border-radius:9px;object-fit:contain;background:#080b10;border:1px solid #303948;vertical-align:middle}.logoLarge{width:46px;height:46px;border-radius:12px;object-fit:contain;background:#080b10;border:1px solid #303948}.teamCell{display:flex;align-items:center;gap:9px;min-width:150px}.teamCell img{flex:0 0 auto}.leaderTable th,.leaderTable td{padding:10px 7px}.leaderTable .metric{font-weight:900;text-align:center}.winner{color:var(--gold);font-weight:950}.placePts{color:#8fc2ff;font-weight:900}.killPts{color:#9cf052;font-weight:900}.totalPts{font-size:15px;font-weight:950}.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.podiumBox{background:#0b1017;border:1px solid var(--line);border-radius:15px;padding:13px;text-align:center}.podiumBox img{width:50px;height:50px}.podiumRank{font-size:20px;font-weight:950}.ocrDrop{border:1px dashed #4a5567;border-radius:15px;padding:18px;text-align:center;background:#0b1017}.ocrDrop input{margin-top:10px}.confidence{font-size:10px;padding:4px 7px;border-radius:999px;background:#202733}.confidence.good{color:#9cf052;background:#19321a}.confidence.warn{color:#ffd67a;background:#352a12}.statGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.statMini{background:#0b1017;border:1px solid var(--line);border-radius:14px;padding:12px}.statMini b{font-size:21px}.killLeaderboard{margin-top:12px}.killLeaderboard .table th,.killLeaderboard .table td{padding:10px 7px}.killRank{font-weight:950}.killValue{font-size:16px;font-weight:950;color:#9cf052}.killAvg{font-weight:850;color:#8fc2ff}.matchResultCard{overflow:hidden}.matchResultHead{display:flex;justify-content:space-between;align-items:center;gap:8px}.matchResultRow{display:grid;grid-template-columns:42px minmax(150px,1.5fr) 80px 80px 90px 90px;gap:7px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.pdfOnly{display:none}.logoInput{font-size:11px}.ocrProgress{height:8px;background:#242b35;border-radius:20px;overflow:hidden;margin-top:9px}.ocrProgress i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}@media(max-width:620px){.podium{grid-template-columns:1fr}.statGrid{grid-template-columns:repeat(2,1fr)}.matchResultRow{grid-template-columns:30px minmax(120px,1fr) 60px 65px 70px 70px;font-size:10px}.leaderTable{font-size:10px}.logoThumb{width:30px;height:30px}}@media print{body{background:white;color:#111;padding:0}.wrap{max-width:none;padding:0}.nav,.topActions,.top,.noPrint,button,input,select,textarea{display:none!important}.section{display:none!important}.section.printing{display:block!important}.card{box-shadow:none;border:1px solid #bbb;background:white;color:#111}.table th,.table td{border-bottom:1px solid #ddd;color:#111}.pdfOnly{display:block}.leaderTable .teamCell img,.teamCell img{border:1px solid #ccc}.muted,.meta,.hint,.sub{color:#555}.badge{border:1px solid #aaa}.chartWrap,.lineChart{background:white;border:1px solid #ccc}}
+
+.eliteBuild{font-size:10px;color:var(--muted);margin-top:4px}.cmdHero{background:radial-gradient(circle at 100% 0,#23351a 0,#121821 42%,#0d1118 100%);border-color:#334b2b}.cmdGrid{display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:9px}.cmdStat{background:#0a1017;border:1px solid var(--line);border-radius:15px;padding:11px}.cmdStat b{font-size:21px}.cmdActions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.workspaceCard{background:#0b1017;border:1px solid var(--line);border-radius:16px;padding:12px}.workspaceHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.workspaceName{font-weight:950;font-size:15px}.workspaceMeta{font-size:10px;color:var(--muted);margin-top:4px}.workspaceProgress{height:7px;border-radius:99px;background:#232a34;overflow:hidden;margin-top:10px}.workspaceProgress i{display:block;height:100%;background:linear-gradient(90deg,#70a7ff,#9cf052);border-radius:99px}.workspaceActions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.statusDot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#9cf052;margin-right:5px}.reportGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.reportCard{background:#0b1017;border:1px solid var(--line);border-radius:16px;padding:14px}.reportCard b{font-size:15px}.lbToolbar{display:grid;grid-template-columns:1.5fr repeat(3,1fr);gap:8px;margin-bottom:10px}.lbForm{font-size:10px;font-weight:900;color:#9cf052}.rankMove{font-weight:950;font-size:11px}.rankUp{color:#9cf052}.rankDown{color:#ff8f8f}.rankFlat{color:#98a3b3}.formDots{display:flex;gap:3px;justify-content:center}.formDot{width:18px;height:18px;border-radius:6px;display:grid;place-items:center;background:#202733;font-size:9px;font-weight:900}.reportPage{background:white;color:#111;padding:20px;min-height:900px}.reportPage .table{color:#111}.reportPage .table th{color:#111;background:#eee}.reportPage .muted,.reportPage .meta{color:#555}.buildBadge{font-family:ui-monospace,monospace;font-size:9px}.dangerSoft{border-color:#5a3030!important}.modalLite{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modalLite.show{display:flex}.modalLite .box{width:min(620px,100%);max-height:88vh;overflow:auto;background:#111720;border:1px solid #344152;border-radius:20px;padding:16px;box-shadow:0 25px 80px #0009}@media(max-width:700px){.cmdGrid{grid-template-columns:1fr 1fr}.cmdGrid .cmdMain{grid-column:1/-1}.cmdActions{grid-template-columns:1fr 1fr}.reportGrid{grid-template-columns:1fr}.lbToolbar{grid-template-columns:1fr 1fr}.lbToolbar .wide{grid-column:1/-1}}
+</style><style id="v26UpgradeStyle">
+.tournamentBrand{display:flex;align-items:center;gap:10px}.tournamentLogo{width:44px;height:44px;border-radius:12px;object-fit:cover;background:#0a0e14;border:1px solid var(--line)}
+.lbTitleBar{display:flex;align-items:center;gap:10px;margin-bottom:10px}.lbTitleLogo{width:42px;height:42px;border-radius:12px;object-fit:cover;border:1px solid var(--line);background:#0b1016}.lbSubtitle{font-size:10px;color:var(--muted)}
+.chartPro{background:#0b1017;border:1px solid var(--line);border-radius:16px;padding:12px}.chartRow{display:grid;grid-template-columns:28px 1.25fr 1.9fr 58px;gap:8px;align-items:center;padding:8px 4px;border-bottom:1px solid #1d2530}.chartRow:last-child{border-bottom:0}.chartName{display:flex;align-items:center;gap:7px;min-width:0}.chartName span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chartLogo{width:24px;height:24px;border-radius:7px;object-fit:cover;background:#11161d}.chartTrack{height:10px;border-radius:99px;background:#202733;overflow:hidden}.chartFill{height:100%;border-radius:99px;background:linear-gradient(90deg,#9cf052,#70a7ff)}.chartPoint{font-weight:950;text-align:right}.chartAxis{display:flex;justify-content:space-between;color:var(--muted);font-size:9px;margin:0 62px 8px 36px}.matchWinner{display:inline-flex;align-items:center;gap:4px;margin-left:5px;color:var(--gold);font-size:10px;font-weight:950}.deleteMatchBtn{margin-left:5px}.ocrMultiGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rosterExplain{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:14px;background:#0b1017}.rosterExplain span{font-size:9px;line-height:1.45;color:var(--muted);padding:7px;border:1px solid #27303b;border-radius:9px;background:#0a0f15}.rosterLinkTable td{vertical-align:top;white-space:normal}.rosterLinkTable input{width:100%;font-size:11px;padding:8px}.confidence{display:inline-flex;align-items:center;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900}.confidence.good{background:#17301c;color:#b9efad;border:1px solid #315e37}.confidence.warn{background:#30270f;color:#f3d47b;border:1px solid #6a5520}.confidence.bad{background:#351a1a;color:#f5aaaa;border:1px solid #6d3030}.ocrLive{color:var(--muted);font-size:10px}@media(max-width:760px){.rosterExplain{grid-template-columns:1fr 1fr}.rosterLinkTable{font-size:10px}}.pdfReady{background:#0c1218;border:1px solid #2d3d4f;border-radius:14px;padding:10px;font-size:11px}.pdfReady b{color:var(--accent)}
+@media(max-width:620px){.ocrMultiGrid{grid-template-columns:1fr}.chartRow{grid-template-columns:25px 1fr 1.4fr 48px;font-size:11px}.chartAxis{margin-right:52px}}
+</style>
+<style id="v26Elite2Style">
+:root{--elite2:#9cf052;--elite2blue:#70a7ff;--elite2gold:#f5c451;--elite2cyan:#57d6d1}
+.modernSwitcher{display:grid;grid-template-columns:1.5fr 1fr;gap:10px;align-items:stretch}.switchHero{background:linear-gradient(135deg,#121b16,#10151d 58%,#182231);border:1px solid #34482f;border-radius:18px;padding:14px}.switchHeroTop{display:flex;align-items:center;gap:11px}.switchLogo{width:48px;height:48px;border-radius:14px;object-fit:contain;background:#090d12;border:1px solid #394453}.switchName{font-size:18px;font-weight:950}.switchMeta{color:var(--muted);font-size:10px;margin-top:3px}.switchStats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}.switchStat{background:#0b1017;border:1px solid var(--line);border-radius:12px;padding:9px}.switchStat b{font-size:16px}.switchTools{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.switchTools button{width:100%}.switchSearch{background:#0b1017;border:1px solid var(--line);border-radius:18px;padding:12px}.switchSearch input{margin-bottom:9px}.switchList{max-height:240px;overflow:auto;display:flex;flex-direction:column;gap:6px}.switchItem{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;padding:9px;border:1px solid var(--line);background:#0c1118;border-radius:12px;cursor:pointer}.switchItem:hover{border-color:#50633e}.switchItem.active{border-color:#506c3d;background:#111b13}.switchMiniLogo{width:30px;height:30px;border-radius:8px;object-fit:contain;background:#090d12}.switchItemName{font-weight:900;font-size:12px}.switchItemMeta{font-size:9px;color:var(--muted);margin-top:2px}.switchFav{color:var(--elite2gold)}
+.commandPalette{position:fixed;inset:0;background:#0009;backdrop-filter:blur(8px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:10vh 14px}.commandPalette.open{display:flex}.commandBox{width:min(720px,100%);background:#11161f;border:1px solid #384556;border-radius:20px;box-shadow:0 30px 90px #000b;overflow:hidden}.commandBox input{border:0;border-bottom:1px solid var(--line);border-radius:0;font-size:16px;padding:16px}.commandResults{max-height:55vh;overflow:auto;padding:8px}.commandResult{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border-radius:12px}.commandResult:hover{background:#1a222d}.commandKey{font-size:9px;color:var(--muted);padding:3px 6px;border:1px solid var(--line);border-radius:6px}
+.healthMatrix{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.healthCell{padding:10px;border-radius:12px;background:#0b1017;border:1px solid var(--line)}.healthCell b{display:block;font-size:15px}.healthCell small{color:var(--muted)}
+.proChart{background:#0b1017;border:1px solid var(--line);border-radius:16px;padding:12px}.proChartRow{display:grid;grid-template-columns:28px minmax(90px,1.1fr) 2fr 58px;gap:8px;align-items:center;padding:8px 3px;border-bottom:1px solid #1d2530}.proChartRow:last-child{border-bottom:0}.proChartName{display:flex;align-items:center;gap:7px;min-width:0}.proChartName span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.proChartLogo{width:25px;height:25px;border-radius:7px;object-fit:contain;background:#0a0e14;border:1px solid #303948}.proChartTrack{height:11px;border-radius:99px;background:#202733;overflow:hidden}.proChartFill{height:100%;border-radius:99px;background:linear-gradient(90deg,#9cf052,#70a7ff)}.proChartValue{text-align:right;font-weight:950}.spark{display:flex;gap:4px;align-items:end;height:80px;padding:8px;background:#0b1017;border:1px solid var(--line);border-radius:14px}.spark i{flex:1;min-width:4px;background:linear-gradient(180deg,#70a7ff,#3f6fa8);border-radius:4px 4px 1px 1px}.insightGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.insightCard{background:#0b1017;border:1px solid var(--line);border-radius:14px;padding:11px}.insightCard b{display:block;margin-top:4px}.auditList{max-height:260px;overflow:auto}.auditRow{padding:9px;border-bottom:1px solid var(--line);font-size:11px}.auditRow b{font-size:10px}.auditTime{color:var(--muted);font-size:9px}
+@media(max-width:720px){.modernSwitcher{grid-template-columns:1fr}.switchStats{grid-template-columns:repeat(2,1fr)}.healthMatrix{grid-template-columns:repeat(2,1fr)}.insightGrid{grid-template-columns:1fr}.proChartRow{grid-template-columns:25px minmax(85px,1fr) 1.6fr 50px}}
+</style>
+
+<style id="roster-v4-style">
+.rosterV4Progress{padding:12px;border:1px solid var(--line);border-radius:14px;background:#0b1017}
+.rosterV4Progress b{display:block;font-size:13px}.rosterV4Bar{height:6px;background:#202733;border-radius:99px;overflow:hidden;margin-top:9px}.rosterV4Bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.rosterV4Summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}.rosterV4Summary>div{padding:10px;border:1px solid var(--line);border-radius:13px;background:#0b1017}.rosterV4Summary b,.rosterV4Summary span{display:block}.rosterV4Summary span{font-size:10px;color:var(--muted);margin-top:3px}.goodText{color:#a7ef63}.warnText{color:#ffc857}
+.rosterV4Grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.rosterV4Card{border:1px solid var(--line);border-radius:14px;background:#0b1017;padding:10px}.rosterV4Head{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:9px;align-items:center}.rosterV4Head small{display:block;color:var(--muted);font-size:9px;margin-top:3px}.slotBadge{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:#151d28;color:#b6f66c;font-weight:1000}.rosterV4Players{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.rosterV4Players label{font-size:9px;color:var(--muted);display:block;margin-bottom:3px}.rosterV4Players input{width:100%;box-sizing:border-box}.rosterV4Meta{font-size:9px;color:var(--muted);margin-top:8px}.rosterV4Explain{font-size:10px;line-height:1.55}
+@media(max-width:760px){.rosterV4Summary{grid-template-columns:1fr 1fr}.rosterV4Grid{grid-template-columns:1fr}.rosterV4Players{grid-template-columns:1fr}}
+</style>
+</head><body><div id="toast" class="toast"></div><div class="wrap">
+<header class="top"><div><div class="brand">PUBG Tournament Manager <span class="pill">V26 ELITE</span></div><div class="sub">Tournament Command Center • Competition Control • Intelligence • Reports</div></div><div class="topActions"><button class="iconbtn" onclick="backup()">↥</button><button class="iconbtn" onclick="restore()">↧</button></div></header>
+<main>
+<section id="home" class="section active">
+
+<div class="card workspaceHub">
+  <div class="workspaceHubGrid">
+    <div class="workspaceHero">
+      <div class="workspaceKicker">Tournament Workspace</div>
+      <div class="workspaceHeroTitle">اختار البطولة أولًا… ثم أضف بياناتها</div>
+      <div class="workspaceHeroSub">كل بطولة لها مساحة مستقلة للفرق، اللوجوهات، المباريات، النتائج والتقارير. أنشئ بطولة جديدة في ثوانٍ، أو ارجع لأي بطولة قديمة من نفس المكان بدون خلط البيانات.</div>
+      <div class="workspaceCurrent">
+        <img id="hubCurrentLogo" class="workspaceCurrentLogo" alt="">
+        <div>
+          <div id="hubCurrentName" class="workspaceCurrentName">لا توجد بطولة محددة</div>
+          <div id="hubCurrentMeta" class="workspaceCurrentMeta">ابدأ بإنشاء بطولة أو اختر بطولة محفوظة.</div>
+        </div>
+      </div>
+      <div id="hubCurrentStats" class="workspaceCurrentStats">
+        <div class="workspaceMiniStat"><small>Teams</small><b>0/16</b></div>
+        <div class="workspaceMiniStat"><small>Matches</small><b>0</b></div>
+        <div class="workspaceMiniStat"><small>Approved</small><b>0</b></div>
+        <div class="workspaceMiniStat"><small>Health</small><b>0%</b></div>
+      </div>
+      <div class="workspaceFlow">
+        <span>① اختار / أنشئ</span><span>② أدخل البيانات</span><span>③ احفظ تلقائيًا</span><span>④ ارجع وقتما تريد</span>
+      </div>
+      <div class="row" style="margin-top:9px">
+        <button class="primary" onclick="eliteHubContinue()">متابعة للبطولة الحالية</button>
+        <button onclick="elite2OpenSwitcher()">فتح مدير البطولات</button>
+      </div>
+    </div>
+
+    <div class="workspaceCreate">
+      <div class="workspaceCreateTitle">＋ إضافة بطولة جديدة</div>
+      <div class="workspaceCreateSub">اكتب اسم البطولة فقط، وأضف اللوجو اختياريًا. بمجرد الإنشاء سيتم فتح البطولة الجديدة تلقائيًا لتبدأ إدخال بياناتها.</div>
+      <div class="workspaceCreateRow">
+        <input id="hubNewName" placeholder="مثال: PMNC KSA 2026 Fall" autocomplete="off">
+        <label class="workspaceCreateLogo" for="hubNewLogo"><span id="hubLogoLabel">＋ Logo</span><img id="hubNewLogoPreview" style="display:none" alt=""></label>
+      </div>
+      <input id="hubNewLogo" type="file" accept="image/png,image/jpeg,image/webp" hidden onchange="eliteHubPreviewLogo(this.files[0])">
+      <div class="workspaceCreateActions">
+        <button class="primary" onclick="eliteHubCreate()">إنشاء وفتح البطولة</button>
+        <button class="ghost" onclick="eliteHubClearNew()">مسح</button>
+      </div>
+      <div class="workspaceReady">✓ بعد الإنشاء لن تحتاج كتابة اسم البطولة مرة أخرى: ستجدها في مكتبة البطولات، ويمكنك فتحها بضغطة واحدة والعودة منها لأي بطولة أخرى.</div>
+      <div class="workspaceEdit">
+        <div class="workspaceLibraryTitle">بيانات البطولة الحالية</div>
+        <div class="workspaceLibrarySub">عدّل اسم البطولة أو شعارها من هنا بدون إنشاء بطولة جديدة.</div>
+        <div class="workspaceEditGrid" style="margin-top:7px">
+          <input id="hubEditName" placeholder="اسم البطولة الحالية">
+          <label class="workspaceCreateLogo" for="hubEditLogo"><span id="hubEditLogoLabel">تغيير Logo</span><img id="hubEditLogoPreview" style="display:none" alt=""></label>
+        </div>
+        <input id="hubEditLogo" type="file" accept="image/png,image/jpeg,image/webp" hidden onchange="eliteHubChangeCurrentLogo(this.files[0])">
+        <div class="workspaceEditActions"><button class="primary" onclick="eliteHubSaveIdentity()">حفظ التعديلات</button><button class="ghost" onclick="eliteHubClearEdit()">إلغاء</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="workspaceLibrary2">
+    <div class="workspaceLibraryHead">
+      <div><div class="workspaceLibraryTitle">مكتبة البطولات</div><div class="workspaceLibrarySub">الأحدث والمفضلة أولًا — اختر أي بطولة للعودة إليها مباشرة.</div></div>
+      <button class="small ghost" onclick="eliteHubRender()">تحديث</button>
+    </div>
+    <div class="workspaceSearchRow">
+      <input id="hubSearch" placeholder="ابحث باسم البطولة…" oninput="eliteHubRender()">
+      <button class="small" onclick="eliteHubFocusNew()">＋ بطولة جديدة</button>
+    </div>
+    <div id="hubTournamentList" class="workspaceList2"></div>
+  </div>
+</div>
+<div class="card hero cmdHero"><div class="titleline"><div><div class="title">Tournament Command Center</div><div class="hint">إدارة البطولات، حالة المنافسة، النسخ الاحتياطية والتقارير من مكان واحد.</div><div class="eliteBuild">V26 ELITE · Build <span class="buildBadge">2026.10.11.ELITE.03</span> · Data Schema 2</div></div><span class="pill"><span class="statusDot"></span><span id="cmdStatus">Ready</span></span></div>
+<div class="cmdGrid" style="margin-top:12px"><div class="cmdStat cmdMain"><div class="muted">Current Tournament</div><b id="cmdTournament">No tournament selected</b><div class="workspaceMeta" id="cmdTournamentMeta">Create a tournament to begin.</div></div><div class="cmdStat"><div class="muted">Teams</div><b id="cmdTeams">0/16</b></div><div class="cmdStat"><div class="muted">Matches</div><b id="cmdMatches">0</b></div><div class="cmdStat"><div class="muted">Approved</div><b id="cmdApproved">0</b></div><div class="cmdStat"><div class="muted">Health</div><b id="cmdHealth">0%</b></div></div>
+<div class="cmdActions" style="margin-top:12px"><button class="primary" onclick="eliteNewTournament()">＋ New Tournament</button><button onclick="eliteOpenTournamentPicker()">Open Tournament</button><button onclick="eliteDuplicateCurrent()">Duplicate</button><button onclick="eliteBackupCurrent()">Safety Backup</button><button onclick="eliteGo('teams')">Teams & Logos</button><button onclick="eliteGo('matches')">Match Center</button><button onclick="eliteGo('overall')">Leaderboard</button><button onclick="eliteGo('reports')">Reports</button></div></div>
+<div class="card"><div class="titleline"><div><div class="title">Tournament Library</div><div class="hint">كل بطولة محفوظة بشكل مستقل. التبديل لا يخلط الفرق أو المباريات أو النتائج.</div></div><button class="ghost" onclick="eliteRenderLibrary()">Refresh</button></div><div id="workspaceLibrary" class="reportGrid" style="margin-top:10px"></div></div>
+
+<div class="card">
+ <div class="titleline"><div><div class="title">⚡ Smart Tournament Switcher</div><div class="hint">تبديل سريع بين البطولات مع بحث، مفضلة، آخر فتح، وحالة كل بطولة بدون خلط البيانات.</div></div><button class="ghost" onclick="elite2OpenSwitcher()">Open Manager</button></div>
+ <div class="modernSwitcher" style="margin-top:10px">
+  <div class="switchHero"><div class="switchHeroTop"><img id="swCurrentLogo" class="switchLogo" alt=""><div><div id="swCurrentName" class="switchName">No tournament selected</div><div id="swCurrentMeta" class="switchMeta">Create or open a tournament</div></div></div>
+   <div class="switchStats"><div class="switchStat"><small>Teams</small><b id="swTeams">0/16</b></div><div class="switchStat"><small>Matches</small><b id="swMatches">0</b></div><div class="switchStat"><small>Approved</small><b id="swApproved">0</b></div><div class="switchStat"><small>Health</small><b id="swHealth">0%</b></div></div>
+   <div class="switchTools"><button class="primary" onclick="eliteNewTournament()">＋ New</button><button onclick="elite2OpenSwitcher()">Switch</button><button onclick="eliteDuplicateCurrent()">Duplicate</button><button onclick="eliteBackupCurrent()">Backup</button></div>
+  </div>
+  <div class="switchSearch"><input id="swSearch" placeholder="Search tournaments…" oninput="elite2RenderSwitcher()"><div id="swList" class="switchList"></div></div>
+ </div>
+</div>
+<div class="card"><div class="titleline"><div class="title">Competition Health</div><span class="pill" id="cmdHealthPill">Waiting</span></div><div id="cmdHealthDetails" class="grid3" style="margin-top:10px"></div></div>
+</section>
+<section id="teams" class="section"><div class="aiShell" id="aiAssistant">
+<div class="aiHead"><div class="aiBrand"><div class="aiOrb">✦</div><div><div class="aiTitle">Tournament AI Assistant</div><div class="aiSub">مساعد ذكي متصل ببيانات البطولة الحالية ويشرح لك النظام ويحلل الأرقام</div></div></div><button class="small ghost" onclick="clearAIChat()">Clear</button></div>
+<div class="aiBody"><div class="aiQuick"><button onclick="aiQuick('ما حالة البطولة الآن؟')">حالة البطولة</button><button onclick="aiQuick('من المتصدر ولماذا؟')">المتصدر</button><button onclick="aiQuick('من أكثر لاعب قتلات؟')">Top Fragger</button><button onclick="aiQuick('هل توجد أخطاء في البيانات؟')">فحص البيانات</button><button onclick="aiQuick('اشرح لي طريقة حساب النقاط')">شرح النقاط</button><button onclick="aiQuick('كيف أضيف مباراة؟')">كيف أضيف مباراة؟</button><button onclick="aiQuick('اعمل تقرير عن آخر 5 مباريات')">آخر 5 مباريات</button><button onclick="aiQuick('قارن بين الفريقين')">مقارنة</button><button onclick="aiQuick('أي فريق يعتمد أكثر على القتلات؟')">Kill Dependence</button></div>
+<div id="aiMessages" class="aiMessages"></div>
+<div class="aiInput"><textarea id="aiInput" placeholder="اسأل عن الفرق، المباريات، النقاط، الوينرز، قتلات اللاعبين، الأخطاء أو طريقة استخدام النظام…"></textarea><button class="primary aiSend" onclick="sendAI()">Send</button></div>
+<div class="aiStatus" id="aiStatus">Live context: connected to the current tournament data.</div><div class="aiContext" id="aiContext"></div></div></div><div class="card hero"><div class="title">Tournament Setup</div><div class="grid"><div><label>Tournament</label><input id="tournament" placeholder="Tournament name"></div><div><label>Tournament Logo</label><input id="tournamentLogo" type="file" accept="image/png,image/jpeg,image/webp" onchange="setTournamentLogo(this.files[0])"></div><div><label>Bulk Team Import</label><input id="bulk" placeholder="One team per line • 16 teams"></div><div><label>Current Logo</label><div class="tournamentBrand"><img id="tournamentLogoPreview" class="tournamentLogo" alt=""><span class="hint">يظهر في التقارير والتصاميم والـPDF.</span></div></div></div><div class="row" style="margin-top:9px"><button class="primary" onclick="importTeams()">Import 16 Teams</button><button onclick="exportCSV()">Export Teams CSV</button></div></div><div class="card"><div class="titleline"><div class="title">Team List</div><span class="pill">16 fixed slots • 3–18</span></div><div id="teamTable"></div></div><div class="card"><div class="titleline"><div><div class="title">🎮 Link In‑Game Roster to Team Slots</div><div class="hint">النظام يعرف شكل Screenshot الـLobby الثابت: الصورة الأولى = Slots 03–11، الصورة الثانية = Slots 12–18. لن نحاول تخمين رقم الـSlot من OCR؛ سنستخدم مكان الخانة في الصورة كمرجع ثابت، ثم نستخرج أسماء اللاعبين فقط.</div></div><span class="pill">Fixed 16-Team Layout</span></div>
+<div class="rosterExplain">
+  <div><b>كيف يعمل؟</b><span>1) ارفع Screenshot 1 و Screenshot 2 من نفس المباراة.</span><span>2) النظام يقسم الصورة تلقائيًا إلى خانات PUBG.</span><span>3) Slot 03 مثلًا يرتبط مباشرةً بالفريق الموجود في Slot 03 عندك.</span><span>4) يستخرج أسماء اللاعبين الأربعة من داخل الخانة.</span><span>5) تراجع الأسماء ثم تحفظها كـ <b>Canonical In‑Game Names</b>.</span>
+</div>
+<div class="ocrMultiGrid" style="margin-top:10px"><div><label>Screenshot 1 · Slots 03 → 11</label><input id="teamSlotImage1" type="file" accept="image/png,image/jpeg,image/webp"></div><div><label>Screenshot 2 · Slots 12 → 18</label><input id="teamSlotImage2" type="file" accept="image/png,image/jpeg,image/webp"></div></div>
+<div class="row" style="margin-top:10px"><button class="primary" onclick="runTeamSlotOCRPair()">Analyze & Link Players</button><button class="ghost" onclick="document.getElementById('teamSlotImage1').value='';document.getElementById('teamSlotImage2').value='';document.getElementById('teamSlotOCRReview').innerHTML='<div class=\'empty\'>Waiting for two lobby screenshots.</div>'">Clear</button></div>
+<div id="teamSlotOCRReview" class="empty" style="margin-top:10px">Waiting for two lobby screenshots. The system will link each detected player to the existing Team Slot automatically.</div></div></section>
+<section id="matches" class="section"><div class="card hero"><div class="title">Match Center</div><div class="grid"><div><label>Match Name</label><input id="mname" placeholder="Match 1"></div><div><label>Game ID</label><input id="gameid" placeholder="Optional / API GameID"></div></div><div class="row" style="margin-top:9px"><button class="primary" onclick="newMatch()">Create & Open Match</button><button class="ghost" onclick="focusResults()">Enter Results</button></div><div class="card" style="margin:10px 0 0;background:#0b1017"><div class="title">Add Match Results by Images</div><div class="hint">ارفع حتى صورتين لنتائج المباراة. سيتم دمج القراءة ووضع النتائج في Review قبل الاعتماد.</div><div class="ocrMultiGrid" style="margin-top:9px"><input id="matchResultImage1" type="file" accept="image/png,image/jpeg,image/webp"><input id="matchResultImage2" type="file" accept="image/png,image/jpeg,image/webp"></div><button class="blue" style="margin-top:9px" onclick="runMatchImageOCRPair()">Read Result Images</button><div id="matchImageOCRStatus" class="hint" style="margin-top:7px">Ready.</div></div></div><div id="entryCard" class="card"></div><div id="matchList"></div></section>
+<section id="results" class="section"><div class="card hero"><div class="title">Match Results Archive</div><div class="hint">Each approved match is shown separately. This is independent from the tournament leaderboard.</div><div class="row noPrint" style="margin-top:10px"><button class="primary" onclick="printSection('results')">Export Results PDF</button><button onclick="printSection('results')">Print / Save PDF</button></div></div><div id="resultsArchive"></div></section>
+<section id="rosterocr" class="section"><div class="card hero"><div class="title">Slot / Player Roster Reader — Deep Image Intelligence</div><div class="hint">يحلل صورة اللوبي على أكثر من معالجة للصورة، يستخرج أسماء اللاعبين ومواقعهم، ثم يربطهم بالـ Slots. لا يتم اعتماد أي Mapping تلقائيًا بدون مراجعة.</div></div><div class="card"><div class="scanGrid"><div><label>Match</label><select id="rosterMatch"></select></div><div><label>Starting Slot</label><input id="rosterStart" type="number" min="3" max="18" value="3"></div><div><label>Scan Depth</label><select id="rosterDepth"><option value="1">Fast</option><option value="2" selected>Deep</option><option value="3">Ultra</option></select></div></div><div class="ocrDrop" style="margin-top:10px"><b>Upload lobby screenshot</b><div class="muted">الأفضل استخدام الصورة الأصلية بأعلى دقة وبدون ضغط.</div><input id="rosterImage" type="file" accept="image/png,image/jpeg,image/webp"></div><img id="rosterPreview" class="imagePreview" style="display:none"><div class="ocrProgress"><i id="rosterProgressBar"></i></div><div id="rosterStatus" class="hint" style="margin-top:8px">Waiting for image.</div></div><div class="card"><div class="titleline"><div class="title">Roster Review</div><span id="rosterScanBadge" class="scanBadge">READY</span></div><div id="rosterReview" class="empty">Upload a lobby screenshot to build Slot → Player mappings.</div></div></section>
+<section id="ocr" class="section"><div class="card hero"><div class="title">Screenshot Result Reader — Advanced Multi-Pass OCR</div><div class="hint">محرك قراءة متطور: تكبير للصورة + تحسين التباين + Grayscale + Threshold + أكثر من تمريرة OCR + مطابقة أسماء اللاعبين مع Roster. النتائج تظل في Review حتى تعتمدها.</div></div><div class="card"><div class="title">1. Match & Scan Engine</div><div class="scanGrid"><div><label>Match</label><select id="ocrMatch"></select></div><div><label>Scan Depth</label><select id="ocrDepth"><option value="1">Fast</option><option value="2" selected>Deep</option><option value="3">Ultra</option></select></div><div><label>Image Mode</label><select id="ocrMode"><option value="auto" selected>Auto Enhance</option><option value="original">Original</option><option value="highcontrast">High Contrast</option><option value="threshold">Threshold</option></select></div></div></div><div class="card"><div class="title">2. Upload Result Screenshot</div><div class="ocrDrop"><b>PNG / JPG / WEBP</b><div class="muted">الصورة الأصلية أفضل بكثير من Screenshot معاد ضغطه أو صورة من السوشيال.</div><input id="ocrImage" type="file" accept="image/png,image/jpeg,image/webp"></div><img id="ocrPreview" class="imagePreview" style="display:none"><div class="ocrProgress"><i id="ocrProgressBar"></i></div><div id="ocrStatus" class="hint" style="margin-top:8px">Waiting for image.</div></div><div class="card"><div class="titleline"><div class="title">3. OCR Review & Intelligence</div><span id="ocrScanBadge" class="scanBadge">READY</span></div><div id="ocrReview" class="empty">Upload an image to start deep analysis.</div></div></section>
+<section id="overall" class="section"><div class="card"><div class="titleline"><div class="title">Overall Standings</div><span class="pill">Approved matches only</span></div><div id="overallKPIs"></div><div id="overallChart"></div><div id="overallTable" style="margin-top:10px"></div></div></section>
+<section id="analytics" class="section"><div class="card hero"><div class="title">Performance & Analytics Center</div><div class="hint">Compare teams across every approved match. Trends, consistency, placement, kills and scoring efficiency are calculated from recorded tournament data only.</div></div><div class="card"><div class="filterbar"><div><label>Team A</label><select id="teamA"></select></div><div><label>Team B</label><select id="teamB"></select></div><div><label>Window</label><select id="analyticsWindow"><option value="all">All Matches</option><option value="5">Last 5 Matches</option><option value="3">Last 3 Matches</option></select></div></div></div>
+<div class="card"><div class="titleline"><div><div class="title">📊 Visual Intelligence</div><div class="hint">رسوم واضحة بدون ازدحام نصوص: ترتيب النقاط، الكفاءة، والاتجاه الحديث.</div></div><span class="pill">Live</span></div><div id="elite2Charts" style="margin-top:10px"></div></div><div id="analyticsContent"></div></section>
+<section id="stats" class="section"><div class="card"><div class="titleline"><div><div class="title">Player Statistics</div><div class="hint">Player kill totals are calculated by summing each player's kills across approved matches.</div></div><span class="pill">Kills = player eliminations</span></div><div class="grid"><div><label>Tournament</label><select id="statsTournament"></select></div><div><label>Match</label><select id="statsMatch"></select></div></div><div id="statsTable" style="margin-top:10px"></div></div></section>
+<section id="reports" class="section"><div class="card hero"><div class="title">Professional Report Center</div><div class="hint">تقارير متعددة الصفحات مبنية من بيانات البطولة الحالية. استخدم Print / Save as PDF للحصول على ملف PDF موثوق من Chrome.</div><div class="grid" style="margin-top:10px"><div><label>Report</label><select id="reportType" onchange="eliteRenderReport()"><option value="full">Full Tournament Report</option><option value="leaderboard">Leaderboard Report</option><option value="results">Match Results Report</option><option value="teams">Teams & Logos Report</option><option value="players">Player Statistics Report</option></select></div><div><label>Window</label><select id="reportWindow" onchange="eliteRenderReport()"><option value="all">All Approved Matches</option><option value="5">Last 5 Approved Matches</option><option value="3">Last 3 Approved Matches</option></select></div></div><div class="row noPrint" style="margin-top:10px"><button class="primary" onclick="exportProfessionalPDF()">Download PDF</button><button onclick="elitePrintReport()">Print / Save PDF</button><button onclick="eliteDownloadReportHTML()">Download Report HTML</button></div></div><div id="reportPreview" class="card"></div></section>
+<section id="settings" class="section"><div class="card"><div class="title">Rules & Data</div><div class="grid4"><div><label>1st</label><input id="p1" type="number" value="10"></div><div><label>2nd</label><input id="p2" type="number" value="6"></div><div><label>3rd</label><input id="p3" type="number" value="5"></div><div><label>Kill</label><input id="pk" type="number" value="1"></div></div><div class="hint" style="margin-top:9px">Default: 1st 10, 2nd 6, 3rd 5, 4th 4, 5th 3, 6th 2, 7th 1, 8th 1, 9th–16th 0. Kill = 1.</div><div class="row" style="margin-top:10px"><button class="primary" onclick="saveRules()">Save Rules</button><button onclick="backup()">Backup</button><button onclick="restore()">Restore</button><button class="danger" onclick="resetAll()">Reset All</button></div><input id="file" type="file" accept="application/json" style="display:none" onchange="loadBackup(event)"></div><div class="card"><div class="title">Data Integrity</div><div class="hint">Matches are approved only when all required team results are mapped, placements are unique, values are valid and no duplicate Game ID is used. Unresolved data stays in Review.</div></div>
+<div class="card"><div class="titleline"><div><div class="title">🧠 Operations Intelligence</div><div class="hint">أدوات متقدمة لإدارة النسخ، سجل العمليات، واختبار جاهزية البطولة قبل البث.</div></div><span id="opsBuildBadge" class="pill">V26 ELITE 2.0</span></div><div class="healthMatrix" id="elite2HealthMatrix" style="margin-top:10px"></div><div class="row" style="margin-top:10px"><button onclick="elite2ValidateNow()">Run Full Validation</button><button onclick="elite2CreateAudit('Manual snapshot created')">Create Snapshot</button><button onclick="elite2Undo()">Undo</button><button onclick="elite2Redo()">Redo</button></div></div>
+<div class="card"><div class="titleline"><div class="title">🧾 Audit Log</div><button class="small ghost" onclick="elite2ClearAudit()">Clear</button></div><div id="elite2Audit" class="auditList empty" style="margin-top:8px">No operations recorded.</div></div>
+</section>
+</main></div><nav class="nav"><button class="active" onclick="tab('home',this)">Command</button><button onclick="tab('teams',this)">Teams</button><button onclick="tab('matches',this)">Matches</button><button onclick="tab('results',this)">Results</button><button onclick="tab('overall',this)">Leaderboard</button><button onclick="tab('analytics',this)">Analytics</button><button onclick="tab('stats',this)">Stats</button><button onclick="tab('reports',this)">Reports</button><button onclick="tab('ocr',this)">OCR</button><button onclick="tab('settings',this)">Settings</button>
+</nav>
+<div id="elite2Palette" class="commandPalette" onclick="if(event.target===this)elite2ClosePalette()"><div class="commandBox"><input id="elite2PaletteInput" placeholder="Search commands, tournaments, teams…" oninput="elite2RenderPalette()"><div id="elite2PaletteResults" class="commandResults"></div></div></div>
+<script>
+const KEY='pubg_tm_v21_pro';
+const BASE={tournament:'',tournamentLogo:'',teams:Array.from({length:16},(_,i)=>({slot:i+3,name:'',players:[]})),matches:[],rules:{place:[0,10,6,5,4,3,2,1,1],kill:1},activeMatchId:null};
+let S=load();
+function clone(x){return JSON.parse(JSON.stringify(x))} function load(){try{let x=JSON.parse(localStorage.getItem(KEY)||'null');return x?Object.assign(clone(BASE),x):clone(BASE)}catch{return clone(BASE)}}
+function save(){localStorage.setItem(KEY,JSON.stringify(S))} function esc(x){return String(x??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;')} function norm(x){return String(x||'').toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]+/g,'')} function toast(x){let e=document.getElementById('toast');e.textContent=x;e.style.display='block';clearTimeout(window._toast);window._toast=setTimeout(()=>e.style.display='none',1800)}
+function tab(id,b){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');render()}
+function render(){document.getElementById('tournament').value=S.tournament||'';let tl=document.getElementById('tournamentLogoPreview');if(tl){tl.src=S.tournamentLogo||'';tl.style.display=S.tournamentLogo?'block':'none'}renderTeams();renderMatches();renderResultsArchive();renderOCRSelectors();renderRosterSelectors();renderOverall();renderAnalytics();renderStats();eliteRenderCommand();eliteRenderReport();document.getElementById('p1').value=S.rules.place[1];document.getElementById('p2').value=S.rules.place[2];document.getElementById('p3').value=S.rules.place[3];document.getElementById('pk').value=S.rules.kill}
+function setTeam(i,v){S.teams[i].name=v.trim();S.tournament=document.getElementById('tournament').value.trim();save();renderAnalytics();renderOverall()}
+function setLogo(i,file){if(!file)return;let r=new FileReader();r.onload=()=>{S.teams[i].logo=r.result;save();render()};r.readAsDataURL(file)}
+function setTournamentLogo(file){if(!file)return;let r=new FileReader();r.onload=()=>{S.tournamentLogo=r.result;save();render();toast('Tournament logo saved')};r.readAsDataURL(file)}
+function renderTeams(){let h='<div class="scroll"><table class="table"><tr><th>Slot</th><th>Team + Logo</th><th>Logo</th><th>In-Game Roster</th></tr>';S.teams.forEach((t,i)=>{let pc=Array.isArray(t.players)?t.players.length:0;h+=`<tr><td class="rank">${t.slot}</td><td><div class="teamCell"><img class="logoThumb" src="${esc(t.logo||'')}" onerror="this.style.display='none'"><input value="${esc(t.name)}" onchange="setTeam(${i},this.value)" placeholder="Team ${t.slot}"></div></td><td><input class="logoInput" type="file" accept="image/png,image/jpeg, image/webp" onchange="setLogo(${i},this.files[0])"></td><td><span class="confidence ${pc===4?'good':pc?'warn':'bad'}">${pc}/4 players</span></td></tr>`});h+='</table></div><div class="hint" style="margin-top:8px">Team logos and the verified in-game player roster are stored inside this tournament. The roster is later used as the canonical identity source for result OCR.</div>';document.getElementById('teamTable').innerHTML=h}
+function importTeams(){let a=document.getElementById('bulk').value.split(/\n|\r/).map(x=>x.trim()).filter(Boolean);if(!a.length)return toast('Paste team names first');if(a.length>16)return toast('Maximum 16 teams');for(let i=0;i<a.length;i++)S.teams[i].name=a[i];S.tournament=document.getElementById('tournament').value.trim();save();document.getElementById('bulk').value='';render();toast(`${a.length} teams imported`)}
+function newMatch(){let name=document.getElementById('mname').value.trim()||`Match ${S.matches.length+1}`,gid=document.getElementById('gameid').value.trim();if(gid&&S.matches.some(m=>m.gameId===gid))return toast('Duplicate Game ID blocked');let m={id:(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(16).slice(2)),name,gameId:gid,created:new Date().toISOString(),approved:false,results:[],review:[],snapshot:S.teams.map(x=>({...x,players:Array.isArray(x.players)?x.players.slice(0,4):[]})),roster:Object.fromEntries(S.teams.map(t=>[t.slot,{teamSlot:t.slot,players:Array.isArray(t.players)?t.players.slice(0,4):[]} ])),players:[]};S.matches.push(m);S.activeMatchId=m.id;save();document.getElementById('mname').value='';document.getElementById('gameid').value='';renderMatches();renderEntry(m);renderOCRSelectors();renderRosterSelectors();toast('Match created — enter results below');requestAnimationFrame(()=>document.getElementById('entryCard')?.scrollIntoView({behavior:'smooth',block:'start'}))}
+function getActive(){return S.matches.find(m=>m.id===S.activeMatchId)||S.matches[S.matches.length-1]}
+function focusResults(){let m=getActive();if(!m){newMatch();return}document.getElementById('matches').scrollIntoView({behavior:'smooth'});renderEntry(m);}
+function points(r){return (S.rules.place[r.placement]||0)+(Number(r.kills)||0)*S.rules.kill}
+function renderEntry(m){if(!m){document.getElementById('entryCard').innerHTML='<div class="empty">Create a match to enter results.</div>';return}let rows=m.results.length?m.results: S.teams.map(t=>({slot:t.slot,team:t.name,placement:0,kills:0}));let bySlot=new Map(rows.map(r=>[r.slot,r]));let used=new Set(rows.filter(r=>r.placement).map(r=>r.placement));let missing=16-used.size;let total=rows.reduce((a,r)=>a+points(r),0);let valid=rows.length===16&&rows.every(r=>r.team&&r.placement>=1&&r.placement<=16&&Number.isInteger(r.kills)&&r.kills>=0)&&used.size===16;
+let h=`<div class="titleline"><div><div class="title">Team Results Entry</div><div class="hint">Select each placement once. Enter kills. Points calculate live.</div></div><span class="badge ${valid?'ok':'review'}">${valid?'READY TO APPROVE':`${missing} placements missing`}</span></div><div class="resultRow head"><div>Slot</div><div>Team</div><div>Placement</div><div>Kills</div><div>Total</div></div>`;
+S.teams.forEach(t=>{let r=bySlot.get(t.slot)||{slot:t.slot,team:t.name,placement:0,kills:0};let opts='<option value="0">—</option>';for(let p=1;p<=16;p++)if(!used.has(p)||p===r.placement)opts+=`<option value="${p}" ${r.placement===p?'selected':''}>${p}</option>`;h+=`<div class="resultRow"><div class="rank">${t.slot}</div><div>${esc(t.name||'Unassigned')}<div class="meta">${r.teamId?'API mapped':''}</div></div><select class="placeSelect" onchange="setPlacement('${m.id}',${t.slot},this.value)">${opts}</select><div class="killControl"><button class="small killBtn" type="button" aria-label="Decrease kills" onclick="adjustKill('${m.id}',${t.slot},-1)">−</button><input class="killInput" data-kill-id="${m.id}-${t.slot}" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Kills for ${esc(t.name||'Team '+t.slot)}" value="${sanitizeKills(r.kills)}" oninput="this.value=this.value.replace(/[^0-9]/g,'')" onchange="setKills('${m.id}',${t.slot},this.value)" onkeydown="handleKillKeydown(event,'${m.id}',${t.slot})"><button class="small killBtn" type="button" aria-label="Increase kills" onclick="adjustKill('${m.id}',${t.slot},1)">+</button></div><div class="totalCell">${points(r)}</div></div>`});
+h+=`<div class="grid" style="margin-top:12px"><div class="scorePreview"><div class="muted">Match Total</div><div class="scoreBig">${total} pts</div></div><div class="scorePreview"><div class="muted">Placements</div><div class="scoreBig">${used.size}/16</div></div></div><div class="row" style="margin-top:10px"><button class="primary" onclick="approveMatch('${m.id}')">✓ Review & Approve</button><button class="blue" onclick="openApi('${m.id}')">Import API JSON</button><button onclick="openManual('${m.id}')">Paste Manual Rows</button></div><div id="manualBox-${m.id}"></div>`;
+document.getElementById('entryCard').innerHTML=h}
+function ensureResult(m,slot){let r=m.results.find(x=>x.slot===slot);if(!r){let t=S.teams.find(x=>x.slot===slot)||{};r={slot,team:t.name||'',placement:0,kills:0};m.results.push(r)}return r}
+function setPlacement(id,slot,v){let m=S.matches.find(x=>x.id===id);let p=Number(v);let r=ensureResult(m,slot);if(p&&m.results.some(x=>x!==r&&x.placement===p)){toast('That placement is already used');renderEntry(m);return}r.placement=p;m.approved=false;save();renderEntry(m)}
+function sanitizeKills(v){let s=String(v??'').replace(/[^0-9]/g,'');if(s==='')return 0;let n=Number(s);return Number.isFinite(n)?Math.max(0,Math.floor(n)):0}
+function setKills(id,slot,v){let m=S.matches.find(x=>x.id===id);if(!m)return;let r=ensureResult(m,slot);r.kills=sanitizeKills(v);m.approved=false;save();renderEntry(m);setTimeout(()=>{let el=document.querySelector(`[data-kill-id="${id}-${slot}"]`);if(el){el.value=r.kills;el.focus();el.select()}},0)}
+function adjustKill(id,slot,d){let m=S.matches.find(x=>x.id===id);if(!m)return;let r=ensureResult(m,slot);r.kills=Math.max(0,sanitizeKills(r.kills)+Number(d||0));m.approved=false;save();renderEntry(m)}
+function handleKillKeydown(e,id,slot){if(e.key==='ArrowUp'){e.preventDefault();adjustKill(id,slot,1)}else if(e.key==='ArrowDown'){e.preventDefault();adjustKill(id,slot,-1)}else if(e.key==='Enter'){e.preventDefault();setKills(id,slot,e.currentTarget.value)}}
+function approveMatch(id){let m=S.matches.find(x=>x.id===id);if(!m)return;let names=S.teams.filter(t=>t.name),rows=m.results||[],issues=[];let expected=new Set(S.teams.map(t=>Number(t.slot))),slots=new Set(rows.map(r=>Number(r.slot))),places=rows.map(r=>Number(r.placement)),placeSet=new Set(places);if(names.length!==16)issues.push('Team List must contain exactly 16 teams');if(rows.length!==16)issues.push(`Results contain ${rows.length}/16 teams`);if(slots.size!==16||[...slots].some(slot=>!expected.has(slot))||[...expected].some(slot=>!slots.has(slot)))issues.push('Results must contain exactly Team List Slots 3–18, once each');if(places.length!==16||placeSet.size!==16||places.some(x=>!Number.isInteger(x)||x<1||x>16))issues.push('Placements must be unique from 1 to 16');if(rows.some(r=>!Number.isInteger(sanitizeKills(r.kills))||sanitizeKills(r.kills)<0))issues.push('Invalid kills');for(const r of rows){if(Array.isArray(r.players)&&r.players.length){let playerKills=r.players.reduce((sum,p)=>sum+Math.max(0,Number(p.kills??p.elim??p.killNum)||0),0);if(playerKills!==sanitizeKills(r.kills))issues.push(`Player kills mismatch for Slot ${r.slot}: team=${sanitizeKills(r.kills)}, players=${playerKills}`);}}if(m.gameId&&S.matches.some(x=>x!==m&&x.gameId===m.gameId))issues.push('Duplicate Game ID');m.review=issues.map(reason=>({reason}));if(issues.length){m.approved=false;save();render();toast('Match remains in Review — fix highlighted issues');return}m.results=rows.map(r=>({...r,kills:sanitizeKills(r.kills),pp:S.rules.place[r.placement]||0,total:points(r),team:r.team||S.teams.find(t=>t.slot===Number(r.slot))?.name||''}));m.approved=true;save();render();toast('Match approved and added to Overall')}
+function openManual(id){let box=document.getElementById('manualBox-'+id);box.innerHTML=`<div class="card" style="margin-top:10px"><label>Manual format: Slot | Team | Placement | Kills</label><textarea id="manualText-${id}" placeholder="3 | TEAM A | 1 | 10\n4 | TEAM B | 2 | 7"></textarea><button class="primary" style="margin-top:7px" onclick="parseManual('${id}')">Process Manual Results</button></div>`}
+function parseManual(id){let m=S.matches.find(x=>x.id===id),raw=document.getElementById('manualText-'+id).value.trim();if(!raw)return toast('Paste rows first');let review=[];let out=[];for(let line of raw.split(/\n/).map(x=>x.trim()).filter(Boolean)){let p=line.split('|').map(x=>x.trim());if(p.length<4){review.push({line,reason:'Expected Slot | Team | Placement | Kills'});continue}let slot=Number(p[0]),team=p[1],placement=Number(p[2]),kills=Number(p[3]);if(!Number.isInteger(slot)||slot<3||slot>18||!team||!Number.isInteger(placement)||placement<1||placement>16||!Number.isInteger(kills)||kills<0){review.push({line,reason:'Invalid values'});continue}let t=S.teams.find(x=>x.slot===slot);out.push({slot,team:t?.name||team,placement,kills});}m.results=out;m.review=review;m.approved=false;save();renderEntry(m);toast(review.length?'Manual results need review':'Results processed')}
+function openApi(id){let box=document.getElementById('manualBox-'+id);box.innerHTML=`<div class="card" style="margin-top:10px"><label>API JSON — TotalPlayerList</label><textarea id="apiText-${id}" placeholder='{"allinfo":{"TotalPlayerList":[...]}}'></textarea><button class="blue" style="margin-top:7px" onclick="parseApi('${id}')">Process API JSON</button></div>`}
+function parseApi(id){let m=S.matches.find(x=>x.id===id);try{let j=JSON.parse(document.getElementById('apiText-'+id).value);let rows=j?.allinfo?.TotalPlayerList||j?.TotalPlayerList||[];if(!Array.isArray(rows))throw Error('No TotalPlayerList');let by=new Map();for(const x of rows){if(!x.teamId)continue;let key=String(x.teamId),a=by.get(key)||{teamId:key,team:x.teamName||'',placement:999,kills:0,players:[]};a.kills+=Number(x.killNum)||0;let rk=Number(x.rank);if(Number.isFinite(rk)&&rk>0)a.placement=Math.min(a.placement,rk);a.players.push({name:x.playerName||'',kills:Number(x.killNum)||0,damage:Number(x.damage)||0,rank:rk||0,knockouts:Number(x.knockouts)||0,survivalTime:Number(x.survivalTime)||0});by.set(key,a)}m.results=[];m.review=[];m.players=[];for(const a of by.values()){let t=S.teams.find(x=>norm(x.name)===norm(a.team));if(!t){m.review.push({line:a.team||a.teamId,reason:'Team mapping unresolved — assign Slot manually'});continue}m.results.push({slot:t.slot,team:t.name,placement:a.placement,kills:a.kills,teamId:a.teamId,players:a.players});m.players.push(...a.players.map(p=>({...p,team:t.name,slot:t.slot})));}m.approved=false;save();renderEntry(m);toast(`API processed: ${m.results.length}/16 teams mapped`)}catch(e){toast('Invalid API JSON')}}
+function renderMatches(){let el=document.getElementById('matchList');if(!S.matches.length){el.innerHTML='<div class="card empty">No matches yet.</div>';return}el.innerHTML=S.matches.slice().reverse().map(m=>`<div class="card matchitem"><div><b>${esc(m.name)}</b><div class="meta">${new Date(m.created).toLocaleString()} • ${m.results.length}/16 mapped • Game ID: ${esc(m.gameId||'—')}</div></div><div class="row" style="flex:0 0 auto"><span class="badge ${m.approved?'ok':'review'}">${m.approved?'APPROVED':'REVIEW'}</span><button class="small" onclick="openMatch('${m.id}')">Open</button><button class="small danger deleteMatchBtn" onclick="deleteMatch('${m.id}')">Delete</button></div></div>`).join('')}
+function deleteMatch(id){let m=S.matches.find(x=>x.id===id);if(!m)return;if(!confirm(`Delete ${m.name||'this match'}? This cannot be undone unless you restore a backup.`))return;S.matches=S.matches.filter(x=>x.id!==id);if(S.activeMatchId===id)S.activeMatchId=S.matches.at(-1)?.id||null;save();render();toast('Match deleted')}
+function openMatch(id){S.activeMatchId=id;save();document.querySelector('.nav button:nth-child(2)').click();setTimeout(()=>renderEntry(getActive()),0)}
+function renderResultsArchive(){let el=document.getElementById('resultsArchive');let ms=S.matches.filter(m=>m.approved).slice().reverse();if(!ms.length){el.innerHTML='<div class="card empty">No approved match results yet.</div>';return}el.innerHTML=ms.map(m=>{let rows=(m.results||[]).slice().sort((a,b)=>a.placement-b.placement);let total=rows.reduce((x,r)=>x+points(r),0);return `<div class="card matchResultCard"><div class="matchResultHead"><div><div class="title">${esc(m.name)}</div><div class="meta">${new Date(m.created).toLocaleString()} · Game ID: ${esc(m.gameId||'—')}</div></div><span class="badge ok">APPROVED · ${total} PTS</span></div><div class="scroll" style="margin-top:9px"><div class="matchResultRow" style="font-weight:900;color:var(--muted)"><div>#</div><div>Team</div><div>Place Pts</div><div>Kills</div><div>Total</div></div>${rows.map(r=>{let t=S.teams.find(x=>x.slot===r.slot)||{};let win=r.placement===1?'<span class="matchWinner">🏆 WINNER</span>':'';return `<div class="matchResultRow"><div class="rank">${r.placement}</div><div><div class="teamCell"><img class="logoThumb" src="${esc(t.logo||'')}" onerror="this.style.visibility='hidden'"><span>${esc(t.name||r.team)}${win}</span></div></div><div class="placePts">${S.rules.place[r.placement]||0}</div><div>${Number(r.kills)||0}</div><div class="totalPts">${points(r)}</div></div>`}).join('')}</div></div>`}).join('')}
+function renderOCRSelectors(){let s=document.getElementById('ocrMatch');if(!s)return;let old=s.value;s.innerHTML=S.matches.map(m=>`<option value="${m.id}">${esc(m.name)}${m.approved?' · Approved':''}</option>`).join('');if([...s.options].some(o=>o.value===old))s.value=old}
+function printSection(id){document.querySelectorAll('.section').forEach(x=>x.classList.remove('printing'));let el=document.getElementById(id);if(!el)return;el.classList.add('printing');window.print();setTimeout(()=>el.classList.remove('printing'),500)}
+function logoForSlot(slot){return (S.teams.find(t=>t.slot===Number(slot))||{}).logo||''}
+function teamForSlot(slot){return S.teams.find(t=>t.slot===Number(slot))||null}
+function updateOCRStatus(t,p){let e=document.getElementById('ocrStatus');if(e)e.textContent=t;let b=document.getElementById('ocrProgressBar');if(b)b.style.width=Math.max(0,Math.min(100,p||0))+'%'}
+function renderRosterSelectors(){let s=document.getElementById('rosterMatch');if(!s)return;let old=s.value;s.innerHTML=S.matches.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');if([...s.options].some(o=>o.value===old))s.value=old}
+function updateRosterStatus(t,p){let e=document.getElementById('rosterStatus');if(e)e.textContent=t;let b=document.getElementById('rosterProgressBar');if(b)b.style.width=Math.max(0,Math.min(100,p||0))+'%'}
+function parseRosterWords(words){let W=words.filter(w=>w.text&&w.confidence!==undefined&&w.confidence>=10);let cols=3, rows=Math.max(1,Math.ceil((Math.max(...W.map(w=>w.bbox?.y1||0),0)+1)/110));let width=Math.max(...W.map(w=>w.bbox?.x1||0),852);if(width>=1100)cols=4;let cellW=width/cols;let grouped=new Map();for(const w of W){let x=(w.bbox.x0+w.bbox.x1)/2,y=(w.bbox.y0+w.bbox.y1)/2,c=Math.min(cols-1,Math.max(0,Math.floor(x/cellW))),r=Math.max(0,Math.floor(y/110)),key=r+':'+c;let a=grouped.get(key)||[];a.push(w);grouped.set(key,a)}let out=[];for(const [key,ws] of grouped){let [r,c]=key.split(':').map(Number);let names=ws.filter(w=>{let t=w.text.trim();return t.length>=3&&!/^\d+$/.test(t)&&!/elimin/i.test(t)&&!/^remaining$/i.test(t)&&!/^team$/i.test(t)}).sort((a,b)=>a.bbox.y0-b.bbox.y0||a.bbox.x0-b.bbox.x0);let lines=[];for(const w of names){let y=(w.bbox.y0+w.bbox.y1)/2, last=lines[lines.length-1];if(!last||Math.abs(last.y-y)>12)lines.push({y,text:w.text});else last.text+=' '+w.text}let players=lines.map(x=>x.text.replace(/[^A-Za-z0-9_\u0600-\u06ff×-]/g,'').trim()).filter(x=>x.length>=3).slice(0,4);if(players.length)out.push({row:r,col:c,players})}return out.sort((a,b)=>a.row-b.row||a.col-b.col)}
+async function runRosterOCR(file){if(!file)return;let review=document.getElementById('rosterReview');review.innerHTML='<div class="hint">Reading lobby screenshot…</div>';updateRosterStatus('Loading OCR engine…',5);try{let result=await Tesseract.recognize(file,'eng+ara',{logger:m=>{if(m.status==='recognizing text')updateRosterStatus('Reading lobby… '+Math.round((m.progress||0)*100)+'%',5+(m.progress||0)*90);}});updateRosterStatus('OCR complete — assign and review Slots.',100);let cells=parseRosterWords(result.data.words||[]);if(!cells.length){review.innerHTML='<div class="callout">No player blocks were detected. Use the original lobby screenshot at full resolution.</div>';return}let start=Number(document.getElementById('rosterStart').value)||3;review.innerHTML=`<div class="notice">Detected ${cells.length} lobby blocks. Slot numbers are assigned by the standard left-to-right, top-to-bottom PUBG MOBILE lobby layout. Review every mapping before applying.</div><div class="scroll" style="margin-top:10px"><table class="table"><tr><th>Slot</th><th>Detected Players</th><th>Team</th></tr>${cells.map((c,i)=>{let slot=start+c.row*3+c.col;return `<tr><td class="rank">${slot}</td><td>${c.players.map(esc).join('<br>')}</td><td><select id="rosterTeam-${i}"><option value="">Select Team</option>${S.teams.map(t=>`<option value="${t.slot}">${t.slot} · ${esc(t.name)}</option>`).join('')}</select></td></tr>`}).join('')}</table></div><div class="row noPrint" style="margin-top:10px"><button class="primary" onclick='applyRosterOCR(${JSON.stringify(cells).replaceAll("'","\\'")})'>Save Slot Roster</button></div>`}catch(e){updateRosterStatus('OCR failed.',0);review.innerHTML='<div class="callout">OCR could not process this lobby screenshot. No data was changed.</div>'}}
+function applyRosterOCR(cells){let id=document.getElementById('rosterMatch').value,m=S.matches.find(x=>x.id===id);if(!m)return toast('Select a match first');let start=Number(document.getElementById('rosterStart').value)||3;m.roster=m.roster||{};cells.forEach((c,i)=>{let slot=start+c.row*3+c.col,teamSlot=Number(document.getElementById('rosterTeam-'+i)?.value||0);m.roster[slot]={teamSlot,players:c.players}});save();render();toast('Slot roster saved for this match')}
+async function runMatchImageOCRPair(){let id=S.activeMatchId||getActive()?.id;if(!id)return toast('Create or open a match first');let files=[document.getElementById('matchResultImage1')?.files?.[0],document.getElementById('matchResultImage2')?.files?.[0]].filter(Boolean);if(!files.length)return toast('Upload at least one result image');let status=document.getElementById('matchImageOCRStatus');let texts=[];try{for(let i=0;i<files.length;i++){if(status)status.textContent=`Reading result image ${i+1}/${files.length}…`;let r=await Tesseract.recognize(files[i],'eng+ara',{logger:m=>{if(m.status==='recognizing text'&&status)status.textContent=`Reading result image ${i+1}/${files.length} · ${Math.round((m.progress||0)*100)}%`}});texts.push(r.data.text||'')}let m=S.matches.find(x=>x.id===id);let parsed=parseMatchResultText(texts.join('\n'));if(!parsed.length){if(status)status.textContent='No reliable result rows detected. Try the original screenshot.';return}m.results=mergeOCRResults(m.results||[],parsed);m.approved=false;m.review=[{reason:'Image OCR imported — review Slot, Placement and Kills before approval.'}];save();renderEntry(m);if(status)status.textContent=`Detected ${parsed.length} result rows. Match is in Review.`;toast('Result images imported for review')}catch(e){if(status)status.textContent='OCR failed. No data was changed.';toast('Result image OCR failed')}}
+function parseMatchResultText(text){let out=[];for(const raw of String(text||'').split(/\n+/)){let line=raw.replace(/\s+/g,' ').trim();if(!line)continue;let m=line.match(/^(?:#?\s*)?(1[0-6]|[1-9])\s+(.+?)\s+(\d{1,2})\s*$/);if(!m)continue;let placement=Number(m[1]),name=m[2].replace(/\b(?:eliminations?|kills?|elims?)\b/ig,'').trim(),kills=Number(m[3]);if(placement>=1&&placement<=16&&name&&kills>=0&&kills<=99)out.push({placement,name,kills})}return out}
+function mergeOCRResults(existing,parsed){let byPlace=new Map((existing||[]).map(r=>[Number(r.placement),r]));for(const x of parsed){let old=byPlace.get(x.placement);byPlace.set(x.placement,{...(old||{}),placement:x.placement,ocrName:x.name,kills:x.kills,team:old?.team||'',slot:old?.slot||0})}return [...byPlace.values()].sort((a,b)=>a.placement-b.placement)}
+async function eliteLoadImage(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=r.result};
+    r.onerror=reject;r.readAsDataURL(file);
+  });
+}
+function eliteCanvasCrop(img,x0,y0,x1,y1,scale=3){
+  const sx=Math.max(0,Math.round(img.width*x0)),sy=Math.max(0,Math.round(img.height*y0));
+  const sw=Math.max(1,Math.round(img.width*(x1-x0))),sh=Math.max(1,Math.round(img.height*(y1-y0)));
+  const c=document.createElement('canvas');c.width=sw*scale;c.height=sh*scale;
+  const ctx=c.getContext('2d',{willReadFrequently:true});
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
+  return c;
+}
+function eliteLobbyLayouts(){
+  return [
+    {slots:[3,4,5,6,7,8,9,10,11],ys:[[.088,.385],[.390,.695],[.700,1]],xs:[[.004,.308],[.320,.630],[.643,.952]]},
+    {slots:[12,13,14,15,16,17,18],ys:[[.190,.465],[.470,.745],[.748,1]],xs:[[.004,.308],[.320,.630],[.643,.952]]}
+  ];
+}
+function eliteCleanPlayerLine(s){
+  s=String(s||'').replace(/\s+/g,' ').trim();
+  s=s.replace(/(?:\/?\s*[0Oo]\s*)?(?:eliminations?|elim(?:inations)?|eliminati?ons?)/ig,'').trim();
+  s=s.replace(/^[^A-Za-z0-9\u0600-\u06ff@#_.xX-]{0,8}/,'').trim();
+  s=s.replace(/^(?:\[\s*\d{1,2}\s*\]|\(?\s*\d{1,2}\s*\)?|\d{1,2})\s*/,'').trim();
+  s=s.replace(/^[|:;,.\/\\-]+|[|:;,.\/\\-]+$/g,'').trim();
+  if(/^0+$/.test(s)||/^\/?0$/.test(s))return '';
+  return s;
+}
+function eliteGroupOCRWords(words,boxW,boxH){
+  const usable=words.filter(w=>{
+    const t=String(w.text||'').trim();
+    const cx=(Number(w.bbox?.x0||0)+Number(w.bbox?.x1||0))/2;
+    const cy=(Number(w.bbox?.y0||0)+Number(w.bbox?.y1||0))/2;
+    if(!t||cx>boxW*.79)return false;
+    if(/elimin|remaining|team$/i.test(t))return false;
+    if(/^[\/|\\]?[0Oo]$/.test(t))return false;
+    return cy>boxH*.05;
+  }).sort((a,b)=>(a.bbox.y0-b.bbox.y0)||(a.bbox.x0-b.bbox.x0));
+  const lines=[];
+  for(const w of usable){
+    const cy=(w.bbox.y0+w.bbox.y1)/2;
+    let line=lines.find(l=>Math.abs(l.cy-cy)<Math.max(18,boxH*.075));
+    if(!line){line={cy,words:[]};lines.push(line)}
+    line.words.push(w);
+  }
+  return lines.sort((a,b)=>a.cy-b.cy).map(l=>eliteCleanPlayerLine(l.words.sort((a,b)=>a.bbox.x0-b.bbox.x0).map(w=>w.text).join(' '))).filter(Boolean);
+}
+async function eliteOCRLobbyBlock(canvas,progressLabel){
+  const variants=[];
+  const base=canvas;
+  const ctx=base.getContext('2d',{willReadFrequently:true}),data=ctx.getImageData(0,0,base.width,base.height);
+  const g=document.createElement('canvas');g.width=base.width;g.height=base.height;
+  const gx=g.getContext('2d',{willReadFrequently:true});gx.drawImage(base,0,0);
+  const id=gx.getImageData(0,0,g.width,g.height),px=id.data;
+  for(let i=0;i<px.length;i+=4){const v=.299*px[i]+.587*px[i+1]+.114*px[i+2];const c=Math.max(0,Math.min(255,(v-35)*1.55+25));px[i]=px[i+1]=px[i+2]=c}
+  gx.putImageData(id,0,0);
+  variants.push(base,g);
+  let best=null;
+  for(let vi=0;vi<variants.length;vi++){
+    const r=await Tesseract.recognize(variants[vi],'eng',{
+      logger:m=>{if(m.status==='recognizing text'&&progressLabel)progressLabel(Math.round((m.progress||0)*100))}
+    });
+    const words=(r.data.words||[]).map(w=>({text:w.text,confidence:Number(w.confidence||0),bbox:w.bbox}));
+    const names=eliteGroupOCRWords(words,variants[vi].width,variants[vi].height);
+    const cleaned=names.filter(n=>n.length>=2).slice(0,4);
+    const score=cleaned.length*25+cleaned.reduce((s,n)=>s+Math.min(100,Math.max(0,n.length*5)),0);
+    if(!best||score>best.score)best={names:cleaned,score,raw:r.data.text||''};
+  }
+  return best||{names:[],score:0,raw:''};
+}
+async function runTeamSlotOCRPair(){
+  const files=[
+    document.getElementById('teamSlotImage1')?.files?.[0],
+    document.getElementById('teamSlotImage2')?.files?.[0]
+  ];
+  if(!files[0]||!files[1])return toast('Please upload both match screenshots');
+  const review=document.getElementById('teamSlotOCRReview');
+  if(!review)return;
+  review.innerHTML='<div class="hint">Analyzing the fixed PUBG MOBILE 16-team layout…</div>';
+  try{
+    const imgs=[await eliteLoadImage(files[0]),await eliteLoadImage(files[1])], layouts=eliteLobbyLayouts(), detected=[];
+    let done=0,total=16;
+    for(let imageIndex=0;imageIndex<2;imageIndex++){
+      const img=imgs[imageIndex],layout=layouts[imageIndex];
+      for(let r=0;r<layout.ys.length;r++){
+        for(let c=0;c<layout.xs.length;c++){
+          const slot=layout.slots[r*3+c]; if(!slot)continue;
+          const [x0,x1]=layout.xs[c],[y0,y1]=layout.ys[r];
+          const canvas=eliteCanvasCrop(img,x0,y0,x1,y1,3);
+          const result=await eliteOCRLobbyBlock(canvas,p=>{review.querySelector('.ocrLive')?.replaceChildren(document.createTextNode(`Reading Slot ${slot} · ${p}%`))});
+          const team=S.teams.find(t=>Number(t.slot)===slot);
+          detected.push({slot,teamName:team?.name||'',players:result.names.slice(0,4),score:result.score,raw:result.raw});
+          done++; 
+          review.innerHTML=`<div class="notice"><b>Reading fixed slots 3–18</b><div class="ocrLive" style="margin-top:4px">Completed ${done}/${total} · Slot ${slot}</div></div>`;
+        }
+      }
+    }
+    const withPlayers=detected.filter(x=>x.players.length);
+    review.innerHTML=`<div class="notice"><b>تم التعرف على ${withPlayers.length} من 16 Slot.</b> النظام لم يعد يبحث عن رقم الـSlot داخل الصورة؛ هو يعرف ترتيب الشاشة مسبقًا: الصورة الأولى = 03–11، الصورة الثانية = 12–18. لذلك يتم ربط اللاعبين مباشرةً بخانة الفريق الموجودة في النظام.</div>
+    <div class="scroll" style="margin-top:10px"><table class="table rosterLinkTable"><tr><th>Slot</th><th>Team in System</th><th>Detected In-Game Players</th><th>Status</th></tr>
+    ${detected.map((x,i)=>`<tr>
+      <td class="rank">${x.slot}</td>
+      <td><b>${esc(x.teamName||'Team not entered')}</b><div class="meta">Slot ${x.slot} is the source of truth</div></td>
+      <td>${[0,1,2,3].map(j=>`<input id="rosterPlayer-${i}-${j}" value="${esc(x.players[j]||'')}" placeholder="Player ${j+1}" style="margin:3px 0">`).join('')}</td>
+      <td><span class="confidence ${x.players.length===4?'good':x.players.length>=2?'warn':'bad'}">${x.players.length===4?'4/4 detected':x.players.length+' detected'}</span></td>
+    </tr>`).join('')}</table></div>
+    <div class="row noPrint" style="margin-top:10px">
+      <button class="primary" onclick='eliteApplyFixedRoster(${JSON.stringify(detected).replaceAll("'","\\'")})'>Save Players to Team Slots</button>
+      <button class="ghost" onclick="runTeamSlotOCRPair()">Re-read Screenshots</button>
+    </div>
+    <div class="callout" style="margin-top:10px">بعد الحفظ، الأسماء تصبح <b>Canonical In-Game Names</b> للبطولة. سيستخدمها قارئ نتائج المباريات لاحقًا لمطابقة الاسم الظاهر في Screenshot مع Slot الفريق بدل التخمين بالاسم أو المركز فقط.</div>`;
+  }catch(e){
+    console.error(e);review.innerHTML='<div class="callout">لم أستطع تحليل الصورتين. تأكد من استخدام Screenshot الأصلي للـLobby/Match وبنفس ترتيب 16 Team (03–11 ثم 12–18). لم يتم تغيير أي بيانات.</div>';
+  }
+}
+function eliteApplyFixedRoster(rows){
+  let changed=0;
+  rows.forEach((x,i)=>{
+    const t=S.teams.find(t=>Number(t.slot)===Number(x.slot)); if(!t)return;
+    const names=[0,1,2,3].map(j=>String(document.getElementById(`rosterPlayer-${i}-${j}`)?.value||'').trim()).filter(Boolean).slice(0,4);
+    if(names.length){t.players=names;t.rosterSource='lobby_screenshot';t.rosterUpdated=new Date().toISOString();changed++}
+  });
+  S.teams=S.teams.map(t=>{t.players=Array.isArray(t.players)?t.players.slice(0,4):[];return t});
+  S.matches.forEach(m=>{m.roster=m.roster||{};S.teams.forEach(t=>{m.roster[t.slot]={teamSlot:t.slot,players:t.players.slice(0,4)}})});
+  save();render();toast(`${changed} team slots linked to in-game player names`);
+}
+
+function eliteEditDistance(a,b){
+  a=norm(a);b=norm(b);if(a===b)return 0;
+  const m=a.length,n=b.length;if(!m)return n;if(!n)return m;
+  let prev=Array(n+1).fill(0),cur=Array(n+1).fill(0);for(let j=0;j<=n;j++)prev[j]=j;
+  for(let i=1;i<=m;i++){cur[0]=i;for(let j=1;j<=n;j++)cur[j]=a[i-1]===b[j-1]?prev[j-1]:Math.min(prev[j-1]+1,prev[j]+1,cur[j-1]+1);[prev,cur]=[cur,prev]}return prev[n]
+}
+function eliteNameSimilarity(a,b){
+  const x=norm(a),y=norm(b);if(!x||!y)return 0;if(x===y)return 1;
+  const d=eliteEditDistance(x,y),base=Math.max(x.length,y.length);let s=1-d/base;
+  if(x.includes(y)||y.includes(x))s=Math.max(s,Math.min(.96,Math.min(x.length,y.length)/base+.18));
+  return Math.max(0,s)
+}
+function eliteMatchPlayerToRoster(raw){
+  let best=null;
+  S.teams.forEach(t=>(t.players||[]).forEach(name=>{
+    const score=eliteNameSimilarity(raw,name);
+    if(!best||score>best.score)best={name,slot:Number(t.slot),team:t.name||'',score}
+  }));
+  return best&&best.score>=.52?best:null
+}
+function eliteMatchResultPlayers(players){
+  const matches=players.map(p=>({...p,canonical:eliteMatchPlayerToRoster(p.name)}));
+  const votes={};
+  matches.forEach(p=>{if(p.canonical){const s=p.canonical.slot;votes[s]=(votes[s]||0)+Math.max(.25,p.canonical.score)}});
+  const ranked=Object.entries(votes).sort((a,b)=>b[1]-a[1]);
+  const slot=ranked[0]?Number(ranked[0][0]):0;
+  const confidence=ranked.length?Math.min(1,ranked[0][1]/Math.max(1,matches.length)) : 0;
+  return {players:matches,slot,confidence}
+}
+
+function parseOCRResult(text){let lines=text.split(/\n+/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean);let out=[];let current=null;let normKill=t=>{let m=t.match(/([0-9OoIlZz]{1,2})\s*elimin/i);if(!m)return null;let q=m[1].replace(/[Oo]/g,'0').replace(/[Il]/g,'1').replace(/[Zz]/g,'2');let n=Number(q);return Number.isFinite(n)&&n>=0&&n<=99?n:null};for(let line of lines){let k=normKill(line);if(k!==null){if(current)current.players.push({name:line.replace(/([0-9OoIlZz]{1,2})\s*elimin.*$/i,'').trim(),kills:k});continue}let bare=line.match(/^(.*?)[\s]+([0-9OoIlZz]{1,2})$/);if(bare&&current){let q=Number(bare[2].replace(/[Oo]/g,'0').replace(/[Il]/g,'1').replace(/[Zz]/g,'2'));if(Number.isFinite(q)){current.players.push({name:bare[1].trim(),kills:q});continue}}let rank=line.match(/(?:^|\s)(1[0-6]|[1-9])(?:\s|$)/);if(rank){current={placement:Number(rank[1]),players:[],raw:line};out.push(current)}}return out.map(x=>({...x,kills:x.players.reduce((a,p)=>a+p.kills,0)})).filter(x=>x.players.length)}
+async function runOCR(file){if(!file)return;let review=document.getElementById('ocrReview');review.innerHTML='<div class="hint">Preparing OCR engine…</div>';updateOCRStatus('Loading OCR engine…',5);try{let result=await Tesseract.recognize(file,'eng+ara',{logger:m=>{if(m.status==='recognizing text')updateOCRStatus('Reading screenshot… '+Math.round((m.progress||0)*100)+'%',5+(m.progress||0)*85);}});updateOCRStatus('OCR complete — review the extracted values.',100);let parsed=parseOCRResult(result.data.text||'');if(!parsed.length){review.innerHTML='<div class="callout">No reliable team blocks were detected. Try the original screenshot at full resolution. The system will never guess a team or kill count silently.</div><pre class="hint" style="white-space:pre-wrap;margin-top:10px">'+esc(result.data.text||'')+'</pre>';return}let m=S.matches.find(x=>x.id===document.getElementById('ocrMatch').value);let roster=m?.roster||{};let detectedRows=parsed.map(x=>{let linked=eliteMatchResultPlayers(x.players);let fallback=Object.entries(roster).find(([slot,v])=>(v.players||[]).some(n=>x.players.some(p=>eliteNameSimilarity(p.name,n)>=.72)));return {...x,slot:linked.slot||(fallback?Number(fallback[0]):0),linkConfidence:linked.confidence,linkedPlayers:linked.players}});parsed=detectedRows;review.innerHTML=`<div class="notice"><b>Detected ${parsed.length} team block(s).</b> Placement is read from the left side; each player elimination is summed into team kills. If a roster match exists, the Slot is suggested automatically; otherwise select it manually.</div><div class="scroll" style="margin-top:10px"><table class="table"><tr><th>Placement</th><th>Players / OCR</th><th>Team</th><th>Total Kills</th><th>Confidence</th></tr>${parsed.map((x,i)=>`<tr><td class="rank">${x.placement}</td><td>${x.players.map(p=>{let c=p.canonical;return esc(p.name)+' × '+p.kills+(c?` <span class="meta">→ ${esc(c.name)} ${Math.round(c.score*100)}%</span>`:'')}).join('<br>')}</td><td><select id="ocrSlot-${i}"><option value="">Select Slot</option>${x.slot?`<option value="${x.slot}" selected>✓ ${x.slot} · ${esc(S.teams.find(t=>t.slot===x.slot)?.name||'Matched')}</option>`:``}${S.teams.map(t=>`<option value="${t.slot}">${t.slot} · ${esc(t.name)}</option>`).join('')}</select></td><td><input id="ocrKills-${i}" type="number" min="0" value="${x.kills}"></td><td><span class="confidence ${x.linkConfidence>=.78?'good':x.linkConfidence>=.5?'warn':'bad'}">${x.slot?'Slot '+x.slot+' · '+Math.round((x.linkConfidence||0)*100)+'%':'Needs mapping'}</span></td></tr>`).join('')}</table></div><div class="row noPrint" style="margin-top:10px"><button class="primary" onclick='applyOCR(${JSON.stringify(parsed).replaceAll("'","\\'")})'>Apply to Match for Review</button></div>`}catch(e){updateOCRStatus('OCR failed. Check the image or internet connection.',0);review.innerHTML='<div class="callout">OCR engine could not process this image. No data was changed.</div>'}}
+function applyOCR(parsed){let id=document.getElementById('ocrMatch').value,m=S.matches.find(x=>x.id===id);if(!m)return toast('Select a match first');let out=[];let seenSlots=new Set(),seenPlaces=new Set(),bad=false;parsed.forEach((x,i)=>{let slot=Number(document.getElementById('ocrSlot-'+i)?.value||0),kills=Math.max(0,Math.floor(Number(document.getElementById('ocrKills-'+i)?.value)||0));if(!slot||seenSlots.has(slot)||seenPlaces.has(x.placement)){bad=true;return}seenSlots.add(slot);seenPlaces.add(x.placement);let t=teamForSlot(slot);out.push({slot,team:t?.name||'',placement:x.placement,kills,players:x.players.map(p=>({...p,team:t?.name||'',slot}))})});if(bad)return toast('Fix duplicate or missing Slot/Placement mappings');m.results=out;m.players=out.flatMap(r=>r.players||[]);m.approved=false;save();render();tab('matches',document.querySelector('.nav button:nth-child(2)'));toast('OCR applied — match is in Review')}
+function aggregate(){let map=new Map(S.teams.filter(t=>t.name).map(t=>[t.slot,{...t,matches:0,kills:0,points:0,placePts:0,avgPlace:0,top1:0,top3:0,top8:0,placeSum:0,latestPlacement:999,latestMatchTime:0}]));for(const m of S.matches)if(m.approved)for(const r of m.results){let a=map.get(r.slot);if(!a)continue;a.matches++;a.kills+=Number(r.kills)||0;a.points+=points(r);a.placePts+=S.rules.place[r.placement]||0;a.placeSum+=r.placement;const mt=Date.parse(m.created||'')||0;if(mt>=a.latestMatchTime){a.latestMatchTime=mt;a.latestPlacement=Number(r.placement)||999}if(r.placement===1)a.top1++;if(r.placement<=3)a.top3++;if(r.placement<=8)a.top8++}for(const a of map.values())a.avgPlace=a.matches?a.placeSum/a.matches:0,a.avgPoints=a.matches?a.points/a.matches:0,a.avgKills=a.matches?a.kills/a.matches:0,a.killShare=a.points?Math.round(a.kills*S.rules.kill/a.points*100):0;return [...map.values()]}
+function renderOverall(){let arr=aggregate().sort((a,b)=>b.points-a.points||b.top1-a.top1||b.placePts-a.placePts||b.kills-a.kills||a.latestPlacement-b.latestPlacement||a.slot-b.slot);let total=arr.reduce((s,a)=>s+a.points,0),matches=new Set(S.matches.filter(m=>m.approved).map(m=>m.id)).size;let top=arr.slice(0,3);document.getElementById('overallKPIs').innerHTML=`<div class="kpiGrid"><div class="kpiBox"><div class="kpi">${matches}</div><div class="kpiLabel">Approved Matches</div></div><div class="kpiBox"><div class="kpi">${arr.length}</div><div class="kpiLabel">Teams Scored</div></div><div class="kpiBox"><div class="kpi">${total}</div><div class="kpiLabel">Total Points</div></div><div class="kpiBox"><div class="kpi">${arr.reduce((s,a)=>s+a.kills,0)}</div><div class="kpiLabel">Total Kills</div></div></div>`;document.getElementById('overallChart').innerHTML=barChart(arr.slice(0,16),'points','Team Points — Tournament Ranking');document.getElementById('overallTable').innerHTML=`<div class="noPrint row" style="margin:10px 0"><button class="primary" onclick="printSection('overall')">Export Leaderboard PDF</button><button onclick="printSection('overall')">Print / Save PDF</button></div>${top.length?`<div class="podium">${top.map((a,i)=>`<div class="podiumBox"><div class="podiumRank">#${i+1}</div><img class="logoLarge" src="${esc(a.logo||'')}" onerror="this.style.visibility='hidden'"><div class="teamName" style="margin-top:7px">${esc(a.name)}</div><div class="kpi">${a.points}</div><div class="muted">Total Points</div></div>`).join('')}</div>`:''}${arr.length?'<div class="scroll"><table class="table leaderTable"><tr><th>#</th><th>Team</th><th>MP</th><th>Winners</th><th>Placement Pts</th><th>Kills</th><th>Kill Pts</th><th>Avg Place</th><th>Total</th></tr>'+arr.map((a,i)=>`<tr><td class="rank">${i+1}</td><td><div class="teamCell"><img class="logoThumb" src="${esc(a.logo||'')}" onerror="this.style.visibility='hidden'"><span>${esc(a.name)}</span></div></td><td class="metric">${a.matches}</td><td class="metric winner">${a.top1}</td><td class="metric placePts">${a.placePts}</td><td class="metric">${a.kills}</td><td class="metric killPts">${a.kills*S.rules.kill}</td><td class="metric">${a.avgPlace?a.avgPlace.toFixed(1):'—'}</td><td class="metric totalPts">${a.points}</td></tr>`).join('')+'</table></div>':'<div class="empty">Approve matches to populate standings.</div>'}` }
+function barChart(arr,key,title){if(!arr.length)return '<div class="empty">No approved match data yet.</div>';let max=Math.max(...arr.map(x=>Number(x[key])||0),1);return `<div class="card chartPro" style="margin:10px 0"><div class="title">${esc(title)}</div><div class="chartAxis"><span>0</span><span>${max}</span></div>${arr.map((x,i)=>{let v=Number(x[key])||0,p=Math.round(v/max*100);return `<div class="chartRow"><div class="rank">${i+1}</div><div class="chartName"><img class="chartLogo" src="${esc(x.logo||'')}" onerror="this.style.visibility='hidden'"><span title="${esc(x.name)}">${esc(x.name)}</span></div><div class="chartTrack"><div class="chartFill" style="width:${p}%"></div></div><div class="chartPoint">${v}</div></div>`}).join('')}</div>`}
+function trendChart(a){let ms=S.matches.filter(m=>m.approved),rows=ms.map(m=>{let r=m.results.find(x=>x.slot===a.slot);return {name:m.name,value:r?points(r):0}});if(!rows.length)return '<div class="empty">No trend data.</div>';let max=Math.max(...rows.map(x=>x.value),1);return `<div class="chartPro"><div class="title">${esc(a.name)} — Match Points Trend</div>${rows.map((x,i)=>{let p=Math.round((x.value/max)*100);return `<div style="display:grid;grid-template-columns:minmax(70px,1fr) 3fr 45px;gap:8px;align-items:center;margin:8px 0"><div class="meta">${esc(x.name)}</div><div class="chartTrack"><div class="chartFill" style="width:${p}%"></div></div><div class="chartPoint">${x.value}</div></div>`}).join('')}</div>`}
+function teamHistory(a){return S.matches.filter(m=>m.approved).map(m=>{let r=m.results.find(x=>x.slot===a.slot);return r?{match:m.name,placement:r.placement,kills:r.kills,points:points(r)}:null}).filter(Boolean)}
+function renderAnalytics(){let teams=S.teams.filter(t=>t.name);let aSel=document.getElementById('teamA'),bSel=document.getElementById('teamB');if(!teams.length){document.getElementById('analyticsContent').innerHTML='<div class="card empty">Add teams first.</div>';return}let oldA=aSel.value,oldB=bSel.value;aSel.innerHTML=teams.map(t=>`<option value="${t.slot}">${esc(t.name)}</option>`).join('');bSel.innerHTML=teams.map(t=>`<option value="${t.slot}">${esc(t.name)}</option>`).join('');aSel.value=teams.some(t=>String(t.slot)===oldA)?oldA:teams[0].slot;bSel.value=teams.some(t=>String(t.slot)===oldB)?oldB:(teams[1]?.slot||teams[0].slot);let A=aggregate().find(x=>String(x.slot)===String(aSel.value))||aggregate()[0],B=aggregate().find(x=>String(x.slot)===String(bSel.value))||aggregate()[1]||A;let w=document.getElementById('analyticsWindow').value;let hA=teamHistory(A),hB=teamHistory(B);if(w!=='all'){hA=hA.slice(-Number(w));hB=hB.slice(-Number(w))}let html=`<div class="card"><div class="title">Head-to-Head</div><div class="compareGrid">${compareCard(A,B,'points','Total Points')}${compareCard(A,B,'kills','Total Kills')}${compareCard(A,B,'avgPoints','Average Points')}${compareCard(A,B,'avgKills','Average Kills')}${compareCard(A,B,'avgPlace','Average Placement',true)}${compareCard(A,B,'top3','Top 3 Finishes')}</div></div>`;
+html+=`<div class="card"><div class="title">Points Trend — ${esc(A.name)}</div>${trendForHistory(hA)}</div><div class="card"><div class="title">Points Trend — ${esc(B.name)}</div>${trendForHistory(hB)}</div>`;
+html+=`<div class="card"><div class="title">Performance Scorecard</div><div class="compareGrid"><div class="teamCard"><div class="teamName">${esc(A.name)}</div>${scoreRows(A)}</div><div class="teamCard"><div class="teamName">${esc(B.name)}</div>${scoreRows(B)}</div></div></div>`;
+html+=`<div class="card"><div class="title">Match-by-Match Comparison</div>${comparisonTable(A,B,hA,hB)}</div><div class="card"><div class="title">Automated Insights</div>${insights(A,B)}</div>`;document.getElementById('analyticsContent').innerHTML=html}
+function compareCard(a,b,k,label,lowerBetter=false){let av=Number(a[k])||0,bv=Number(b[k])||0,better=lowerBetter?(av<bv?0:av>bv?1:-1):(av>bv?0:av<bv?1:-1);return `<div class="teamCard"><div class="muted">${label}</div><div style="display:flex;justify-content:space-between;margin-top:6px"><b>${formatMetric(k,av)}</b><span class="delta">${better===0?'A':better===1?'B':'='}</span><b>${formatMetric(k,bv)}</b></div><div class="progress" style="margin-top:7px"><i style="width:${Math.min(100,Math.max(4,(av/(Math.max(av,bv,1)))*100))}%"></i></div><div class="meta">A: ${esc(a.name)} • B: ${esc(b.name)}</div></div>`}
+function formatMetric(k,v){return k==='avgPlace'||k==='avgPoints'||k==='avgKills'?v.toFixed(1):String(Math.round(v))}
+function trendForHistory(rows){if(!rows.length)return '<div class="empty">No approved matches for this team yet.</div>';let max=Math.max(...rows.map(x=>x.points),1),w=620,h=190,p=18,pts=rows.map((x,i)=>`${p+(i/(Math.max(1,rows.length-1)))*(w-2*p)},${h-p-(x.points/max)*(h-2*p)}`).join(' ');return `<div class="lineChart"><svg class="lineSvg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline fill="none" stroke="#70a7ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="${pts}"/>${rows.map((x,i)=>{let cx=p+(i/(Math.max(1,rows.length-1)))*(w-2*p),cy=h-p-(x.points/max)*(h-2*p);return `<circle cx="${cx}" cy="${cy}" r="4" fill="#70a7ff"/>`}).join('')}</svg></div><div class="legend">${rows.map(x=>`<span>${esc(x.match)}: <b>${x.points}</b></span>`).join(' • ')}</div>`}
+function scoreRows(a){let consistency=a.matches?Math.max(0,100-Math.min(100,(Math.sqrt(a.matches?0:0)+Math.abs(a.avgPlace-4))*18)):0;return `<div style="margin-top:10px"><div class="muted">Kill contribution</div><div class="kpi">${a.killShare}%</div><div class="progress"><i style="width:${a.killShare}%"></i></div></div><div style="margin-top:12px"><div class="muted">Top 3 rate</div><div class="kpi">${a.matches?(a.top3/a.matches*100).toFixed(0):0}%</div><div class="progress"><i style="width:${a.matches?Math.min(100,a.top3/a.matches*100):0}%"></i></div></div><div class="grid3" style="margin-top:12px"><div><div class="muted">Top 1</div><b>${a.top1}</b></div><div><div class="muted">Top 8</div><b>${a.top8}</b></div><div><div class="muted">Matches</div><b>${a.matches}</b></div></div>`}
+function comparisonTable(a,b,ha,hb){let n=Math.max(ha.length,hb.length);if(!n)return '<div class="empty">No match data.</div>';let rows='';for(let i=0;i<n;i++){let x=ha[i],y=hb[i];rows+=`<tr><td>${i+1}</td><td>${x?x.placement:'—'}</td><td>${x?x.kills:'—'}</td><td><b>${x?x.points:'—'}</b></td><td>${y?y.points:'—'}</td><td>${y?y.kills:'—'}</td><td>${y?y.placement:'—'}</td></tr>`}return `<div class="scroll"><table class="table"><tr><th>Match</th><th>${esc(a.name)} Place</th><th>${esc(a.name)} K</th><th>${esc(a.name)} Pts</th><th>${esc(b.name)} Pts</th><th>${esc(b.name)} K</th><th>${esc(b.name)} Place</th></tr>${rows}</table></div>`}
+function insights(a,b){let out=[];if(a.matches&&b.matches){out.push(`${esc(a.name)} averages <b>${a.avgPoints.toFixed(1)}</b> points per match versus <b>${b.avgPoints.toFixed(1)}</b> for ${esc(b.name)}.`);out.push(`${esc(a.name)} has <b>${a.kills}</b> total kills; ${esc(b.name)} has <b>${b.kills}</b>.`);if(a.avgPlace<b.avgPlace)out.push(`${esc(a.name)} has the stronger average placement (${a.avgPlace.toFixed(1)} vs ${b.avgPlace.toFixed(1)}).`);else if(b.avgPlace<a.avgPlace)out.push(`${esc(b.name)} has the stronger average placement (${b.avgPlace.toFixed(1)} vs ${a.avgPlace.toFixed(1)}).`);if(a.top3>b.top3)out.push(`${esc(a.name)} has more Top-3 finishes (${a.top3} vs ${b.top3}).`);else if(b.top3>a.top3)out.push(`${esc(b.name)} has more Top-3 finishes (${b.top3} vs ${a.top3}).`)}else out.push('Approve more matches to unlock reliable comparative insights.');return out.map(x=>`<div class="callout" style="margin:7px 0">${x}</div>`).join('')}
+function renderStats(){
+  let sel=document.getElementById('statsMatch');
+  let old=sel.value;
+  sel.innerHTML='<option value="all">All approved matches</option>'+S.matches.filter(m=>m.approved).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  if([...sel.options].some(o=>o.value===old))sel.value=old;
+  let chosen=sel.value||'all',players=[];
+  for(const m of S.matches.filter(m=>m.approved)){
+    if(chosen!=='all'&&m.id!==chosen)continue;
+    for(const r of m.results||[]){
+      const list=(r.players&&r.players.length)?r.players:(m.players||[]).filter(p=>Number(p.slot)===Number(r.slot));
+      for(const p of list)players.push({...p,team:r.team||p.team||'',teamSlot:r.slot,match:m.name,matchId:m.id});
+    }
+  }
+  const agg=new Map();
+  for(const p of players){
+    const name=String(p.name||'Unknown Player').trim()||'Unknown Player';
+    const team=String(p.team||'Unassigned').trim()||'Unassigned';
+    const pid=String(p.playerId||p.uId||p.uid||'').trim();
+    const key=pid?`id:${pid}`:`slot:${Number(p.teamSlot)||0}|name:${norm(name)}`;
+    let a=agg.get(key)||{name,team,teamSlot:Number(p.teamSlot)||0,playerId:pid,kills:0,damage:0,matches:0,knockouts:0,survival:0};
+    a.kills+=Math.max(0,Number(p.kills??p.elim??p.killNum)||0);
+    a.damage+=Math.max(0,Number(p.damage)||0);
+    a.knockouts+=Math.max(0,Number(p.knockouts??p.knock??0)||0);
+    a.survival+=Math.max(0,Number(p.survivalTime??p.time??0)||0);
+    a.matches++;
+    if(!a.team||a.team==='Unassigned')a.team=team;
+    if(!a.teamSlot)a.teamSlot=Number(p.teamSlot)||0;
+    agg.set(key,a);
+  }
+  const a=[...agg.values()].sort((x,y)=>y.kills-x.kills||y.matches-x.matches||x.name.localeCompare(y.name));
+  const totalKills=a.reduce((s,x)=>s+x.kills,0);
+  const top=a[0];
+  document.getElementById('statsTournament').innerHTML=`<option>${esc(S.tournament||'Current Tournament')}</option>`;
+  if(!a.length){document.getElementById('statsTable').innerHTML='<div class="empty">Player kill statistics appear after an approved match contains player-level data from API or reviewed OCR.</div>';return}
+  document.getElementById('statsTable').innerHTML=`
+    <div class="statGrid" style="margin-bottom:10px">
+      <div class="statMini"><div class="muted">Players</div><b>${a.length}</b></div>
+      <div class="statMini"><div class="muted">Total Player Kills</div><b>${totalKills}</b></div>
+      <div class="statMini"><div class="muted">Top Fragger</div><b>${esc(top.name)}</b><div class="meta">${top.kills} kills</div></div>
+      <div class="statMini"><div class="muted">Average Kills / Player</div><b>${(totalKills/Math.max(1,a.length)).toFixed(1)}</b></div>
+    </div>
+    <div class="noPrint row" style="margin-bottom:10px"><button class="primary" onclick="printSection('stats')">Export Player Stats PDF</button><button onclick="printSection('stats')">Print / Save PDF</button></div>
+    <div class="killLeaderboard card">
+      <div class="titleline"><div><div class="title">Player Kill Leaderboard</div><div class="hint">Sorted by total kills only; every player's kills are summed from approved match data.</div></div><span class="pill">${chosen==='all'?'Tournament':'Selected Match'}</span></div>
+      <div class="scroll"><table class="table">
+        <tr><th>#</th><th>Player / Team</th><th>Matches</th><th>Total Kills</th><th>Avg Kills</th></tr>
+        ${a.map((x,i)=>{let team=S.teams.find(t=>Number(t.slot)===Number(x.teamSlot))||S.teams.find(t=>norm(t.name)===norm(x.team))||{};return `<tr><td class="killRank">${i+1}</td><td><div class="teamCell"><img class="logoThumb" src="${esc(team.logo||'')}" onerror="this.style.visibility='hidden'"><span><b>${esc(x.name)}</b><br><span class="meta">${esc(x.team)}</span></span></div></td><td>${x.matches}</td><td class="killValue">${x.kills}</td><td class="killAvg">${(x.kills/x.matches).toFixed(2)}</td></tr>`}).join('')}
+      </table></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="title">Detailed Player Statistics</div>
+      <div class="scroll"><table class="table"><tr><th>#</th><th>Player / Team</th><th>MP</th><th>Kills</th><th>Damage</th><th>Avg K</th><th>Knockouts</th><th>Avg Survival</th></tr>
+      ${a.map((x,i)=>{let team=S.teams.find(t=>Number(t.slot)===Number(x.teamSlot))||S.teams.find(t=>norm(t.name)===norm(x.team))||{};return `<tr><td>${i+1}</td><td><div class="teamCell"><img class="logoThumb" src="${esc(team.logo||'')}" onerror="this.style.visibility='hidden'"><span><b>${esc(x.name)}</b><br><span class="meta">${esc(x.team)}</span></span></div></td><td>${x.matches}</td><td class="killPts"><b>${x.kills}</b></td><td>${Math.round(x.damage).toLocaleString()}</td><td>${(x.kills/x.matches).toFixed(2)}</td><td>${x.knockouts}</td><td>${x.survival?((x.survival/x.matches)/60).toFixed(1)+' min':'—'}</td></tr>`}).join('')}
+      </table></div>
+    </div>`;
+}
+function aiApprovedMatches(){return S.matches.filter(m=>m.approved)}
+function aiAggregate(){return aggregate().sort((a,b)=>b.points-a.points||b.top1-a.top1||b.placePts-a.placePts||b.kills-a.kills||a.latestPlacement-b.latestPlacement||a.slot-b.slot)}
+function aiPlayerKills(){
+  const map=new Map();
+  for(const m of aiApprovedMatches()) for(const r of (m.results||[])){
+    const list=(r.players&&r.players.length)?r.players:(m.players||[]).filter(p=>Number(p.slot)===Number(r.slot));
+    for(const p of list){const name=String(p.name||'Unknown Player').trim();if(!name||name==='Unknown Player')continue;const pid=String(p.playerId||p.uId||p.uid||'').trim();const key=pid?'id:'+pid:'slot:'+Number(r.slot)+'|name:'+norm(name);const x=map.get(key)||{name,team:r.team||p.team||'Unassigned',slot:Number(r.slot)||0,kills:0,matches:0};x.kills+=Math.max(0,Number(p.kills??p.elim??p.killNum)||0);x.matches++;if(x.team==='Unassigned')x.team=r.team||p.team||x.team;map.set(key,x)}
+  }
+  return [...map.values()].sort((a,b)=>b.kills-a.kills||b.matches-a.matches||a.name.localeCompare(b.name));
+}
+function aiDataHealth(){
+  const ms=S.matches||[],approved=ms.filter(m=>m.approved),review=ms.filter(m=>!m.approved),issues=[];
+  const gameIds=new Set();for(const m of ms){if(m.gameId){if(gameIds.has(m.gameId))issues.push('Duplicate Game ID: '+m.gameId);gameIds.add(m.gameId)}if(m.approved){const rows=m.results||[];const places=rows.map(r=>Number(r.placement)).filter(Boolean);if(rows.length!==16)issues.push((m.name||'Match')+': not all 16 teams are mapped');if(new Set(places).size!==places.length)issues.push((m.name||'Match')+': duplicate placement');if(rows.some(r=>!Number.isInteger(Number(r.kills))||Number(r.kills)<0))issues.push((m.name||'Match')+': invalid kills')}}
+  return {teams:S.teams.filter(t=>t.name).length,approved:approved.length,review:review.length,issues};
+}
+function aiTeamByText(q){const n=norm(q);return S.teams.filter(t=>t.name&&n.includes(norm(t.name))).sort((a,b)=>norm(b.name).length-norm(a.name).length)[0]||null}
+function aiOpenTab(id){const b=[...document.querySelectorAll('.nav button')].find(x=>x.getAttribute('onclick')?.includes("'"+id+"'"));if(b)tab(id,b)}
+function aiAnswer(q){
+  const raw=String(q||'').trim(), n=norm(raw), ranking=aiAggregate(), players=aiPlayerKills(), health=aiDataHealth(), approved=aiApprovedMatches();
+  if(!raw)return 'اكتب سؤالك وسأساعدك في قراءة بيانات البطولة أو شرح طريقة استخدام النظام.';
+  if(/(كيف.*اضيف|اضيف.*مباراة|newmatch|matchcenter)/i.test(n)){aiOpenTab('matches');return 'لإضافة مباراة: افتح Match Center، اكتب اسم المباراة وGame ID إن وجد، ثم اضغط Create & Open Match. بعد ذلك أدخل نتائج الفرق أو استخدم API/OCR، راجع البيانات، ثم اعتمد المباراة.'}
+  if(/(النقاط|point|scoring|حساب.*النقاط|نظام.*النقاط)/i.test(n)){return `حساب الفريق في كل Match = Placement Points + Kill Points. الترتيب الحالي للمراكز: 1=${S.rules.place[1]}، 2=${S.rules.place[2]}، 3=${S.rules.place[3]}، 4=${S.rules.place[4]}، 5=${S.rules.place[5]}، 6=${S.rules.place[6]}، 7–8=${S.rules.place[7]}، وكل Kill = ${S.rules.kill} نقطة.`}
+  if(/(تعادل|tie|كسر.*تعادل|tiebreak)/i.test(n)){return 'عند تساوي Total Points: الفريق صاحب Winners أكثر يكون أولاً. إذا تساويا في Winners، الفريق صاحب Placement Points الأعلى يكون أولاً. بعد ذلك Total Kills، ثم Placement في أحدث مباراة، ثم Slot كفاصل أخير ثابت.'}
+  if(/(فحص|اخطاء|أخطاء|error|integrity|صحة.*بيانات|data.*health)/i.test(n)){if(!health.issues.length)return `البيانات تبدو سليمة مبدئيًا: ${health.approved} مباراة Approved و${health.review} في Review، ولا توجد أخطاء سلامة مكتشفة حاليًا.`;return `وجدت ${health.issues.length} ملاحظة تحتاج مراجعة: ${health.issues.slice(0,5).join(' • ')}${health.issues.length>5?' • وغيرها':''}`}
+  if(/(حالة.*البطولة|status|احصائيات.*البطولة|summary|ملخص)/i.test(n)){const total=ranking.reduce((s,x)=>s+x.points,0),kills=ranking.reduce((s,x)=>s+x.kills,0);return `حالة البطولة: ${S.tournament||'بدون اسم'} — ${health.teams}/16 فريق مسجل، ${approved.length} مباراة Approved، ${health.review} مباراة في Review، ${total} Total Points موزعة، و${kills} قتلة فرق مسجلة.`}
+  if(/(متصدر|leader|اول|الأول|اول فريق|top team)/i.test(n)){const a=ranking[0];if(!a)return 'لا توجد مباراة Approved بعد، لذلك لا يوجد متصدر حاليًا.';return `المتصدر حاليًا هو <b>${esc(a.name)}</b> بـ <b>${a.points}</b> نقطة. لديه ${a.top1} Winner، ${a.placePts} Placement Points و${a.kills} Kill.`}
+  if(/(وينر|winner|wwcd|فاز|انتصارات)/i.test(n)){if(!ranking.length)return 'لا توجد بيانات Approved بعد.';const a=ranking.slice().sort((x,y)=>y.top1-x.top1||y.points-x.points)[0];return `<b>${esc(a.name)}</b> لديه أكبر عدد Winners حاليًا: <b>${a.top1}</b>.`}
+  if(/(اكثر.*قتل|قتلات.*لاعب|top.*fragger|frag|kills.*player|لاعب.*قتلات)/i.test(n)){const p=players[0];if(!p)return 'لا توجد بيانات Player-level معتمدة بعد. أضف API أو راجع OCR يحتوي على أسماء اللاعبين وKills.';return `أكثر لاعب قتلات حاليًا هو <b>${esc(p.name)}</b> من <b>${esc(p.team)}</b> بإجمالي <b>${p.kills}</b> Kill في ${p.matches} Match.`}
+  const team=aiTeamByText(raw);
+  if(team){const a=ranking.find(x=>Number(x.slot)===Number(team.slot));const ps=players.filter(p=>Number(p.slot)===Number(team.slot));if(!a)return `<b>${esc(team.name)}</b> موجود في Team List، لكن لا توجد له نتائج Approved حتى الآن.`;const topP=ps[0];return `<b>${esc(team.name)}</b>: ${a.points} Total Points، ${a.top1} Winners، ${a.placePts} Placement Points، ${a.kills} Kills، ومتوسط المركز ${a.avgPlace?a.avgPlace.toFixed(1):'—'}.${topP?` أكثر لاعب قتلات لديه حاليًا <b>${esc(topP.name)}</b> بـ ${topP.kills} Kill.`:''}`}
+  if(/(leaderboard|الترتيب|standings|ranking)/i.test(n)){aiOpenTab('overall');if(!ranking.length)return 'لا توجد نتائج Approved بعد لعرض الترتيب.';return ranking.slice(0,5).map((a,i)=>`#${i+1} <b>${esc(a.name)}</b> — ${a.points} pts · ${a.top1} Winners · ${a.placePts} Placement Pts · ${a.kills} Kills`).join('<br>')}
+  if(/(احصائيات|stats|player statistics|لاعبين)/i.test(n)){aiOpenTab('stats');return players.length?`يوجد ${players.length} لاعبًا لديهم Player-level data. اللاعب الأول في القتلات: <b>${esc(players[0].name)}</b> بـ ${players[0].kills} Kill.`:'لا توجد Player-level data معتمدة بعد.'}
+  if(/(ocr|صورة|صور|screenshot)/i.test(n)){return 'يمكنك استخدام Results OCR لقراءة نتائج المباراة من الصورة، وSlot OCR لربط اللاعبين بالـ Slots. البيانات المستخرجة لا تؤثر على الترتيب مباشرة إلا بعد المراجعة والاعتماد.'}
+  if(/(ماذا.*تفعل|ساعدني|help|مساعدة|شرح|كيف.*النظام)/i.test(n)){return 'أنا أقرأ بيانات النظام الحالي مباشرة. أستطيع شرح النقاط، ترتيب الفرق، Winners، قتلات اللاعبين، حالة المباريات، أخطاء البيانات، OCR، وكيفية إضافة مباراة. جرّب: «من المتصدر؟» أو «من أكثر لاعب قتلات؟» أو «هل توجد أخطاء؟».'}
+  return 'أستطيع مساعدتك في بيانات البطولة الحالية، لكن لم أفهم الطلب بالكامل. جرّب سؤالًا مثل: «من المتصدر؟»، «من أكثر لاعب قتلات؟»، «كم Winners لفريق X؟»، «هل توجد أخطاء؟»، أو «اشرح لي النقاط».';
+}
+function aiAdd(role,html){const box=document.getElementById('aiMessages');if(!box)return;const d=document.createElement('div');d.className='aiMsg '+role;d.innerHTML=html;box.appendChild(d);box.scrollTop=box.scrollHeight}
+function aiQuick(q){document.getElementById('aiInput').value=q;sendAI()}
+function sendAI(){const el=document.getElementById('aiInput'),q=el.value.trim();if(!q)return;aiAdd('user',esc(q));el.value='';const status=document.getElementById('aiStatus');status.textContent='Analyzing live tournament data…';setTimeout(()=>{aiAdd('bot',aiAnswer(q));status.textContent='Live context: connected to the current tournament data.';renderAIContext()},120)}
+function clearAIChat(){const box=document.getElementById('aiMessages');if(box)box.innerHTML='';aiWelcome();}
+function aiWelcome(){aiAdd('bot','مرحبًا 👋 أنا مساعد البطولة. أستطيع قراءة البيانات الحالية من الفرق والمباريات والـ Leaderboard وPlayer Stats، وشرح لك أي جزء من النظام بدون تغيير بياناتك. اسألني أي شيء.');renderAIContext()}
+function renderAIContext(){const e=document.getElementById('aiContext');if(!e)return;const h=aiDataHealth(),p=aiPlayerKills();e.innerHTML=`<span class="pill">Teams ${h.teams}/16</span><span class="pill">Approved ${h.approved}</span><span class="pill">Review ${h.review}</span><span class="pill">Players ${p.length}</span>`}
+
+/* ===== V26 ELITE EXTENSIONS ===== */
+const ELITE_BUILD='2026.10.11.ELITE.03',ELITE_SCHEMA=2,WORKSPACE_KEY='pubg_tm_v26_workspaces',SNAPSHOT_KEY='pubg_tm_v26_snapshots';
+function safeJSON(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'null')??fallback}catch{return fallback}}
+function workspaceMap(){let x=safeJSON(WORKSPACE_KEY,{});return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}
+function saveWorkspaceMap(x){try{localStorage.setItem(WORKSPACE_KEY,JSON.stringify(x))}catch(e){toast('Workspace storage is full — export a backup')}}
+function workspaceId(){return localStorage.getItem(WORKSPACE_KEY+'_current')||''}
+function setWorkspaceId(id){if(id)localStorage.setItem(WORKSPACE_KEY+'_current',id);else localStorage.removeItem(WORKSPACE_KEY+'_current')}
+function makeWorkspaceId(){return 'tm_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8)}
+function normalizeTournamentState(x){let y=Object.assign(clone(BASE),x||{});y.tournamentLogo=y.tournamentLogo||'';y.teams=Array.from({length:16},(_,i)=>{let t=Object.assign({slot:i+3,name:'',players:[]},y.teams?.[i]||{});t.players=Array.isArray(t.players)?t.players.filter(x=>String(x||'').trim()).map(x=>String(x).trim()).slice(0,4):[];return t});y.matches=Array.isArray(y.matches)?y.matches:[];y.rules=Object.assign(clone(BASE.rules),y.rules||{});return y}
+function workspaceHealth(st){let teams=st.teams.filter(t=>t.name).length,approved=st.matches.filter(m=>m.approved).length,total=st.matches.length;let checks=[teams===16,approved>0||total===0,st.matches.every(m=>!m.approved||m.results?.length===16)];let score=Math.round(checks.filter(Boolean).length/checks.length*100);if(teams<16)score=Math.min(score,65);return {teams,approved,total,score}}
+function syncCurrentWorkspace(){let map=workspaceMap(),id=workspaceId();if(!id)return;map[id]=Object.assign({},map[id],{id,name:S.tournament||map[id]?.name||'Untitled Tournament',state:clone(S),updated:Date.now()});saveWorkspaceMap(map)}
+function ensureWorkspace(){let map=workspaceMap(),id=workspaceId();if(id&&map[id]){S=normalizeTournamentState(map[id].state);return id}let ids=Object.keys(map);if(ids.length){id=ids[0];setWorkspaceId(id);S=normalizeTournamentState(map[id].state);save();return id}if(S.tournament||S.teams.some(t=>t.name)||S.matches.length){id=makeWorkspaceId();map[id]={id,name:S.tournament||'Imported V26 Tournament',state:clone(S),created:Date.now(),updated:Date.now(),archived:false};saveWorkspaceMap(map);setWorkspaceId(id);return id}return ''}
+function eliteRenderCommand(){let id=workspaceId(),map=workspaceMap(),cur=id?map[id]:null,st=workspaceHealth(S),e=id&&cur?cur:null;let q=(x,v)=>{let el=document.getElementById(x);if(el)el.textContent=v};q('cmdTournament',S.tournament||e?.name||'No tournament selected');q('cmdTeams',st.teams+'/16');q('cmdMatches',st.total);q('cmdApproved',st.approved);q('cmdHealth',st.score+'%');q('cmdStatus',id?'Active workspace':'Ready');q('cmdTournamentMeta',id?('ID '+id+' · Last saved '+new Date(e.updated||Date.now()).toLocaleString()):'Create a tournament to begin.');let pill=document.getElementById('cmdHealthPill');if(pill)pill.textContent=st.score>=90?'Healthy':st.score>=70?'Needs review':'Incomplete';let d=document.getElementById('cmdHealthDetails');if(d)d.innerHTML=`<div class="cmdStat"><div class="muted">Teams readiness</div><b>${st.teams}/16</b></div><div class="cmdStat"><div class="muted">Approved matches</div><b>${st.approved}/${st.total}</b></div><div class="cmdStat"><div class="muted">Storage</div><b>Protected</b></div>`;eliteRenderLibrary()}
+function eliteRenderLibrary(){let el=document.getElementById('workspaceLibrary');if(!el)return;let map=workspaceMap(),arr=Object.values(map).filter(x=>!x.archived).sort((a,b)=>(b.updated||0)-(a.updated||0));if(!arr.length){el.innerHTML='<div class="empty">No saved tournaments yet. Create your first tournament.</div>';return}el.innerHTML=arr.map(w=>{let h=workspaceHealth(normalizeTournamentState(w.state)),active=w.id===workspaceId();return `<div class="workspaceCard ${active?'dangerSoft':''}"><div class="workspaceHead"><div><div class="workspaceName">${esc(w.name||'Untitled Tournament')}</div><div class="workspaceMeta">${active?'● CURRENT · ':''}${h.teams}/16 Teams · ${h.total} Matches · ${h.approved} Approved</div></div><span class="pill">${h.score}%</span></div><div class="workspaceProgress"><i style="width:${h.score}%"></i></div><div class="workspaceActions"><button class="primary" onclick="eliteSwitchTournament('${w.id}')">Open</button><button onclick="eliteDuplicateTournament('${w.id}')">Duplicate</button><button onclick="eliteRenameTournament('${w.id}')">Rename</button><button onclick="eliteArchiveTournament('${w.id}')">Archive</button></div></div>`}).join('')}
+function eliteNewTournament(){if(S.tournament||S.teams.some(t=>t.name)||S.matches.length){syncCurrentWorkspace()}let name=prompt('Tournament name');if(!name?.trim())return;let id=makeWorkspaceId(),st=normalizeTournamentState({tournament:name.trim()});let map=workspaceMap();map[id]={id,name:st.tournament,state:st,created:Date.now(),updated:Date.now(),archived:false};saveWorkspaceMap(map);setWorkspaceId(id);S=st;save();render();aiWelcome();toast('New tournament created')}
+function eliteOpenTournamentPicker(){let arr=Object.values(workspaceMap()).filter(x=>!x.archived);if(!arr.length)return eliteNewTournament();let msg=arr.map((x,i)=>`${i+1}. ${x.name}`).join('\n');let n=Number(prompt('Enter tournament number:\n\n'+msg));if(n>=1&&n<=arr.length)eliteSwitchTournament(arr[n-1].id)}
+function eliteSwitchTournament(id){let map=workspaceMap(),w=map[id];if(!w)return;syncCurrentWorkspace();S=normalizeTournamentState(w.state);setWorkspaceId(id);save();render();clearAIChat();toast('Tournament opened: '+S.tournament)}
+function eliteDuplicateCurrent(){let id=workspaceId();if(id)eliteDuplicateTournament(id);else eliteNewTournament()}
+function eliteDuplicateTournament(id){let map=workspaceMap(),w=map[id];if(!w)return;let name=prompt('New tournament name',String(w.name||'Tournament')+' Copy');if(!name?.trim())return;let nid=makeWorkspaceId(),st=normalizeTournamentState(w.state);st.tournament=name.trim();map[nid]={id:nid,name:st.tournament,state:st,created:Date.now(),updated:Date.now(),archived:false};saveWorkspaceMap(map);setWorkspaceId(nid);S=st;save();render();toast('Tournament duplicated')}
+function eliteRenameTournament(id){let map=workspaceMap(),w=map[id];if(!w)return;let name=prompt('Tournament name',w.name);if(!name?.trim())return;w.name=name.trim();w.state.tournament=name.trim();w.updated=Date.now();map[id]=w;saveWorkspaceMap(map);if(id===workspaceId()){S.tournament=w.name;save()}render();toast('Tournament renamed')}
+function eliteArchiveTournament(id){let map=workspaceMap(),w=map[id];if(!w||!confirm('Archive '+w.name+'?'))return;w.archived=true;w.updated=Date.now();map[id]=w;saveWorkspaceMap(map);if(id===workspaceId()){let next=Object.values(map).find(x=>!x.archived&&x.id!==id);if(next)eliteSwitchTournament(next.id);else{setWorkspaceId('');S=clone(BASE);save();render()}}else eliteRenderCommand();toast('Tournament archived')}
+function eliteBackupCurrent(){syncCurrentWorkspace();let payload={app:'PUBG Tournament Manager V26 ELITE',build:ELITE_BUILD,schema:ELITE_SCHEMA,exportedAt:new Date().toISOString(),workspaceId:workspaceId(),tournament:clone(S),workspaces:workspaceMap()};let b=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(S.tournament||'Tournament').replace(/[^A-Za-z0-9_-]+/g,'_')+'_V26_ELITE_Backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Safety backup exported')}
+function eliteSnapshot(){let arr=safeJSON(SNAPSHOT_KEY,[]);arr.unshift({id:Date.now(),tournament:S.tournament,state:clone(S),workspaceId:workspaceId()});arr=arr.slice(0,5);try{localStorage.setItem(SNAPSHOT_KEY,JSON.stringify(arr))}catch(e){}return arr[0]}
+function eliteGo(id){let b=[...document.querySelectorAll('.nav button')].find(x=>x.getAttribute('onclick')?.includes("'"+id+"'"));if(b)tab(id,b)}
+function eliteLBData(){let a=aggregate().sort((x,y)=>y.points-x.points||y.top1-x.top1||y.placePts-x.placePts||y.kills-x.kills||x.latestPlacement-y.latestPlacement||x.slot-y.slot);let map=new Map();a.forEach((x,i)=>map.set(x.slot,Object.assign(x,{rank:i+1})));return a}
+function eliteForm(slot){let ms=S.matches.filter(m=>m.approved).slice(-5);return ms.map(m=>{let r=m.results.find(x=>Number(x.slot)===Number(slot));return r?Number(r.placement):null}).filter(x=>x!==null)}
+const legacyRenderOverall=renderOverall;
+renderOverall=function(){let arr=eliteLBData(),search=(document.getElementById('lbSearch')?.value||'').toLowerCase().trim(),sort=document.getElementById('lbSort')?.value||'points',limit=Number(document.getElementById('lbLimit')?.value||16);if(search)arr=arr.filter(a=>a.name.toLowerCase().includes(search));if(sort==='kills')arr.sort((a,b)=>b.kills-a.kills||b.points-a.points);if(sort==='wins')arr.sort((a,b)=>b.top1-a.top1||b.points-a.points);let all=eliteLBData(),top=all.slice(0,3),total=all.reduce((z,a)=>z+a.points,0),matches=S.matches.filter(m=>m.approved).length;let k=document.getElementById('overallKPIs');if(k)k.innerHTML=`<div class="lbTitleBar"><img class="lbTitleLogo" src="${esc(S.tournamentLogo||'')}" onerror="this.style.display='none'"><div><div class="title" style="margin:0">${esc(S.tournament||'Tournament')} — Championship Leaderboard</div><div class="lbSubtitle">Official standings · ${matches} approved matches · Points = Placement + Kills</div></div></div><div class="kpiGrid"><div class="kpiBox"><div class="kpi">${matches}</div><div class="kpiLabel">Approved Matches</div></div><div class="kpiBox"><div class="kpi">${all.length}</div><div class="kpiLabel">Teams Scored</div></div><div class="kpiBox"><div class="kpi">${total}</div><div class="kpiLabel">Total Points</div></div><div class="kpiBox"><div class="kpi">${all.reduce((z,a)=>z+a.kills,0)}</div><div class="kpiLabel">Total Kills</div></div></div>`;let chart=document.getElementById('overallChart');if(chart)chart.innerHTML=barChart(all.slice(0,16),'points','Championship Points');let t=document.getElementById('overallTable');if(!t)return;t.innerHTML=`<div class="noPrint lbToolbar"><div class="wide"><label>Search Team</label><input id="lbSearch" value="${esc(search)}" placeholder="Search team..."></div><div><label>Sort</label><select id="lbSort"><option value="points" ${sort==='points'?'selected':''}>Total Points</option><option value="kills" ${sort==='kills'?'selected':''}>Kills</option><option value="wins" ${sort==='wins'?'selected':''}>Winners</option></select></div><div><label>Rows</label><select id="lbLimit"><option value="8" ${limit===8?'selected':''}>Top 8</option><option value="16" ${limit===16?'selected':''}>Top 16</option><option value="99" ${limit===99?'selected':''}>All</option></select></div><div><label>Export</label><button class="primary" onclick="exportProfessionalPDF('leaderboard')">PDF</button></div></div>${top.length?`<div class="podium">${top.map((a,i)=>`<div class="podiumBox"><div class="podiumRank">#${i+1}</div><img class="logoLarge" src="${esc(a.logo||'')}" onerror="this.style.visibility='hidden'"><div class="teamName" style="margin-top:7px">${esc(a.name)}${i===0?'<span class="matchWinner">🏆</span>':''}</div><div class="kpi">${a.points}</div><div class="muted">Total Points</div><div class="meta">${a.kills} Kills · ${a.top1} WWCD</div></div>`).join('')}</div>`:''}${arr.length?'<div class="scroll"><table class="table leaderTable"><tr><th>#</th><th>Team</th><th>MP</th><th>WWCD</th><th>Place</th><th>Kills</th><th>Kill Pts</th><th>Total</th></tr>'+arr.slice(0,limit).map(a=>`<tr><td class="rank">${a.rank}</td><td><div class="teamCell"><img class="logoThumb" src="${esc(a.logo||'')}" onerror="this.style.visibility='hidden'"><span><b>${esc(a.name)}</b>${a.top1?'<span class="matchWinner">🏆 '+a.top1+'</span>':''}</span></div></td><td class="metric">${a.matches}</td><td class="metric winner">${a.top1}</td><td class="metric placePts">${a.placePts}</td><td class="metric">${a.kills}</td><td class="metric killPts">${a.kills*S.rules.kill}</td><td class="metric totalPts">${a.points}</td></tr>`).join('')+'</table></div>':'<div class="empty">Approve matches to populate standings.</div>'}`;let si=document.getElementById('lbSearch');if(si)si.oninput=()=>renderOverall();let ss=document.getElementById('lbSort');if(ss)ss.onchange=()=>renderOverall();let sl=document.getElementById('lbLimit');if(sl)sl.onchange=()=>renderOverall()}
+function eliteReportData(){let arr=eliteLBData(),ms=S.matches.filter(m=>m.approved),w=document.getElementById('reportWindow')?.value||'all';if(w!=='all')ms=ms.slice(-Number(w));return {arr,ms}}
+function eliteRenderReport(){let box=document.getElementById('reportPreview');if(!box)return;let type=document.getElementById('reportType')?.value||'full',d=eliteReportData(),html=`<div class="reportPage">${S.tournamentLogo?`<img src="${esc(S.tournamentLogo)}" style="width:54px;height:54px;border-radius:14px;object-fit:cover">`:''}<h1>${esc(S.tournament||'PUBG Tournament')}</h1><h2>V26 ELITE · Professional Competition Report</h2><p>Generated ${new Date().toLocaleString()} · Build ${ELITE_BUILD}</p>`;if(type==='leaderboard'||type==='full')html+=`<h3>Championship Leaderboard</h3><table class="table"><tr><th>#</th><th>Team</th><th>MP</th><th>WWCD</th><th>Place Pts</th><th>Kills</th><th>Total</th></tr>${d.arr.map((a,i)=>`<tr><td>${i+1}</td><td>${esc(a.name)}</td><td>${a.matches}</td><td>${a.top1}</td><td>${a.placePts}</td><td>${a.kills}</td><td><b>${a.points}</b></td></tr>`).join('')}</table>`;if(type==='results'||type==='full')html+=`<h3>Approved Match Results</h3>${d.ms.map(m=>`<h4>${esc(m.name)} ${m.gameId?'· '+esc(m.gameId):''}</h4><table class="table"><tr><th>Place</th><th>Team</th><th>Kills</th><th>Points</th></tr>${(m.results||[]).slice().sort((a,b)=>a.placement-b.placement).map(r=>`<tr><td>${r.placement}</td><td>${r.placement===1?'🏆 ':''}${esc(r.team||teamForSlot(r.slot))}</td><td>${r.kills}</td><td><b>${points(r)}</b></td></tr>`).join('')}</table>`).join('')}`;if(type==='teams'||type==='full')html+=`<h3>Teams & Logos</h3><table class="table"><tr><th>Slot</th><th>Team</th><th>Status</th></tr>${S.teams.map(t=>`<tr><td>${t.slot}</td><td>${esc(t.name||'—')}</td><td>${t.name?'Registered':'Empty'}</td></tr>`).join('')}</table>`;if(type==='players'||type==='full'){let ps=aiPlayerKills();html+=`<h3>Player Intelligence</h3><table class="table"><tr><th>#</th><th>Player</th><th>Team</th><th>Matches</th><th>Kills</th></tr>${ps.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name)}</td><td>${esc(p.team)}</td><td>${p.matches}</td><td><b>${p.kills}</b></td></tr>`).join('')}</table>`}html+='</div>';box.innerHTML=html}
+async function exportProfessionalPDF(type){type=type||document.getElementById('reportType')?.value||'full';let jsp=window.jspdf?.jsPDF;if(!jsp){toast('PDF engine unavailable — using Print / Save PDF');elitePrintReport(type);return}try{let d=new jsp({orientation:'portrait',unit:'pt',format:'a4'}),margin=36,W=d.internal.pageSize.getWidth(),H=d.internal.pageSize.getHeight();const title=S.tournament||'PUBG Tournament';let logo=S.tournamentLogo||'';const header=()=>{d.setFillColor(10,14,20);d.rect(0,0,W,72,'F');d.setTextColor(245,196,81);d.setFontSize(18);d.text(title,margin,30);d.setTextColor(220,226,232);d.setFontSize(9);d.text('PUBG Tournament Manager V26 ELITE · Professional Report',margin,48);if(logo){try{d.addImage(logo,'PNG',W-margin-38,15,28,28)}catch(e){}}};const footer=()=>{let n=d.getNumberOfPages();for(let i=1;i<=n;i++){d.setPage(i);d.setTextColor(120);d.setFontSize(8);d.text(`Generated ${new Date().toLocaleString()} · Page ${i}/${n}`,margin,H-18)}};header();d.setTextColor(20);d.setFontSize(14);d.text(type==='leaderboard'?'Championship Leaderboard':type==='results'?'Match Results':type==='players'?'Player Statistics':'Tournament Report',margin,105);let arr=eliteLBData(),ms=S.matches.filter(m=>m.approved);let y=125;if(type==='leaderboard'||type==='full'){d.autoTable({startY:y,head:[['#','Team','MP','WWCD','Place','Kills','Kill Pts','Total']],body:arr.map((a,i)=>[i+1,a.name,a.matches,a.top1,a.placePts,a.kills,a.kills*S.rules.kill,a.points]),theme:'grid',styles:{fontSize:8},headStyles:{fillColor:[25,35,48],textColor:[255,255,255]},margin:{left:margin,right:margin}});y=d.lastAutoTable.finalY+24}if(type==='results'||type==='full'){for(const m of ms){if(y>H-120){d.addPage();header();y=96}d.setTextColor(20);d.setFontSize(11);d.text(m.name+(m.gameId?' · '+m.gameId:''),margin,y);d.autoTable({startY:y+8,head:[['Place','Team','Place Pts','Kills','Total']],body:(m.results||[]).slice().sort((a,b)=>a.placement-b.placement).map(r=>[r.placement,(r.placement===1?'WINNER · ':'')+(r.team||teamForSlot(r.slot)?.name||''),S.rules.place[r.placement]||0,Number(r.kills)||0,points(r)]),theme:'grid',styles:{fontSize:7},margin:{left:margin,right:margin}});y=d.lastAutoTable.finalY+18}}if(type==='teams'||type==='full'){if(y>H-160){d.addPage();header();y=96}d.setTextColor(20);d.setFontSize(12);d.text('Teams & Logos',margin,y);d.autoTable({startY:y+8,head:[['Slot','Team','Status']],body:S.teams.map(t=>[t.slot,t.name||'—',t.name?'Registered':'Empty']),theme:'grid',styles:{fontSize:8},margin:{left:margin,right:margin}});y=d.lastAutoTable.finalY+18}if(type==='players'||type==='full'){let ps=aiPlayerKills();if(y>H-160){d.addPage();header();y=96}d.setTextColor(20);d.setFontSize(12);d.text('Player Statistics',margin,y);d.autoTable({startY:y+8,head:[['#','Player','Team','Matches','Kills']],body:ps.map((p,i)=>[i+1,p.name,p.team,p.matches,p.kills]),theme:'grid',styles:{fontSize:8},margin:{left:margin,right:margin}})}footer();let fn=(title+'_'+type+'_Report').replace(/[^A-Za-z0-9_-]+/g,'_');d.save(fn+'.pdf');toast('Professional PDF downloaded')}catch(e){console.error(e);toast('PDF generation failed — using Print / Save PDF');elitePrintReport(type)}}
+function elitePrintReport(type){if(type){let s=document.getElementById('reportType');if(s)s.value=type;eliteRenderReport()}let box=document.getElementById('reportPreview');if(!box)return;document.querySelectorAll('.section').forEach(x=>x.classList.remove('printing'));document.getElementById('reports').classList.add('printing');window.print();setTimeout(()=>document.getElementById('reports').classList.remove('printing'),700)}
+function eliteDownloadReportHTML(){let box=document.getElementById('reportPreview');if(!box)return;let doc='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(S.tournament||'Tournament Report')+'</title><style>body{font-family:Arial,sans-serif;padding:30px;color:#111}table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #ccc;padding:7px;text-align:left}th{background:#eee}</style></head><body>'+box.innerHTML+'</body></html>';let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([doc],{type:'text/html'}));a.download=(S.tournament||'Tournament').replace(/[^A-Za-z0-9_-]+/g,'_')+'_Report.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+const legacySave=save;save=function(){legacySave();syncCurrentWorkspace();eliteSnapshot()}
+const legacyBackup=backup;backup=function(){eliteBackupCurrent()}
+const legacyLoadBackup=loadBackup;loadBackup=function(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(x&&x.workspaces&&typeof x.workspaces==='object'){saveWorkspaceMap(x.workspaces);if(x.workspaceId&&x.workspaces[x.workspaceId]){setWorkspaceId(x.workspaceId);S=normalizeTournamentState(x.workspaces[x.workspaceId].state)}else if(x.tournament){S=normalizeTournamentState(x.tournament)}save();render();toast('V26 ELITE workspace backup restored')}else{S=normalizeTournamentState(x);let id=workspaceId()||makeWorkspaceId();setWorkspaceId(id);let map=workspaceMap();map[id]={id,name:S.tournament||'Restored Tournament',state:clone(S),created:Date.now(),updated:Date.now(),archived:false};saveWorkspaceMap(map);save();render();toast('Tournament backup restored')}}catch(err){toast('Invalid backup file')}};r.readAsText(f)}
+const legacyResetAll=resetAll;resetAll=function(){if(!confirm('Reset ALL V26 ELITE data, tournaments and safety snapshots?'))return;localStorage.removeItem(KEY);localStorage.removeItem(WORKSPACE_KEY);localStorage.removeItem(WORKSPACE_KEY+'_current');localStorage.removeItem(SNAPSHOT_KEY);location.reload()}
+const legacyPrintSection=printSection;printSection=function(id){if(id==='overall')return elitePrintReport('leaderboard');if(id==='results')return elitePrintReport('results');if(id==='stats')return elitePrintReport('players');return legacyPrintSection(id)}
+const legacyAIAnswer=aiAnswer;aiAnswer=function(q){let n=norm(q),ranking=aiAggregate(),health=aiDataHealth(),approved=aiApprovedMatches();if(/(قارن|مقارنة|compare)/i.test(n)){let teams=ranking.slice(0,2);if(teams.length<2)return 'أحتاج فريقين بنتائج معتمدة للمقارنة.';let a=teams[0],b=teams[1];return `مقارنة سريعة: <b>${esc(a.name)}</b> ${a.points} نقطة، ${a.kills} Kill، ${a.top1} WWCD مقابل <b>${esc(b.name)}</b> ${b.points} نقطة، ${b.kills} Kill، ${b.top1} WWCD.`}if(/(مفاجاة|مفاجأة|rising|صاعد|تحسن|تحسن اكثر)/i.test(n)){let scored=ranking.filter(x=>x.matches>0).sort((a,b)=>(b.avgPoints-b.avgKills)-(a.avgPoints-a.avgKills));return scored[0]?`أكثر فريق ملفت حاليًا هو <b>${esc(scored[0].name)}</b> بمتوسط ${scored[0].avgPoints.toFixed(1)} نقطة للمباراة.`:'لا توجد بيانات كافية.'}if(/(توقع|prediction|من.*يفوز|champion)/i.test(n)){if(ranking.length<2)return 'أحتاج نتائج معتمدة أكثر لعمل توقع منطقي.';let top=ranking.slice(0,3);return `السباق الحالي: ${top.map((x,i)=>`#${i+1} <b>${esc(x.name)}</b> — ${x.points} نقطة`).join(' · ')}. هذا تحليل وصفي وليس ضمانًا للنتيجة.`}if(/(بيانات|anomal|شذوذ|خطا|أخطاء)/i.test(n)){let issues=health.issues||[];return issues.length?`وجدت <b>${issues.length}</b> ملاحظات في البيانات: ${issues.slice(0,5).map(esc).join(' · ')}`:'فحص البيانات الحالي لا يظهر مشاكل رئيسية.'}if(/(افضل.*مباراة|best.*match|highest.*match|أعلى.*مباراة)/i.test(n)){let best=null;for(const m of approved){let total=(m.results||[]).reduce((z,r)=>z+points(r),0);if(!best||total>best.total)best={m,total}}return best?`أفضل مباراة حاليًا هي <b>${esc(best.m.name)}</b> بإجمالي <b>${best.total}</b> نقطة موزعة على الفرق.`:'لا توجد مباريات Approved بعد.'}if(/(اسوء|أسوأ|worst|lowest|اقل.*مباراة)/i.test(n)){let worst=null;for(const m of approved){let total=(m.results||[]).reduce((z,r)=>z+points(r),0);if(!worst||total<worst.total)worst={m,total}}return worst?`أقل مباراة من حيث مجموع النقاط هي <b>${esc(worst.m.name)}</b> بإجمالي <b>${worst.total}</b> نقطة.`:'لا توجد مباريات Approved بعد.'}if(/(فارق|gap|فرق.*المتصدر|close.*race|سباق)/i.test(n)){if(ranking.length<2)return 'أحتاج فريقين على الأقل بنتائج Approved لتحليل سباق البطولة.';return `الفارق بين المتصدر <b>${esc(ranking[0].name)}</b> والمركز الثاني <b>${esc(ranking[1].name)}</b> هو <b>${ranking[0].points-ranking[1].points}</b> نقطة.`}if(/(اخر.*5|last.*5|form|فورم|مستوى.*حديث)/i.test(n)){let top=ranking.slice(0,5).map(a=>{let f=eliteForm(a.slot);return `<b>${esc(a.name)}</b>: ${f.length?f.join(' → '):'—'}`}).join('<br>');return top||'لا توجد نتائج Approved بعد.'}if(/(تقرير|report)/i.test(n)){aiOpenTab('reports');return `فتحت لك مركز التقارير. يمكنك اختيار Full Tournament أو Leaderboard أو Results أو Players ثم Export / Save as PDF.`}if(/(نسخة|backup|احتياطي|باك اب)/i.test(n)){return `النسخة الحالية تعمل على Build <b>${ELITE_BUILD}</b>. يمكنك استخدام Safety Backup من الصفحة الرئيسية لحفظ البطولة والـWorkspace Library معًا.`}if(/(من.*مهدد|تهديد|closest|closest.*leader|اقرب.*متصدر)/i.test(n)){if(ranking.length<2)return 'أحتاج فريقين بنتائج معتمدة.';let gap=ranking[0].points-ranking[1].points;return `أقرب مطارد للمتصدر هو <b>${esc(ranking[1].name)}</b> بفارق <b>${gap}</b> نقطة. ${gap<=5?'السباق شديد التقارب.':'الفارق ما زال قابلًا للتغيير مع المباريات القادمة.'}`}if(/(اعمل.*ملخص|ملخص.*احترافي|executive|ملخص تنفيذي)/i.test(n)){let top=ranking[0],kills=ranking.reduce((z,a)=>z+a.kills,0);return top?`ملخص البطولة: <b>${esc(S.tournament||'Tournament')}</b> · ${approved.length} مباريات Approved · المتصدر <b>${esc(top.name)}</b> بـ ${top.points} نقطة · إجمالي القتلات ${kills} · ${health.issues.length} ملاحظات بيانات.`:'لا توجد نتائج Approved بعد.'}return legacyAIAnswer(q)};
+ensureWorkspace();
+function saveRules(){S.rules.place=[0,Number(p1.value),Number(p2.value),Number(p3.value),4,3,2,1,1];S.rules.kill=Math.max(0,Number(pk.value)||1);save();render();toast('Rules saved')}
+function backup(){let b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='PUBG_Tournament_Manager_V26_ELITE_Backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function restore(){document.getElementById('file').click()}function loadBackup(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);S=Object.assign(clone(BASE),x);save();render();toast('Backup restored')}catch{toast('Invalid backup')}};r.readAsText(f)}
+function exportCSV(){let rows=[['Slot','Team'],...S.teams.map(x=>[x.slot,x.name])];let csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='teams.csv';a.click()}
+function resetAll(){if(confirm('Reset all tournament data?')){localStorage.removeItem(KEY);location.reload()}}
+document.getElementById('statsMatch').addEventListener('change',renderStats);document.getElementById('aiInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI()}});document.getElementById('ocrImage').addEventListener('change',e=>runOCR(e.target.files[0]));document.getElementById('rosterImage').addEventListener('change',e=>runRosterOCR(e.target.files[0]));document.getElementById('teamA').addEventListener('change',renderAnalytics);document.getElementById('teamB').addEventListener('change',renderAnalytics);document.getElementById('analyticsWindow').addEventListener('change',renderAnalytics);render();
+eliteRenderCommand();
+aiWelcome();
+
+/* ===== V26 ELITE 2.0 — Command Center / Navigation / Intelligence ===== */
+const ELITE2_BUILD='2026.10.11.ELITE.03',ELITE2_META_KEY='pubg_tm_v26_meta',ELITE2_AUDIT_KEY='pubg_tm_v26_audit',ELITE2_HISTORY_KEY='pubg_tm_v26_history';
+function elite2Meta(){let x=safeJSON(ELITE2_META_KEY,{});return x&&typeof x==='object'?x:{}}
+function elite2SaveMeta(x){try{localStorage.setItem(ELITE2_META_KEY,JSON.stringify(x))}catch(e){}}
+function elite2RecordMeta(id,patch){let m=elite2Meta();m[id]=Object.assign({},m[id],patch);elite2SaveMeta(m);return m[id]}
+function elite2Audit(){let x=safeJSON(ELITE2_AUDIT_KEY,[]);return Array.isArray(x)?x:[]}
+function elite2SaveAudit(x){try{localStorage.setItem(ELITE2_AUDIT_KEY,JSON.stringify(x.slice(0,120)))}catch(e){}}
+function elite2CreateAudit(action,detail){let id=workspaceId()||'global';let a=elite2Audit();a.unshift({id:Date.now()+Math.random(),workspaceId:id,action,detail:detail||'',time:new Date().toISOString()});elite2SaveAudit(a);elite2RenderAudit()}
+function elite2ClearAudit(){if(!confirm('Clear the audit log?'))return;localStorage.removeItem(ELITE2_AUDIT_KEY);elite2RenderAudit()}
+function elite2RenderAudit(){let e=document.getElementById('elite2Audit');if(!e)return;let arr=elite2Audit().filter(x=>!workspaceId()||x.workspaceId===workspaceId());if(!arr.length){e.className='auditList empty';e.textContent='No operations recorded.';return}e.className='auditList';e.innerHTML=arr.slice(0,50).map(x=>`<div class="auditRow"><b>${esc(x.action)}</b><div>${esc(x.detail||'')}</div><div class="auditTime">${new Date(x.time).toLocaleString()}</div></div>`).join('')}
+function elite2Current(){let m=workspaceMap(),id=workspaceId();return id?m[id]:null}
+function elite2OpenSwitcher(){document.getElementById('elite2Palette')?.classList.add('open');let i=document.getElementById('elite2PaletteInput');if(i){i.value='';i.focus()}elite2RenderPalette()}
+function elite2ClosePalette(){document.getElementById('elite2Palette')?.classList.remove('open')}
+function elite2AllCommands(q){let n=norm(q||''),out=[];let map=workspaceMap();Object.values(map).filter(x=>!x.archived).forEach(w=>{let h=workspaceHealth(normalizeTournamentState(w.state));let name=w.name||'Untitled';if(!n||norm(name).includes(n))out.push({type:'tournament',title:name,meta:`${h.teams}/16 Teams · ${h.total} Matches · ${h.approved} Approved`,action:()=>{elite2Switch(w.id);elite2ClosePalette()}})});const cmds=[['New Tournament','Create a new isolated tournament',()=>{eliteNewTournament();elite2ClosePalette()}],['Tournament Manager','Open the tournament switcher',()=>elite2OpenSwitcher()],['Teams & Logos','Open team management',()=>{eliteGo('teams');elite2ClosePalette()}],['Match Center','Open match control',()=>{eliteGo('matches');elite2ClosePalette()}],['Leaderboard','Open championship leaderboard',()=>{eliteGo('overall');elite2ClosePalette()}],['Reports','Open professional reports',()=>{eliteGo('reports');elite2ClosePalette()}],['Validate Data','Run full data validation',()=>{elite2ValidateNow();elite2ClosePalette()}],['Backup Current Tournament','Export a workspace backup',()=>{eliteBackupCurrent();elite2ClosePalette()}]];cmds.forEach(c=>{if(!n||norm(c[0]).includes(n)||norm(c[1]).includes(n))out.push({type:'command',title:c[0],meta:c[1],action:c[2]})});let st=normalizeTournamentState(S);st.teams.filter(t=>t.name).forEach(t=>{if(!n||norm(t.name).includes(n))out.push({type:'team',title:t.name,meta:`Slot ${t.slot} · Team`,action:()=>{eliteGo('teams');setTimeout(()=>document.getElementById('teamSearch')?.focus(),100);elite2ClosePalette()}})});return out.slice(0,30)}
+function elite2RenderPalette(){let e=document.getElementById('elite2PaletteResults');if(!e)return;let arr=elite2AllCommands(document.getElementById('elite2PaletteInput')?.value||'');e.innerHTML=arr.length?arr.map((x,i)=>`<div class="commandResult" onclick="elite2PalettePick(${i})"><div><b>${esc(x.title)}</b><div class="muted" style="font-size:10px">${esc(x.meta)}</div></div><span class="commandKey">${x.type}</span></div>`).join(''):'<div class="empty">No commands or tournaments found.</div>';window.__elite2Palette=arr}
+function elite2PalettePick(i){let x=window.__elite2Palette?.[i];if(x?.action)x.action()}
+function elite2Switch(id){let map=workspaceMap(),w=map[id];if(!w)return;let cur=workspaceId();if(cur&&cur!==id)syncCurrentWorkspace();S=normalizeTournamentState(w.state);setWorkspaceId(id);elite2RecordMeta(id,{lastOpened:Date.now(),openCount:(elite2Meta()[id]?.openCount||0)+1});save();render();clearAIChat();elite2CreateAudit('Tournament switched',w.name||S.tournament);toast('Opened: '+(w.name||S.tournament));}
+function elite2ToggleFavorite(id){let m=elite2Meta(),cur=m[id]||{};elite2RecordMeta(id,{favorite:!cur.favorite});elite2RenderSwitcher()}
+function elite2RenderSwitcher(){let list=document.getElementById('swList');if(!list)return;let q=norm(document.getElementById('swSearch')?.value||''),map=workspaceMap(),meta=elite2Meta();let arr=Object.values(map).filter(w=>!w.archived&&(!q||norm(w.name).includes(q))).sort((a,b)=>{let ma=meta[a.id]||{},mb=meta[b.id]||{};return (Number(!!mb.favorite)-Number(!!ma.favorite))||((mb.lastOpened||mb.updated||b.updated||0)-(ma.lastOpened||ma.updated||a.updated||0))});if(!arr.length){list.innerHTML='<div class="empty">No matching tournaments.</div>';return}list.innerHTML=arr.map(w=>{let h=workspaceHealth(normalizeTournamentState(w.state)),m=meta[w.id]||{},active=w.id===workspaceId();return `<div class="switchItem ${active?'active':''}" onclick="elite2Switch('${w.id}')"><img class="switchMiniLogo" src="${esc(w.state?.tournamentLogo||'')}" onerror="this.style.display='none'"><div><div class="switchItemName">${esc(w.name||'Untitled')}</div><div class="switchItemMeta">${h.teams}/16 · ${h.approved}/${h.total} approved · ${h.score}%</div></div><button class="small ghost switchFav" onclick="event.stopPropagation();elite2ToggleFavorite('${w.id}')">${m.favorite?'★':'☆'}</button></div>`}).join('')}
+function elite2RenderCurrent(){let h=workspaceHealth(S),logo=document.getElementById('swCurrentLogo'),name=document.getElementById('swCurrentName'),meta=document.getElementById('swCurrentMeta');if(name)name.textContent=S.tournament||'No tournament selected';if(meta)meta.textContent=workspaceId()?`Workspace ${workspaceId()} · ${new Date(elite2Current()?.updated||Date.now()).toLocaleString()}`:'Create or open a tournament';if(logo){logo.src=S.tournamentLogo||'';logo.style.display=S.tournamentLogo?'block':'none'}[['swTeams',h.teams+'/16'],['swMatches',h.total],['swApproved',h.approved],['swHealth',h.score+'%']].forEach(([id,v])=>{let e=document.getElementById(id);if(e)e.textContent=v});elite2RenderSwitcher()}
+function elite2Health(){let h=workspaceHealth(S),issues=aiDataHealth()?.issues||[],dup=[];let seen={};S.matches.forEach(m=>{if(m.gameId){if(seen[m.gameId])dup.push(m.gameId);seen[m.gameId]=1}});let checks=[['Teams',h.teams===16,h.teams+'/16'],['Matches',S.matches.every(m=>!m.approved||m.results?.length===16),h.approved+'/'+h.total+' approved'],['Game IDs',dup.length===0,dup.length?dup.length+' duplicates':'Unique'],['Data',issues.length===0,issues.length+' issues']];return checks}
+function elite2RenderHealth(){let e=document.getElementById('elite2HealthMatrix');if(!e)return;e.innerHTML=elite2Health().map(x=>`<div class="healthCell"><small>${x[0]}</small><b class="${x[1]?'ok':'bad'}">${x[1]?'✓ Ready':'⚠ Review'}</b><small>${esc(x[2])}</small></div>`).join('')}
+function elite2ValidateNow(){let checks=elite2Health(),bad=checks.filter(x=>!x[1]);elite2RenderHealth();elite2CreateAudit('Full validation',bad.length?bad.map(x=>x[0]).join(', ')+' need review':'All core checks passed');toast(bad.length?`${bad.length} areas need review`:'Validation passed — core data is healthy')}
+let __elite2Undo=[],__elite2Redo=[];
+function elite2PushHistory(label){try{__elite2Undo.push({label,state:clone(S)});if(__elite2Undo.length>20)__elite2Undo.shift();__elite2Redo=[]}catch(e){}}
+function elite2Undo(){let x=__elite2Undo.pop();if(!x)return toast('Nothing to undo');__elite2Redo.push({label:x.label,state:clone(S)});S=normalizeTournamentState(x.state);save();render();elite2CreateAudit('Undo',x.label);toast('Undo applied')}
+function elite2Redo(){let x=__elite2Redo.pop();if(!x)return toast('Nothing to redo');__elite2Undo.push({label:x.label,state:clone(S)});S=normalizeTournamentState(x.state);save();render();elite2CreateAudit('Redo',x.label);toast('Redo applied')}
+function elite2VisualCharts(){let e=document.getElementById('elite2Charts');if(!e)return;let a=eliteLBData().slice(0,10),max=Math.max(1,...a.map(x=>x.points));let rows=a.map(x=>`<div class="proChartRow"><b>#${x.rank}</b><div class="proChartName"><img class="proChartLogo" src="${esc(S.teams.find(t=>t.slot===x.slot)?.logo||'')}" onerror="this.style.display='none'"><span>${esc(x.name)}</span></div><div class="proChartTrack"><div class="proChartFill" style="width:${Math.max(2,Math.round(x.points/max*100))}%"></div></div><div class="proChartValue">${x.points}</div></div>`).join('');let approved=S.matches.filter(m=>m.approved).slice(-10),trend=approved.map(m=>(m.results||[]).reduce((z,r)=>z+points(r),0)),tm=Math.max(1,...trend);let spark=trend.map(v=>`<i style="height:${Math.max(8,Math.round(v/tm*100))}%" title="${v}"></i>`).join('');let top=a[0],second=a[1];e.innerHTML=`<div class="titleline"><div><b>Championship Points</b><div class="muted" style="font-size:10px">Top 10 · exact values shown beside every bar</div></div></div><div class="proChart" style="margin-top:8px">${rows||'<div class="empty">No approved data yet.</div>'}</div><div class="grid" style="margin-top:8px"><div><div class="muted" style="font-size:10px">Recent match scoring volume</div><div class="spark">${spark||'<span class="muted">No matches</span>'}</div></div><div class="insightGrid"><div class="insightCard"><small>Leader</small><b>${esc(top?.name||'—')}</b><span class="muted">${top?.points||0} pts</span></div><div class="insightCard"><small>Chaser</small><b>${esc(second?.name||'—')}</b><span class="muted">${second?top.points-second.points:'—'} gap</span></div><div class="insightCard"><small>Recent</small><b>${approved.length}</b><span class="muted">approved matches shown</span></div></div></div>`}
+function elite2AI(q){let n=norm(q),ranking=aiAggregate();let team=ranking.find(x=>x.name&&n.includes(norm(x.name)));if(team){let f=eliteForm(team.slot),recent=f.length?f.join(' → '):'No recent placements';return `تحليل <b>${esc(team.name)}</b>: <b>${team.points}</b> نقطة، <b>${team.kills}</b> Kill، <b>${team.top1}</b> WWCD، ${team.matches} مباريات. آخر النتائج: ${esc(recent)}. متوسط النقاط/مباراة: <b>${team.avgPoints?.toFixed(1)||'0.0'}</b>.`}
+if(/(من.*اقرب|اقرب.*فوز|closest.*win|safe lead|متصدر.*امن)/i.test(n)&&ranking.length>1){let gap=ranking[0].points-ranking[1].points;return `المتصدر <b>${esc(ranking[0].name)}</b> يتقدم بفارق <b>${gap}</b> نقطة. ${gap>=10?'الفارق قوي حاليًا.':'الفارق قابل للتغيير بسرعة.'}`}
+if(/(كفاء|efficien|kills.*point|اعتماد.*kill|kill dependence)/i.test(n)){let a=ranking.map(x=>({...x,ratio:x.points?x.kills/x.points:0})).sort((a,b)=>b.ratio-a.ratio)[0];return a?`أعلى اعتماد نسبي على الـKills حاليًا: <b>${esc(a.name)}</b> بنسبة ${((a.ratio||0)*100).toFixed(1)}% تقريبًا من نقاطه المرتبطة بالقتلات وفق القاعدة الحالية.`:'لا توجد بيانات كافية.'}
+if(/(جاهز.*بث|broadcast.*ready|جاهزي|ready)/i.test(n)){let c=elite2Health(),bad=c.filter(x=>!x[1]);return bad.length?`البطولة ليست جاهزة بالكامل: ${bad.map(x=>esc(x[0])).join('، ')} تحتاج مراجعة.`:'البطولة تبدو جاهزة من ناحية سلامة البيانات الأساسية.'}
+if(/(توصي|اقتراح|recommend)/i.test(n)){return `اقتراحي الآن: ثبّت نتائج المباريات المعتمدة، راجع أي OCR منخفض الثقة، وخذ Safety Backup قبل الانتقال لمباراة جديدة.`}
+return null}
+const elite2AIBase=aiAnswer;aiAnswer=function(q){return elite2AI(q)||elite2AIBase(q)};
+const elite2New=eliteNewTournament;eliteNewTournament=function(){elite2PushHistory('Before creating tournament');elite2New();setTimeout(()=>{let id=workspaceId();if(id)elite2RecordMeta(id,{lastOpened:Date.now()});elite2CreateAudit('Tournament created',S.tournament||'New tournament');elite2RenderCurrent()},80)};
+const elite2SwitchBase=eliteSwitchTournament;eliteSwitchTournament=function(id){elite2PushHistory('Before tournament switch');elite2Switch(id)};
+const elite2DupBase=eliteDuplicateTournament;eliteDuplicateTournament=function(id){elite2PushHistory('Before tournament duplicate');elite2DupBase(id);setTimeout(()=>elite2RenderCurrent(),80)};
+const elite2ArchiveBase=eliteArchiveTournament;eliteArchiveTournament=function(id){elite2PushHistory('Before archive');elite2ArchiveBase(id);setTimeout(()=>elite2RenderCurrent(),80)};
+const elite2SaveBase=save;save=function(){elite2PushHistory('Save');elite2SaveBase();};
+// Avoid history explosion from the wrapper itself: collapse duplicate consecutive snapshots.
+const elite2RenderCommandBase=eliteRenderCommand;eliteRenderCommand=function(){elite2RenderCommandBase();elite2RenderCurrent();elite2RenderHealth();elite2RenderAudit();elite2VisualCharts()};
+window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();elite2OpenSwitcher()}if(e.key==='Escape')elite2ClosePalette()});
+// Update build labels and initial advanced views.
+setTimeout(()=>{document.querySelectorAll('.buildBadge').forEach(e=>e.textContent=ELITE2_BUILD);let b=document.getElementById('opsBuildBadge');if(b)b.textContent=ELITE2_BUILD;elite2RenderCurrent();elite2RenderHealth();elite2RenderAudit();elite2VisualCharts()},0);
+
+/* ===== V26 ELITE 2.1 — Tournament Workspace Hub Logic ===== */
+function eliteHubFileToData(file,cb){if(!file){cb('');return}const r=new FileReader();r.onload=()=>cb(r.result||'');r.readAsDataURL(file)}
+function eliteHubMetaFor(id){const m=elite2Meta();return m[id]||{}}
+function eliteHubHealth(w){try{return workspaceHealth(normalizeTournamentState(w.state))}catch(e){return {teams:0,approved:0,total:0,score:0}}}
+function eliteHubCreate(){
+  const input=document.getElementById('hubNewName'), name=(input?.value||'').trim();
+  if(!name){input?.focus();toast('اكتب اسم البطولة أولًا');return}
+  const exists=Object.values(workspaceMap()).some(w=>!w.archived&&norm(w.name||'')===norm(name));
+  if(exists){toast('هذه البطولة موجودة بالفعل — اخترها من المكتبة');eliteHubRender();return}
+  const logoFile=document.getElementById('hubNewLogo')?.files?.[0];
+  const id=makeWorkspaceId(), st=normalizeTournamentState({tournament:name});
+  const map=workspaceMap();map[id]={id,name,state:st,created:Date.now(),updated:Date.now(),archived:false};
+  saveWorkspaceMap(map);setWorkspaceId(id);S=st;
+  const finish=logo=>{if(logo)S.tournamentLogo=logo;save();elite2RecordMeta(id,{lastOpened:Date.now(),openCount:(eliteHubMetaFor(id).openCount||0)+1});elite2CreateAudit('Tournament created',name);render();eliteHubClearNew();eliteHubRender();toast('تم إنشاء البطولة وفتحها: '+name)};
+  if(logoFile)eliteHubFileToData(logoFile,finish);else finish('');
+}
+function eliteHubContinue(){
+  if(!workspaceId()){eliteHubFocusNew();toast('أنشئ أو اختر بطولة أولًا');return}
+  eliteGo('teams');
+}
+function eliteHubFocusNew(){const i=document.getElementById('hubNewName');if(i){i.focus();i.scrollIntoView({behavior:'smooth',block:'center'})}}
+function eliteHubClearNew(){
+  const i=document.getElementById('hubNewName'),f=document.getElementById('hubNewLogo'),p=document.getElementById('hubNewLogoPreview'),l=document.getElementById('hubLogoLabel');
+  if(i)i.value='';if(f)f.value='';if(p){p.src='';p.style.display='none'}if(l)l.textContent='＋ Logo';
+}
+function eliteHubPreviewLogo(file){
+  if(!file)return;
+  const p=document.getElementById('hubNewLogoPreview'),l=document.getElementById('hubLogoLabel');
+  if(p){p.src=URL.createObjectURL(file);p.style.display='block'}if(l)l.style.display='none';
+}
+function eliteHubChangeCurrentLogo(file){
+  if(!file||!workspaceId())return;
+  eliteHubFileToData(file,logo=>{S.tournamentLogo=logo;save();toast('تم تحديث شعار البطولة');eliteHubRender()});
+}
+function eliteHubSaveIdentity(){
+  const id=workspaceId(),name=(document.getElementById('hubEditName')?.value||'').trim();
+  if(!id){toast('لا توجد بطولة حالية');return}
+  if(!name){toast('اسم البطولة لا يمكن أن يكون فارغًا');return}
+  const map=workspaceMap(),w=map[id];if(!w)return;
+  const duplicate=Object.values(map).some(x=>x.id!==id&&!x.archived&&norm(x.name||'')===norm(name));
+  if(duplicate){toast('اسم البطولة مستخدم بالفعل');return}
+  w.name=name;w.state=normalizeTournamentState(w.state);w.state.tournament=name;w.updated=Date.now();map[id]=w;saveWorkspaceMap(map);S.tournament=name;save();elite2CreateAudit('Tournament identity updated',name);render();eliteHubClearEdit();eliteHubRender();toast('تم حفظ بيانات البطولة');
+}
+function eliteHubClearEdit(){const i=document.getElementById('hubEditName'),f=document.getElementById('hubEditLogo'),p=document.getElementById('hubEditLogoPreview'),l=document.getElementById('hubEditLogoLabel');if(i)i.value=S.tournament||'';if(f)f.value='';if(p){p.src='';p.style.display='none'}if(l)l.style.display=''}
+function eliteHubToggleFavorite(id){
+  const meta=eliteHubMetaFor(id),next=!meta.favorite;elite2RecordMeta(id,{favorite:next});eliteHubRender();elite2RenderSwitcher();toast(next?'تمت إضافة البطولة للمفضلة':'تمت إزالة البطولة من المفضلة');
+}
+function eliteHubOpen(id){
+  if(!id)return;
+  elite2Switch(id);
+  setTimeout(()=>{eliteHubRender();elite2RenderSwitcher()},50);
+}
+function eliteHubCard(w){
+  const h=eliteHubHealth(w),meta=eliteHubMetaFor(w.id),active=w.id===workspaceId(),logo=(w.state&&w.state.tournamentLogo)||'';
+  return `<div class="workspaceCard2 ${active?'active':''}">
+    <img class="workspaceCardLogo" src="${esc(logo)}" onerror="this.style.display='none'" alt="">
+    <div style="min-width:0">
+      <button class="workspaceFav ${meta.favorite?'on':''}" title="Favorite" onclick="event.stopPropagation();eliteHubToggleFavorite('${w.id}')">${meta.favorite?'★':'☆'}</button>
+      <div class="workspaceCardName">${esc(w.name||'Untitled Tournament')}</div>
+      <div class="workspaceCardMeta">${h.teams}/16 Teams · ${h.total} Matches · ${h.approved} Approved</div>
+      <div class="workspaceCardActions">
+        <button class="${active?'primary':''}" onclick="eliteHubOpen('${w.id}')">${active?'✓ الحالية':'فتح البطولة'}</button>
+        <button onclick="eliteDuplicateTournament('${w.id}')">نسخ</button>
+      </div>
+    </div>
+  </div>`;
+}
+function eliteHubRender(){
+  const map=workspaceMap(),all=Object.values(map).filter(w=>!w.archived),q=norm(document.getElementById('hubSearch')?.value||'');
+  const arr=all.filter(w=>!q||norm(w.name||'').includes(q)).sort((a,b)=>{
+    const ma=eliteHubMetaFor(a.id),mb=eliteHubMetaFor(b.id);
+    if(!!ma.favorite!==!!mb.favorite)return ma.favorite?-1:1;
+    const ta=ma.lastOpened||a.updated||a.created,tb=mb.lastOpened||b.updated||b.created;
+    return tb-ta;
+  });
+  const list=document.getElementById('hubTournamentList');
+  if(list)list.innerHTML=arr.length?arr.map(eliteHubCard).join(''):`<div class="workspaceEmpty2" style="grid-column:1/-1">لا توجد بطولة مطابقة. اكتب اسم البطولة الجديدة بالأعلى وأنشئها الآن.</div>`;
+  const cur=workspaceId()?workspaceMap()[workspaceId()]:null,h=cur?eliteHubHealth(cur):{teams:0,total:0,approved:0,score:0};
+  const name=document.getElementById('hubCurrentName'),meta=document.getElementById('hubCurrentMeta'),logo=document.getElementById('hubCurrentLogo');
+  if(name)name.textContent=cur?.name||'لا توجد بطولة محددة';
+  if(meta)meta.textContent=cur?`آخر تحديث: ${new Date(cur.updated||Date.now()).toLocaleString()} · هذه هي المساحة التي ستُضاف إليها كل البيانات الآن.`:'ابدأ بإنشاء بطولة أو اختر بطولة محفوظة.';
+  if(logo){logo.src=cur?.state?.tournamentLogo||'';logo.style.display=cur?.state?.tournamentLogo?'block':'none'}
+  const stats=document.getElementById('hubCurrentStats');
+  if(stats)stats.innerHTML=`<div class="workspaceMiniStat"><small>Teams</small><b>${h.teams}/16</b></div><div class="workspaceMiniStat"><small>Matches</small><b>${h.total}</b></div><div class="workspaceMiniStat"><small>Approved</small><b>${h.approved}</b></div><div class="workspaceMiniStat"><small>Health</small><b>${h.score}%</b></div>`;
+  const edit=document.getElementById('hubEditName');if(edit&&document.activeElement!==edit)edit.value=S.tournament||'';
+}
+const eliteHubOriginalRender=eliteRenderCommand;
+eliteRenderCommand=function(){eliteHubOriginalRender();eliteHubRender()};
+const eliteHubOriginalNew=eliteNewTournament;
+eliteNewTournament=function(){eliteGo('home');setTimeout(()=>{eliteHubFocusNew();toast('اكتب اسم البطولة الجديدة في قسم Tournament Workspace')},80)};
+setTimeout(()=>{eliteHubRender();eliteHubClearEdit()},80);
+
+/* ===== V26 ELITE 4.0 — Fixed Lobby Slot Intelligence ===== */
+const ROSTER_ENGINE_V4='2026.10.12.ROSTER.04';
+
+function buildRows(items){
+  /* Compatibility helper: some earlier OCR revisions called buildRows().
+     It now normalizes arbitrary row collections without changing tournament data. */
+  const src=Array.isArray(items)?items:[];
+  return src.map((x,i)=>({
+    slot:Number(x?.slot)||0,
+    name:String(x?.name||x?.teamName||''),
+    players:Array.isArray(x?.players)?x.players.filter(Boolean).map(String).slice(0,4):[],
+    placement:Number(x?.placement)||0,
+    kills:Number(x?.kills)||0,
+    source:x?.source||'ocr',
+    confidence:Number(x?.confidence)||0
+  }));
+}
+window.buildRows=buildRows;
+
+const ELITE_ROSTER_LAYOUT_V4={
+  first:{
+    slots:[3,4,5,6,7,8,9,10,11],
+    xs:[[0.004,0.308],[0.320,0.630],[0.643,0.952]],
+    ys:[[0.088,0.385],[0.390,0.695],[0.700,0.995]]
+  },
+  second:{
+    slots:[12,13,14,15,16,17,18],
+    xs:[[0.004,0.308],[0.320,0.630],[0.643,0.952]],
+    ys:[[0.095,0.370],[0.385,0.685],[0.695,0.995]]
+  }
+};
+
+function rosterV4Normalize(s){
+  return String(s??'').normalize('NFKC').replace(/[\u200B-\u200D\uFEFF]/g,'')
+    .replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
+    .replace(/[۰-۹]/g,d=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))
+    .toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]+/gu,'');
+}
+function rosterV4TeamAnchors(teamName){
+  const raw=String(teamName||'').normalize('NFKC');
+  const tokens=raw.split(/[^\p{L}\p{N}]+/u).map(rosterV4Normalize).filter(Boolean);
+  const generic=new Set(['team','teams','esports','esport','club','gaming','squad','official','pro','the','mobile']);
+  const meaningful=tokens.filter(x=>x.length>=2&&!generic.has(x));
+  const out=new Set();
+  meaningful.forEach(x=>{
+    out.add(x);
+    if(x.length>=3) for(let n=3;n<=Math.min(6,x.length);n++)out.add(x.slice(0,n));
+  });
+  if(meaningful.length>=2){
+    out.add(meaningful.map(x=>x[0]).join(''));
+    out.add(meaningful.map(x=>x.slice(0,2)).join(''));
+  }
+  return [...out].filter(x=>x.length>=2);
+}
+function rosterV4NameClean(s){
+  let x=String(s||'').replace(/\s+/g,' ').trim();
+  x=x.replace(/^(?:[\[\]{}()|:;,.\/\\~`'"]|\s)+/,'').trim();
+  x=x.replace(/^(?:\d{1,2}|[OoIl]{1,2})\s+(?=[A-Za-z])/,'').trim();
+  x=x.replace(/^(?:\/|\\|\|)\s*/,'').trim();
+  x=x.replace(/\s+(?:\/|\\|\|)?\s*(?:0|O|Q|D|El|Eli|Eliminations?)$/i,'').trim();
+  x=x.replace(/\b(?:eliminations?|elim(?:inations)?)\b.*$/i,'').trim();
+  x=x.replace(/[|:;,]+$/,'').trim();
+  if(!x || /^[-_/\\|]+$/.test(x) || /^0+$/.test(x))return '';
+  /* Do not remove internal spaces: names such as "X 74" are valid in-game names. */
+  return x;
+}
+function rosterV4PlayerScore(name,teamName,confidence){
+  const n=rosterV4Normalize(name), anchors=rosterV4TeamAnchors(teamName);
+  let boost=0;
+  for(const a of anchors){
+    if(n.startsWith(a))boost=Math.max(boost,28+Math.min(24,a.length*4));
+    else if(n.includes(a))boost=Math.max(boost,12+Math.min(18,a.length*3));
+  }
+  const len=Math.min(28,n.length);
+  return Number(confidence||0)*0.55 + len*1.25 + boost;
+}
+function rosterV4MakeImage(img,mode){
+  const scale=2.2;
+  const c=document.createElement('canvas');
+  c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));
+  const ctx=c.getContext('2d',{willReadFrequently:true});
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.drawImage(img,0,0,c.width,c.height);
+  if(mode==='enhanced'){
+    const id=ctx.getImageData(0,0,c.width,c.height),p=id.data;
+    for(let i=0;i<p.length;i+=4){
+      const v=.299*p[i]+.587*p[i+1]+.114*p[i+2];
+      const z=Math.max(0,Math.min(255,(v-32)*1.75+28));
+      p[i]=p[i+1]=p[i+2]=z;
+    }
+    ctx.putImageData(id,0,0);
+  }
+  return c;
+}
+function rosterV4SlotBox(imageIndex,slot,W,H){
+  const L=imageIndex===0?ELITE_ROSTER_LAYOUT_V4.first:ELITE_ROSTER_LAYOUT_V4.second;
+  const idx=L.slots.indexOf(Number(slot));
+  if(idx<0)return null;
+  const r=Math.floor(idx/3),c=idx%3;
+  const [x0,x1]=L.xs[c], [y0,y1]=L.ys[r];
+  return {x0:x0*W,y0:y0*H,x1:x1*W,y1:y1*H,w:(x1-x0)*W,h:(y1-y0)*H};
+}
+function rosterV4WordsForSlot(words,box){
+  if(!box)return [];
+  return words.filter(w=>{
+    const t=String(w.text||'').trim();
+    if(!t)return false;
+    const cx=(Number(w.bbox?.x0||0)+Number(w.bbox?.x1||0))/2;
+    const cy=(Number(w.bbox?.y0||0)+Number(w.bbox?.y1||0))/2;
+    const nx=(cx-box.x0)/box.w, ny=(cy-box.y0)/box.h;
+    if(nx<.075||nx>.70||ny<.075||ny>.94)return false;
+    if(/^(remaining|team|eliminations?|elim|elimination)$/i.test(t))return false;
+    if(/^[/\\|]+[0OoQ]?$/i.test(t))return false;
+    return true;
+  });
+}
+function rosterV4LinesForSlot(words,box,teamName){
+  const rowCenters=[.17,.39,.61,.82];
+  const buckets=rowCenters.map(()=>[]);
+  for(const w of words){
+    const cx=(Number(w.bbox?.x0||0)+Number(w.bbox?.x1||0))/2;
+    const cy=(Number(w.bbox?.y0||0)+Number(w.bbox?.y1||0))/2;
+    const ny=(cy-box.y0)/box.h;
+    let best=0,dist=999;
+    rowCenters.forEach((v,i)=>{const d=Math.abs(v-ny);if(d<dist){dist=d;best=i}});
+    if(dist<=.12)buckets[best].push(w);
+  }
+  return buckets.map(ws=>{
+    ws.sort((a,b)=>(a.bbox.x0-b.bbox.x0));
+    const raw=ws.map(w=>w.text).join(' ');
+    const name=rosterV4NameClean(raw);
+    if(!name)return null;
+    const conf=ws.reduce((s,w)=>s+Number(w.confidence||w.conf||0),0)/Math.max(1,ws.length);
+    return {name,confidence:conf,score:rosterV4PlayerScore(name,teamName,conf),rawWords:ws.map(w=>w.text)};
+  }).filter(Boolean).slice(0,4);
+}
+function rosterV4Consensus(passRows,teamName){
+  const candidates=passRows.flat().filter(Boolean);
+  const chosen=[];
+  for(const c of candidates){
+    let best=c, support=0;
+    for(const q of candidates){
+      if(c===q)continue;
+      const a=rosterV4Normalize(c.name),b=rosterV4Normalize(q.name);
+      if(!a||!b)continue;
+      const short=Math.min(a.length,b.length),long=Math.max(a.length,b.length);
+      if(a===b || (short>=5 && (a.includes(b)||b.includes(a))) || (short>=6 && eliteNameSimilarity(a,b)>=.72)){
+        support+=1;
+        if(q.score>best.score)best=q;
+      }
+    }
+    chosen.push({...best,support});
+  }
+  chosen.sort((a,b)=>(b.support*40+b.score)-(a.support*40+a.score));
+  const out=[];
+  for(const c of chosen){
+    if(out.some(x=>eliteNameSimilarity(x.name,c.name)>=.82))continue;
+    out.push(c);
+    if(out.length===4)break;
+  }
+  return out;
+}
+async function rosterV4OCRImage(img,imageIndex,onProgress){
+  const outputs=[];
+  for(const mode of ['original','enhanced']){
+    const canvas=rosterV4MakeImage(img,mode);
+    const result=await Tesseract.recognize(canvas,'eng',{
+      logger:m=>{if(m.status==='recognizing text'&&onProgress)onProgress(Math.round((m.progress||0)*100),mode)}
+    });
+    const words=(result.data.words||[]).map(w=>({
+      text:String(w.text||'').trim(),
+      confidence:Number(w.confidence||0),
+      bbox:w.bbox
+    }));
+    outputs.push(words);
+  }
+  const result=[];
+  const slots=imageIndex===0?ELITE_ROSTER_LAYOUT_V4.first.slots:ELITE_ROSTER_LAYOUT_V4.second.slots;
+  for(const slot of slots){
+    const box=rosterV4SlotBox(imageIndex,slot,canvas.width,canvas.height);
+    const team=S.teams.find(t=>Number(t.slot)===Number(slot));
+    const passRows=outputs.map(words=>{
+      const cell=rosterV4WordsForSlot(words,box);
+      return rosterV4LinesForSlot(cell,box,team?.name||'');
+    });
+    const players=rosterV4Consensus(passRows,team?.name||'');
+    result.push({
+      slot:Number(slot),
+      teamName:team?.name||'',
+      players,
+      candidates:passRows,
+      confidence:players.length===4?Math.round(Math.min(99,78+players.reduce((s,p)=>s+Math.min(8,p.support),0)*1.2)):Math.round(players.length*20),
+      sourceImage:imageIndex+1
+    });
+  }
+  return result;
+}
+function rosterV4DuplicateAudit(rows){
+  const seen=new Map(),dupes=[];
+  rows.forEach(r=>(r.players||[]).forEach(p=>{
+    const k=rosterV4Normalize(p.name);if(!k)return;
+    const old=seen.get(k);if(old)dupes.push({name:p.name,slots:[old.slot,r.slot]});
+    else seen.set(k,{slot:r.slot});
+  }));
+  return dupes;
+}
+window.runTeamSlotOCRPair=async function(){
+  const f1=document.getElementById('teamSlotImage1')?.files?.[0];
+  const f2=document.getElementById('teamSlotImage2')?.files?.[0];
+  const review=document.getElementById('teamSlotOCRReview');
+  if(!f1||!f2)return toast('Please upload both lobby screenshots');
+  if(!review)return;
+  review.innerHTML='<div class="rosterV4Progress"><b>Roster Intelligence 4.0</b><div id="rosterV4Live">Preparing the two fixed lobby screenshots…</div><div class="rosterV4Bar"><i id="rosterV4BarFill"></i></div></div>';
+  try{
+    const imgs=[await eliteLoadImage(f1),await eliteLoadImage(f2)];
+    const all=[];
+    for(let imageIndex=0;imageIndex<2;imageIndex++){
+      const rows=await rosterV4OCRImage(imgs[imageIndex],imageIndex,(p,mode)=>{
+        const completed=imageIndex*50+p*.5;
+        const fill=document.getElementById('rosterV4BarFill'),live=document.getElementById('rosterV4Live');
+        if(fill)fill.style.width=Math.round(completed)+'%';
+        if(live)live.textContent=`Reading Screenshot ${imageIndex+1} · ${mode} · ${p}%`;
+      });
+      all.push(...rows);
+    }
+    const dupes=rosterV4DuplicateAudit(all);
+    const valid=all.filter(r=>r.players.length);
+    const missing=all.filter(r=>r.players.length<4);
+    const teamMissing=all.filter(r=>!r.teamName);
+    window._eliteRosterV4Rows=all;
+    review.innerHTML=`
+      <div class="rosterV4Summary">
+        <div><b>Fixed Slot Map</b><span>Screenshot 1 → 03–11</span><span>Screenshot 2 → 12–18</span></div>
+        <div><b>${valid.length}/16</b><span>Slots with player data</span></div>
+        <div class="${missing.length?'warnText':'goodText'}"><b>${16-missing.length}/16</b><span>Complete 4-player rosters</span></div>
+        <div class="${dupes.length?'warnText':'goodText'}"><b>${dupes.length}</b><span>Duplicate player names</span></div>
+      </div>
+      ${teamMissing.length?'<div class="callout">Some slots do not have a Team Name in the current tournament. Enter the team name in the Team table first; the OCR will still keep the correct Slot.</div>':''}
+      ${dupes.length?'<div class="callout warn">Duplicate player names were detected across Slots. Review them before saving.</div>':''}
+      <div class="rosterV4Grid">
+      ${all.map((r,i)=>`
+        <div class="rosterV4Card">
+          <div class="rosterV4Head"><span class="slotBadge">${String(r.slot).padStart(2,'0')}</span><div><b>${esc(r.teamName||'Team not entered')}</b><small>Slot ${r.slot} is the identity key</small></div><span class="confidence ${r.players.length===4?'good':r.players.length>=2?'warn':'bad'}">${r.players.length}/4</span></div>
+          <div class="rosterV4Players">
+            ${[0,1,2,3].map(j=>`<div><label>Player ${j+1}</label><input id="rv4-${i}-${j}" value="${esc(r.players[j]?.name||'')}" placeholder="Exact in-game name"></div>`).join('')}
+          </div>
+          <div class="rosterV4Meta">${r.players.length===4?'Ready to save as canonical roster.':'Needs review — OCR did not get all 4 names.'} ${r.confidence?`Confidence ${r.confidence}%`:''}</div>
+        </div>`).join('')}
+      </div>
+      <div class="row noPrint" style="margin-top:12px">
+        <button class="primary" onclick='eliteApplyFixedRosterV4(window._eliteRosterV4Rows)'>✓ Save Canonical Roster</button>
+        <button onclick="runTeamSlotOCRPair()">↻ Re-read</button>
+      </div>
+      <div class="callout rosterV4Explain">
+        <b>How this works:</b> the engine does not ask OCR to discover the Slot number. The Slot is determined by the fixed PUBG lobby position. The Team already stored in Slot 03 is therefore the owner of every player detected inside the Slot 03 box, and the same rule applies through Slot 18. These saved names become the canonical player identities used later by Match Result OCR.
+      </div>`;
+    const fill=document.getElementById('rosterV4BarFill');if(fill)fill.style.width='100%';
+  }catch(e){
+    console.error(e);
+    review.innerHTML=`<div class="callout warn"><b>Roster analysis failed.</b><br>${esc(e?.message||String(e))}<br><small>No tournament data was changed.</small></div>`;
+  }
+};
+window.eliteApplyFixedRosterV4=function(rows){
+  let changed=0,partial=0;
+  const used=new Map(), conflicts=[];
+  rows.forEach((r,i)=>{
+    const t=S.teams.find(x=>Number(x.slot)===Number(r.slot));if(!t)return;
+    const names=[0,1,2,3].map(j=>String(document.getElementById(`rv4-${i}-${j}`)?.value||'').trim()).filter(Boolean).slice(0,4);
+    const unique=[...new Set(names.map(x=>x))];
+    if(unique.length){t.players=unique;t.rosterSource='fixed_lobby_pair_v4';t.rosterEngine=ROSTER_ENGINE_V4;t.rosterUpdated=new Date().toISOString();t.rosterEvidence={slot:Number(r.slot),sourceImages:2,layout:'PUBG_FIXED_03_18',confidence:r.confidence||0};changed++}
+    if(unique.length<4)partial++;
+    unique.forEach(n=>{
+      const k=rosterV4Normalize(n);
+      if(!k)return;
+      if(used.has(k))conflicts.push(`${n}: Slot ${used.get(k)} / Slot ${r.slot}`);
+      else used.set(k,Number(r.slot));
+    });
+  });
+  S.teams=S.teams.map(t=>{t.players=Array.isArray(t.players)?t.players.slice(0,4):[];return t});
+  S.matches.forEach(m=>{
+    m.roster=m.roster||{};
+    S.teams.forEach(t=>{m.roster[t.slot]={teamSlot:t.slot,teamName:t.name||'',players:t.players.slice(0,4),source:'canonical-team-roster-v4'}});
+  });
+  save();render();
+  if(conflicts.length)toast(`Roster saved with ${conflicts.length} duplicate-name warning(s)`);
+  else toast(`${changed} team slots linked to canonical in-game names${partial?` · ${partial} need review`:''}`);
+};
+
+/* Stronger canonical player matcher for later Result OCR.
+   Slot remains the primary identity; fuzzy name matching is only evidence. */
+window.eliteMatchPlayerToRoster=function(raw){
+  let best=null;
+  const q=String(raw||'').trim();
+  if(!q)return null;
+  S.teams.forEach(t=>(t.players||[]).forEach(name=>{
+    const exact=rosterV4Normalize(q)===rosterV4Normalize(name);
+    const score=exact?1:eliteNameSimilarity(q,name);
+    const anchors=rosterV4TeamAnchors(t.name||'');
+    const nq=rosterV4Normalize(q);
+    const na=anchors.some(a=>nq.startsWith(a)||nq.includes(a))?.12:0;
+    const final=Math.min(1,score+na);
+    if(!best||final>best.score)best={name,slot:Number(t.slot),team:t.name||'',score:final,exact};
+  }));
+  return best&&best.score>=.52?best:null;
+};
+
+</script></body></html>
