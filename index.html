@@ -745,7 +745,7 @@ setTimeout(()=>{eliteHubRender();eliteHubClearEdit()},80);
  The system never invents a player name and never exposes accuracy sliders.
  Full-image OCR -> spatial card parsing -> roster assignment -> targeted retry.
 */
-const X={files:[],results:[],filter:'all',scanning:false,worker:null,engine:'PUBG_ROSTER_OCR_V9_VERIFIED'};
+const X={files:[],results:[],filter:'all',scanning:false,worker:null,engine:'PUBG_LOBBY_OCR_V10_SLOT_SEQUENCE_AND_MULTI_PASS'};
 window._slotImportV2=X;
 const $=id=>document.getElementById(id);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -824,81 +824,115 @@ function inferGrid(img){
  const cards=[];for(let r=0;r<3;r++)for(let c=0;c<3;c++){const x=xs[c],y=ys[r];if(x>=W||y>=H)continue;cards.push({x,y,w:Math.min(cardW,W-x),h:Math.min(cardH,H-y),row:r,col:c});}
  return cards.filter(c=>c.w>130&&c.h>80);
 }
-function groupPlayerLines(words,card){
- const xL=card.x+card.w*.135,xR=card.x+card.w*.68,yL=card.y+card.h*.06,yR=card.y+card.h*.98;
+function teamForSlot(slot){const t=(S.teams||[]).find(x=>Number(x.slot)===Number(slot));return t||null;}
+function rosterForSlot(slot){const t=teamForSlot(slot);return{team:t?.name||'',players:(t?.players||[]).map(p=>typeof p==='string'?p:clean(p?.name)).filter(Boolean)};}
+function normalizeOCRPlayerText(s){let t=clean(s).replace(/[|¦]+/g,'I').replace(/[“”‘’]/g,'').replace(/^[^A-Za-z0-9\u0600-\u06FF\u4E00-\u9FFF]+/,'');t=t.replace(/^\d\s+(?=[A-Za-z])/,'');t=t.replace(/\s*\/\s*0\s*Eliminations.*$/i,'').replace(/\s*\/\s*[0-9]+\s*Eliminations.*$/i,'');return clean(t);}
+function lineGroups(words,card,xLFrac=.08,xRFrac=.72,yLFrac=.04,yRFrac=.98){
+ const xL=card.x+card.w*xLFrac,xR=card.x+card.w*xRFrac,yL=card.y+card.h*yLFrac,yR=card.y+card.h*yRFrac;
  const ws=words.filter(w=>w.x1>=xL&&w.x0<=xR&&w.cy>=yL&&w.cy<=yR&&w.confidence>=0).sort((a,b)=>a.cy-b.cy||a.x0-b.x0);
- const groups=[];for(const w of ws){let g=groups[groups.length-1];if(!g||Math.abs(w.cy-g.cy)>Math.max(7,(card.h*.075))){g={cy:w.cy,words:[]};groups.push(g);}g.words.push(w);g.cy=g.words.reduce((s,z)=>s+z.cy,0)/g.words.length;}
- return groups.map(g=>{const ww=g.words.sort((a,b)=>a.x0-b.x0);return{text:clean(ww.map(z=>z.t).join(' ')),confidence:Math.round(ww.reduce((s,z)=>s+clamp(z.confidence,0,100),0)/ww.length),cy:g.cy,words:ww};}).filter(g=>g.text);
+ const groups=[];for(const w of ws){let g=groups[groups.length-1];if(!g||Math.abs(w.cy-g.cy)>Math.max(6,card.h*.07)){g={cy:w.cy,words:[]};groups.push(g);}g.words.push(w);g.cy=g.words.reduce((sum,z)=>sum+z.cy,0)/g.words.length;}
+ return groups.map(g=>{const ww=g.words.sort((a,b)=>a.x0-b.x0);return{text:normalizeOCRPlayerText(ww.map(z=>z.t).join(' ')),confidence:Math.round(ww.reduce((sum,z)=>sum+clamp(z.confidence,0,100),0)/Math.max(1,ww.length)),cy:g.cy,words:ww};}).filter(g=>g.text);
 }
-function rosterForSlot(slot){const t=(S.teams||[]).find(x=>Number(x.slot)===Number(slot));return{team:t?.name||'',players:(t?.players||[]).map(p=>typeof p==='string'?p:clean(p?.name)).filter(Boolean)};}
-function pairScore(text,name){const a=normKey(text),b=normKey(name);if(!a||!b)return 0;if(a===b)return 1;const sim=similarity(a,b),d=editDistance(a,b);if(d<=1&&Math.max(a.length,b.length)>=4)return Math.max(sim,.84);return sim;}
+function groupPlayerLines(words,card){return lineGroups(words,card,.08,.72,.03,.98).slice(0,4);}
+function candidateCluster(list){
+ const cleaned=list.map(x=>({text:normalizeOCRPlayerText(x.text),confidence:Number(x.confidence)||0,source:x.source||'ocr'})).filter(x=>x.text&&x.text.length>=2);
+ if(!cleaned.length)return[];
+ const clusters=[];
+ for(const c of cleaned){let hit=null,best=0;for(const g of clusters){const sim=similarity(c.text,g.text);if(sim>best){best=sim;hit=g;}}if(hit&&best>=.78){hit.items.push(c);if((c.confidence+(c.text.length*1.5))>(hit.best.confidence+(hit.best.text.length*1.5)))hit.best=c;hit.text=hit.best.text;}else clusters.push({text:c.text,best:c,items:[c]});}
+ return clusters.map(g=>{const weight=g.items.reduce((a,x)=>a+Math.max(1,x.confidence/20),0);return{text:g.best.text,confidence:Math.round(Math.min(100,Math.max(g.best.confidence,weight*18))),votes:g.items.length,items:g.items};}).sort((a,b)=>(b.votes*20+b.confidence+b.text.length)-(a.votes*20+a.confidence+a.text.length));
+}
+async function readPlayerRegionCandidates(img,card){
+ const crop=cropCanvas(img,card.x+card.w*.08,card.y+card.h*.03,card.w*.64,card.h*.94,5);
+ const local={x:0,y:0,w:crop.width,h:crop.height};const passes=[];
+ for(const mode of ['original','contrast']){try{const d=await recognize(crop,mode),words=ocrWords(d,5),groups=lineGroups(words,local,.01,.98,.01,.99).slice(0,4);passes.push(groups);}catch(e){console.warn('player region OCR pass failed',e);}}
+ const rows=[];for(let i=0;i<4;i++){
+  const candidates=[];for(const pass of passes){const g=pass[i];if(g)candidates.push({text:g.text,confidence:g.confidence,source:'region'});}
+  const top=candidateCluster(candidates)[0];rows.push({text:top?.text||'',confidence:top?.confidence||0,cy:card.y+card.h*[.17,.40,.63,.85][i],candidates:candidateCluster(candidates).slice(0,4)});
+ }
+ return rows;
+}
+async function readPlayerLineCandidates(img,card,lineIndex){
+ const centers=[.17,.40,.63,.85],cy=card.y+card.h*centers[lineIndex],lineH=card.h*.15;
+ const x=card.x+card.w*.08,y=cy-lineH*.55,w=card.w*.64,h=lineH;const out=[];
+ for(const mode of ['original','contrast']){
+  try{const c=cropCanvas(img,x,y,w,h,5),d=await recognize(c,mode),text=normalizeOCRPlayerText(clean(d?.text||''));if(text)out.push({text,confidence:78,source:mode});const words=ocrWords(d,5);const lineText=clean(words.sort((a,b)=>a.x0-b.x0).map(z=>z.t).join(' '));if(lineText)out.push({text:normalizeOCRPlayerText(lineText),confidence:Math.max(70,...words.map(z=>Number(z.confidence)||0)),source:mode+'-tsv'});}catch(e){console.warn('player line OCR pass failed',e);}
+ }
+ return candidateCluster(out);
+}
+async function targetedCardRead(img,card){
+ let rows=await readPlayerRegionCandidates(img,card);
+ if(rows.length!==4||rows.some(r=>!r.text||Number(r.confidence)<78)){
+  const improved=[];for(let i=0;i<4;i++){if(rows[i]?.text&&Number(rows[i].confidence)>=82){improved.push(rows[i]);continue;}const c=await readPlayerLineCandidates(img,card,i);const top=c[0];improved.push({text:top?.text||rows[i]?.text||'',confidence:top?.confidence||rows[i]?.confidence||0,cy:card.y+card.h*[.17,.40,.63,.85][i],candidates:c.slice(0,4)});}rows=improved;
+ }
+ return rows.filter(x=>x.text).slice(0,4);
+}
+function pairScore(text,name){const a=normKey(text),b=normKey(name);if(!a||!b)return 0;if(a===b)return 1;const sim=similarity(a,b),d=editDistance(a,b);if(d<=1&&Math.max(a.length,b.length)>=4)return Math.max(sim,.84);if(d<=2&&Math.max(a.length,b.length)>=7)return Math.max(sim,.80);return sim;}
 function bestAssignment(observed,canonical){
  if(observed.length!==4||canonical.length!==4)return{score:0,rows:[],verified:false};
  const n=4;let best=null;
  function rec(i,used,total,map){if(i===n){if(!best||total>best.score)best={score:total,map:[...map]};return;}for(let j=0;j<n;j++){if(used.has(j))continue;used.add(j);map.push({obs:i,can:j,score:pairScore(observed[i].text,canonical[j])});rec(i+1,used,total+map[map.length-1].score,map);map.pop();used.delete(j);}}
  rec(0,new Set(),0,[]);if(!best)return{score:0,rows:[],verified:false};
  const rows=best.map(x=>({obs:observed[x.obs],canonical:canonical[x.can],score:x.score})).sort((a,b)=>a.obs.cy-b.obs.cy);
- const verified=rows.every(r=>r.score>=.80)&&best.score>=3.35;
+ const verified=rows.every(r=>r.score>=.80)&&best.score>=3.25;
  return{score:best.score,rows,verified};
 }
 function identifySlot(observed){
- const candidates=[];for(const t of (S.teams||[])){const roster=rosterForSlot(t.slot);const a=bestAssignment(observed,roster.players);if(a.score)candidates.push({slot:Number(t.slot),team:roster.team,assignment:a});}
- candidates.sort((a,b)=>b.assignment.score-a.assignment.score);if(!candidates.length)return null;const best=candidates[0],second=candidates[1];const unique=!second||best.assignment.score-second.assignment.score>=.16;return{...best,unique,candidates};
+ const candidates=[];for(const t of (S.teams||[])){const roster=rosterForSlot(t.slot);if(roster.players.length!==4)continue;const a=bestAssignment(observed,roster.players);if(a.score)candidates.push({slot:Number(t.slot),team:roster.team,assignment:a});}
+ candidates.sort((a,b)=>b.assignment.score-a.assignment.score);if(!candidates.length)return null;const best=candidates[0],second=candidates[1],unique=!second||best.assignment.score-second.assignment.score>=.16;return{...best,unique,candidates};
 }
-function rowsToPlayers(observed,assignment){return assignment.rows.map(r=>({name:r.canonical,raw:r.obs.text,confidence:r.obs.confidence,verified:r.score>=.80,matched:true,matchScore:r.score}));}
-async function targetedCardRead(img,card){
- const crop=cropCanvas(img,card.x+card.w*.07,card.y+card.h*.18,card.w*.62,card.h*.80,4.5);const data=await recognize(crop,'contrast');const words=ocrWords(data,1);const local={x:0,y:0,w:crop.width,h:crop.height};
- return groupPlayerLines(words,{x:0,y:0,w:crop.width,h:crop.height}).slice(0,4).map(g=>({...g,cy:g.cy/4.5}));
+function rowsToPlayers(observed,assignment){return assignment.rows.map(r=>({name:r.canonical,raw:r.obs.text,confidence:r.obs.confidence,verified:r.score>=.80,matched:true,matchScore:r.score,candidates:r.obs.candidates||[]}));}
+function slotBadgeCandidates(img,card){
+ const x=card.x+card.w*.025,y=card.y+card.h*.02,w=card.w*.20,h=card.h*.24,crop=cropCanvas(img,x,y,w,h,8);return recognize(crop,'original').then(d=>{const raw=clean(d?.text||'').replace(/[^0-9]/g,'');const out=[];if(raw)out.push(Number(raw));const words=ocrWords(d,8);for(const q of words){const n=clean(q.t).replace(/[^0-9]/g,'');if(n)out.push(Number(n));}return [...new Set(out)].filter(n=>n>=1&&n<=99);}).catch(()=>[]);
+}
+function sequenceSlots(rows){
+ const cards=rows.slice().sort((a,b)=>a.sourceImage-b.sourceImage||a.row-b.row||a.column-b.column);
+ const total=cards.length,possible=[];const maxStart=Math.max(3,18-total+1);
+ for(let start=3;start<=maxStart;start++){
+  let score=0;for(let i=0;i<cards.length;i++){const expected=start+i;const c=cards[i].slotCandidates||[];if(c.includes(expected))score+=2;else if(c.some(v=>Math.abs(v-expected)<=1))score+=.25;}possible.push({start,score});
+ }
+ possible.sort((a,b)=>b.score-a.score);return possible[0]?.start||3;
 }
 async function analyzeImage(file,index){
  const img=await loadImg(file);const cards=inferGrid(img);if(!cards.length)throw new Error('لم يتم اكتشاف شبكة PUBG 3×3');
- setStatus(`الصورة ${index+1}/${X.files.length} — قراءة الصورة بالكامل…`,10+index*(55/Math.max(1,X.files.length)));
+ setStatus(`الصورة ${index+1}/${X.files.length} — قراءة الصورة بالكامل…`,10+index*(45/Math.max(1,X.files.length)));
  const scale=2,full=makeCanvas(img,scale),data=await recognize(full,'original'),words=ocrWords(data,scale),out=[];
- const visibleCards=cards.filter(card=>{const xl=card.x+card.w*.10,xr=card.x+card.w*.70,yl=card.y+card.h*.04,yr=card.y+card.h*.98;const n=words.filter(w=>w.x1>=xl&&w.x0<=xr&&w.cy>=yl&&w.cy<=yr).length;const p=words.filter(w=>w.x1>=card.x+card.w*.135&&w.x0<=card.x+card.w*.68&&w.cy>=card.y+card.h*.06&&w.cy<=card.y+card.h*.98).length;return n>=5&&p>=3;});
- const detectedCards=visibleCards;
- if(!detectedCards.length)throw new Error('لم يتم العثور على كروت Lobby قابلة للقراءة');
- for(let i=0;i<detectedCards.length;i++){
-   const card=detectedCards[i];let observed=groupPlayerLines(words,card).slice(0,4);let identified=identifySlot(observed);let retry=false;
-   const good=identified?.assignment?.verified&&identified.unique&&observed.length===4;
-   if(!good){retry=true;setStatus(`الصورة ${index+1}/${X.files.length} — تحقق دقيق للكارت ${i+1}/${detectedCards.length}…`,45+index*(45/Math.max(1,X.files.length)));const retryRows=await targetedCardRead(img,card);if(retryRows.length===4){const ri=identifySlot(retryRows);if(ri&&(!identified||ri.assignment.score>identified.assignment.score)) {observed=retryRows;identified=ri;}}}
-   const slot=identified?.slot||0,team=identified?.team||'',verified=!!(identified?.assignment?.verified&&identified.unique&&observed.length===4);
-   const players=verified?rowsToPlayers(observed,identified.assignment):observed.map(g=>({name:g.text,raw:g.text,confidence:g.confidence,verified:false,matched:false}));
-   while(players.length<4)players.push({name:'',raw:'',confidence:0,verified:false,matched:false,missing:true});
-   out.push({slot,team,players:players.slice(0,4),verified,needsReview:!verified,conflict:false,sourceImage:index,card:i+1,row:card.row+1,column:card.col+1,file:file.name,retryUsed:retry,evidence:cropCanvas(img,card.x,card.y,card.w,card.h,1.4).toDataURL('image/jpeg',.88),rawObserved:observed.map(x=>x.text)});
+ const visibleCards=cards.filter(card=>{const xl=card.x+card.w*.06,xr=card.x+card.w*.72,yl=card.y+card.h*.02,yr=card.y+card.h*.98;const n=words.filter(w=>w.x1>=xl&&w.x0<=xr&&w.cy>=yl&&w.cy<=yr).length;const p=words.filter(w=>w.x1>=card.x+card.w*.08&&w.x0<=card.x+card.w*.72&&w.cy>=card.y+card.h*.03&&w.cy<=card.y+card.h*.98).length;return n>=5&&p>=3;});
+ if(!visibleCards.length)throw new Error('لم يتم العثور على كروت Lobby قابلة للقراءة');
+ for(let i=0;i<visibleCards.length;i++){
+  const card=visibleCards[i];setStatus(`الصورة ${index+1}/${X.files.length} — قراءة أسماء اللاعبين ${i+1}/${visibleCards.length}…`,30+index*(50/Math.max(1,X.files.length))+i*(18/Math.max(1,visibleCards.length)));
+  let observed=groupPlayerLines(words,card).slice(0,4);let retryRows=await targetedCardRead(img,card);if(retryRows.length===4)observed=retryRows;
+  const badge=(X.files.length===1)?await slotBadgeCandidates(img,card):[];
+  out.push({slot:0,team:'',players:observed.map(g=>({name:g.text,raw:g.text,confidence:g.confidence,verified:false,matched:false,candidates:g.candidates||[]})),verified:false,needsReview:true,conflict:false,sourceImage:index,card:i+1,row:card.row+1,column:card.col+1,file:file.name,retryUsed:true,evidence:cropCanvas(img,card.x,card.y,card.w,card.h,1.4).toDataURL('image/jpeg',.9),rawObserved:observed.map(x=>x.text),slotCandidates:badge});
  }
  return out;
 }
 function samePlayers(a,b){const aa=(a?.players||[]).map(p=>normKey(p?.name)).filter(Boolean),bb=(b?.players||[]).map(p=>normKey(p?.name)).filter(Boolean);return aa.length===4&&bb.length===4&&aa.every((n,i)=>n===bb[i]);}
+function applyRosterVerification(r){
+ const roster=rosterForSlot(r.slot);r.team=roster.team||r.team;
+ if(roster.players.length!==4)return r;
+ const a=bestAssignment((r.players||[]).filter(p=>p.name).map((p,i)=>({...p,text:p.name,cy:i})),roster.players);
+ if(a.rows.length===4){r.players=rowsToPlayers((r.players||[]).filter(p=>p.name).map((p,i)=>({...p,text:p.name,cy:i})),a);r.verified=!!a.verified;}
+ return r;
+}
 function mergeResults(rows){
- const map=new Map();
- for(const r of rows){
-   if(!r.slot){const key=`unassigned-${r.sourceImage}-${r.card}`;map.set(key,r);continue;}
-   const old=map.get(r.slot);
-   if(!old){map.set(r.slot,r);continue;}
-   const conflict=!!old.conflict||!!r.conflict||(old.verified&&r.verified&&!samePlayers(old,r));
-   const best=(r.verified&&!old.verified)?r:old;
-   best.team=rosterForSlot(r.slot).team||best.team;
-   best.sources=[...(old.sources||[]),old, ...(r.sources||[]),r];
-   best.conflict=conflict;
-   best.verified=!!best.verified&&!conflict;
-   best.needsReview=!best.verified||conflict;
-   map.set(r.slot,best);
- }
+ const grouped=new Map();for(const r of rows){const key=`${r.sourceImage}-${r.card}`;grouped.set(key,r);}
+ const list=[...grouped.values()].sort((a,b)=>a.sourceImage-b.sourceImage||a.card-b.card);const start=sequenceSlots(list);list.forEach((r,i)=>{r.slot=start+i;r.team=rosterForSlot(r.slot).team||'';applyRosterVerification(r);});
+ const map=new Map();for(const r of list){const old=map.get(r.slot);if(!old){map.set(r.slot,r);continue;}const conflict=!!old.conflict||!!r.conflict||(old.verified&&r.verified&&!samePlayers(old,r));const best=(r.verified&&!old.verified)?r:old;best.team=rosterForSlot(r.slot).team||best.team;best.sources=[...(old.sources||[]),old,...(r.sources||[]),r];best.conflict=conflict;best.verified=!!best.verified&&!conflict;best.needsReview=!best.verified||conflict;map.set(r.slot,best);}
  return[...map.values()].sort((a,b)=>(a.slot||999)-(b.slot||999));
 }
 window.runTeamSlotImportV2=async()=>{if(X.scanning)return;if(!X.files.length)return toast('ارفع صور الـLobby أولاً');X.scanning=true;X.results=[];renderReview();try{setStatus('بدء التحليل التلقائي…',1);await ensureOCR();const all=[];for(let i=0;i<X.files.length;i++)all.push(...await analyzeImage(X.files[i],i));X.results=mergeResults(all);renderReview();const verified=X.results.filter(r=>r.verified).length,review=X.results.length-verified;setStatus(review?`اكتمل التحليل — ${verified} متحقق بالكامل، و${review} يحتاج تحقق.`:`اكتمل التحليل — كل النتائج متحققة 100% مقابل الـRoster.`,100);}catch(e){console.error('PUBG ROSTER OCR V9',e);X.results=[];renderReview();setStatus(`فشل التحليل: ${String(e?.message||e)}`,0);toast('فشل التحليل — لم يتم تعديل بيانات البطولة');}finally{X.scanning=false;}};
 window.clearTeamSlotImportV2=()=>{X.files=[];X.results=[];renderFiles();renderReview();setStatus('جاهز — التحليل تلقائي بالكامل',0);};
 window.slotImportFilterV2=f=>{X.filter=f;renderReview();};
 window.slotImportAddManualRow=()=>{const slots=(S.teams||[]).map(t=>Number(t.slot)).filter(Number.isFinite),slot=slots.length?Math.max(...slots)+1:3;X.results.push({slot,team:rosterForSlot(slot).team,players:[1,2,3,4].map(()=>({name:'',verified:false})),verified:false,needsReview:true,manual:true,conflict:false,sources:[]});renderReview();};
-function refreshManualVerification(i){const r=X.results[i];if(!r)return;const roster=rosterForSlot(r.slot);const canonical=roster.players.map(normKey),entered=(r.players||[]).map(p=>normKey(p?.name));r.team=roster.team||r.team;r.verified=canonical.length===4&&entered.length===4&&canonical.every((n,j)=>n&&n===entered[j])&&!r.conflict;r.needsReview=!r.verified;}
-window.slotImportSetSlot=(i,v)=>{if(!X.results[i])return;const n=Number(v)||0;X.results[i].slot=n;X.results[i].team=rosterForSlot(n).team;X.results[i].manual=true;X.results[i].verified=false;X.results[i].needsReview=true;refreshManualVerification(i);renderReview();};
+function refreshManualVerification(i){const r=X.results[i];if(!r)return;const roster=rosterForSlot(r.slot);const entered=(r.players||[]).map(p=>normKey(p?.name));r.team=roster.team||r.team;if(roster.players.length===4){const a=bestAssignment((r.players||[]).map((p,j)=>({...p,text:p.name,cy:j})),roster.players);if(a.rows.length===4)r.players=rowsToPlayers((r.players||[]).map((p,j)=>({...p,text:p.name,cy:j})),a);r.verified=!!a.verified&&!r.conflict;}else{r.verified=!!r.team&&entered.length===4&&entered.every(Boolean)&&((r.players||[]).length===4)&&((r.players||[]).every(p=>p.manual===true&&p.verified===true));}r.needsReview=!r.verified||!!r.conflict;}
+window.slotImportSetSlot=(i,v)=>{if(!X.results[i])return;const n=Number(v)||0;X.results[i].slot=n;X.results[i].team=rosterForSlot(n).team;X.results[i].manual=true;refreshManualVerification(i);renderReview();};
 window.slotImportSetTeam=(i,v)=>{if(!X.results[i])return;const next=clean(v);X.results[i].team=next;X.results[i].manual=true;const r=X.results[i];r.verified=false;r.needsReview=true;renderReview();};
 window.slotImportSetPlayer=(i,j,v)=>{if(!X.results[i])return;if(!X.results[i].players)X.results[i].players=[];X.results[i].players[j]={name:clean(v),confidence:100,verified:true,matched:false,manual:true};X.results[i].manual=true;refreshManualVerification(i);renderReview();};
 function renderReview(){
  const el=$('slotImportReviewV2');if(!el)return;const list=X.results.filter(r=>X.filter==='all'||(X.filter==='review'&&!r.verified)||(X.filter==='ready'&&r.verified)||(X.filter==='conflict'&&r.conflict));const verified=X.results.filter(r=>r.verified).length,review=X.results.length-verified,summary=$('slotImportSummaryV2');
  if(summary)summary.innerHTML=`<div class="slotStatV2"><small>Slots</small><b>${X.results.length}</b></div><div class="slotStatV2"><small>Verified</small><b>${verified}</b></div><div class="slotStatV2"><small>Need Check</small><b>${review}</b></div><div class="slotStatV2"><small>OCR</small><b>Auto</b></div><div class="slotStatV2"><small>Mode</small><b>Automatic</b></div>`;
  if(!X.results.length){el.innerHTML='<div class="empty">لم يتم تحليل أي صورة بعد.</div>';return;}
- el.innerHTML=list.map(r=>{const i=X.results.indexOf(r),state=r.verified?'ready':'review',team=r.team||rosterForSlot(r.slot).team;return `<div class="slotRowV2 ${state}"><div class="slotRowHeadV2"><div class="slotBadgeV2">${r.slot?String(r.slot).padStart(2,'0'):'??'}</div><div class="slotTeamEditV2"><input value="${escv(team)}" placeholder="Team" onchange="slotImportSetTeam(${i},this.value)"><div class="slotMetaV2">${r.verified?'✓ الأربعة مطابقون للـRoster المعتمد':'⚠ يحتاج تحقق — لن يتم الحفظ كبيانات مؤكدة'}</div></div><span class="slotStateV2 ${state}">${r.verified?'✓ VERIFIED':'REVIEW'}</span></div><div class="slotEvidenceV2">${r.evidence?`<img src="${r.evidence}" alt="PUBG card">`:'<div class="empty">No evidence</div>'}<div class="evidenceText"><b>Players</b>${(r.players||[]).map((p,j)=>`<div class="slotCandV2" style="display:block;margin:5px 0"><b>P${j+1}</b> <input value="${escv(p.name)}" style="width:68%;padding:5px" onchange="slotImportSetPlayer(${i},${j},this.value)"> ${p.verified?'✓':'⚠'}</div>`).join('')}</div></div><div class="slotManualV2"><input type="number" min="1" max="99" value="${r.slot||''}" onchange="slotImportSetSlot(${i},this.value)"><input value="${escv(team)}" placeholder="Team" onchange="slotImportSetTeam(${i},this.value)"><button class="small ${r.verified?'ghost':'primary'}" onclick="slotImportSetTeam(${i},this.previousElementSibling.value)">${r.verified?'Edit':'Accept'}</button></div></div>`;}).join('')+`<div class="slotCommitBarV2"><div><b>${review?'الحفظ محجوب — التحقق الكامل مطلوب':'جاهز للحفظ — كل الأسماء مطابقة للـRoster'}</b><div class="hint">لا توجد نسب أو إعدادات OCR. النظام يعمل تلقائيًا.</div></div><button class="primary" ${review?'disabled':''} onclick="commitTeamSlotImportV2()">✓ Confirm & Save ${verified} Verified Slots</button></div>`;
+ el.innerHTML=list.map(r=>{const i=X.results.indexOf(r),state=r.verified?'ready':'review',team=r.team||rosterForSlot(r.slot).team;return `<div class="slotRowV2 ${state}"><div class="slotRowHeadV2"><div class="slotBadgeV2">${r.slot?String(r.slot).padStart(2,'0'):'??'}</div><div class="slotTeamEditV2"><input value="${escv(team)}" placeholder="Team" onchange="slotImportSetTeam(${i},this.value)"><div class="slotMetaV2">${r.verified?'✓ الفريق مرتبط بالـSlot والأسماء متحققة':'⚠ يحتاج تحقق — الفريق مأخوذ من بيانات الـSlot والأسماء تحتاج تأكيد'}</div></div><span class="slotStateV2 ${state}">${r.verified?'✓ VERIFIED':'REVIEW'}</span></div><div class="slotEvidenceV2">${r.evidence?`<img src="${r.evidence}" alt="PUBG card">`:'<div class="empty">No evidence</div>'}<div class="evidenceText"><b>Players — OCR multi-pass</b>${(r.players||[]).map((p,j)=>{const c=(p.candidates||[]).slice(0,3);return `<div class="slotCandV2" style="display:block;margin:5px 0"><b>P${j+1}</b> <input value="${escv(p.name)}" style="width:68%;padding:5px" onchange="slotImportSetPlayer(${i},${j},this.value)"> ${p.verified?'✓':'⚠'}${c.length?`<div style="margin-top:3px;opacity:.72">${c.map(x=>`<span style="margin-right:6px">${escv(x.text)}</span>`).join(' · ')}</div>`:''}</div>`;}).join('')}</div></div><div class="slotManualV2"><input type="number" min="1" max="99" value="${r.slot||''}" onchange="slotImportSetSlot(${i},this.value)"><input value="${escv(team)}" placeholder="Team" onchange="slotImportSetTeam(${i},this.value)"><button class="small ${r.verified?'ghost':'primary'}" onclick="slotImportSetTeam(${i},this.previousElementSibling.value)">${r.verified?'Edit':'Accept'}</button></div></div>`;}).join('')+`<div class="slotCommitBarV2"><div><b>${review?'الحفظ محجوب — التحقق الكامل مطلوب':'جاهز للحفظ — كل الأسماء مطابقة للـRoster'}</b><div class="hint">لا توجد نسب أو إعدادات OCR. النظام يعمل تلقائيًا.</div></div><button class="primary" ${review?'disabled':''} onclick="commitTeamSlotImportV2()">✓ Confirm & Save ${verified} Verified Slots</button></div>`;
 }
 window.commitTeamSlotImportV2=()=>{const rows=X.results.filter(r=>r.verified);if(rows.length!==X.results.length)return toast('الحفظ محجوب حتى تصبح كل النتائج Verified');if(rows.some(r=>r.conflict))return toast('الحفظ محجوب: يوجد تعارض بين صور لنفس الـSlot');const seen=new Set();for(const r of rows){if(seen.has(r.slot))return toast(`Duplicate Slot ${r.slot}`);seen.add(r.slot);const t=S.teams.find(t=>Number(t.slot)===Number(r.slot));if(!t)return toast(`Slot ${r.slot} غير موجود في البطولة`);if(r.players.length!==4||r.players.some(p=>!p.verified))return toast(`Slot ${r.slot} غير متحقق بالكامل`);}for(const r of rows){const t=S.teams.find(t=>Number(t.slot)===Number(r.slot));if(t){t.name=r.team||t.name;t.players=r.players.map(p=>({name:p.name,confidence:100,source:'verified_roster_ocr'}));t.slotImportAudit={engine:X.engine,verifiedAt:new Date().toISOString(),verified:true,sourceImages:[r.file,...(r.sources||[]).map(s=>s.file).filter(Boolean)].filter(Boolean)};}}save();render();toast(`تم حفظ ${rows.length} Slot — Verified`);};
 const input=$('teamSlotImagesV2'),drop=$('slotImportDrop');if(input)input.addEventListener('change',e=>addFiles(e.target.files));if(drop){['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag');}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag');}));drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));}renderFiles();renderReview();
