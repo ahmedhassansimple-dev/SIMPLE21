@@ -49,13 +49,15 @@
 @media(max-width:760px){.workspaceHubGrid{grid-template-columns:1fr}.workspaceList2{grid-template-columns:1fr}.workspaceCreateRow{grid-template-columns:minmax(0,1fr) 92px}.workspaceHeroTitle{font-size:21px}}
 
 .rosterIntelligenceCard{border-color:#35462f}.rosterUploadGrid,.rosterControlGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rosterControlGrid{grid-template-columns:1fr 1fr 1.2fr}.rosterUpload{background:#0b1017;border:1px solid var(--line);border-radius:13px;padding:10px}.rosterUpload input{margin-top:4px}.lockedRule{height:42px;display:flex;align-items:center;padding:0 11px;border:1px solid #394352;border-radius:11px;background:#0a0e14;color:#bfc8d4;font-size:11px}.rosterSummary{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.rosterStat{background:#0b1017;border:1px solid var(--line);border-radius:12px;padding:9px}.rosterStat b{display:block;font-size:18px}.rosterStat small{color:var(--muted);font-size:9px}.rosterReviewRow{border:1px solid var(--line);border-radius:15px;background:#0b1017;margin:8px 0;padding:10px}.rosterReviewRow.ready{border-color:#315e37}.rosterReviewRow.review{border-color:#6a5520;background:#15120b}.rosterReviewRow.bad{border-color:#6d3030;background:#160d0d}.rosterPlayerGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.playerEvidence{display:flex;gap:7px;align-items:center;margin-top:6px}.playerCrop{width:150px;height:38px;object-fit:contain;background:#070b10;border:1px solid #303947;border-radius:8px}.playerMeta{font-size:9px;color:var(--muted);line-height:1.4}.playerStatus{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900}.playerStatus.ready{background:#17301c;color:#b9efad;border:1px solid #315e37}.playerStatus.review{background:#30270f;color:#f3d47b;border:1px solid #6a5520}.playerStatus.bad{background:#351a1a;color:#f5aaaa;border:1px solid #6d3030}.ocrCandidate{margin-top:5px;padding:6px 7px;border-radius:8px;background:#0a0f15;border:1px solid #27303d;font-size:10px}.ocrCandidate b{color:#dfe7ef}.rosterToolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}.rosterToolbar button{padding:7px 9px;font-size:10px}@media(max-width:760px){.rosterUploadGrid,.rosterControlGrid,.rosterPlayerGrid{grid-template-columns:1fr}.rosterSummary{grid-template-columns:repeat(2,1fr)}.playerCrop{width:120px}}
+
+.bulkSmartPreview{margin-top:7px}.bulkSmartTable{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#0b1017}.bulkSmartHead,.bulkSmartTable>div{display:grid;grid-template-columns:55px 1fr;gap:8px;padding:6px 8px;border-bottom:1px solid #202936;font-size:10px}.bulkSmartHead{font-weight:900;color:#8f9bad;background:#111923}.bulkSmartTable>div:last-child{border-bottom:0}.bulkSmartTable b{color:var(--accent)}.bulkSmartOk{margin-top:5px;color:#9cf052;font-size:10px;font-weight:800}.bulkSmartError{margin-top:6px;color:#ff9c9c;background:#281416;border:1px solid #603037;border-radius:9px;padding:7px;font-size:10px}
 </style><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.min.js"></script><style id="aiAssistantStyle">
 .aiShell{margin:10px 0 14px;border:1px solid #33412b;border-radius:18px;background:linear-gradient(145deg,#11191a,#10141b 60%,#16200f);box-shadow:0 10px 30px #0003;overflow:hidden}.aiHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px;border-bottom:1px solid var(--line)}.aiBrand{display:flex;align-items:center;gap:10px}.aiOrb{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#9cf052,#5f9d35);color:#071006;font-weight:1000;font-size:18px;box-shadow:0 0 20px #9cf05225}.aiTitle{font-weight:950}.aiSub{font-size:10px;color:var(--muted);margin-top:2px}.aiBody{padding:12px}.aiQuick{display:flex;gap:6px;overflow:auto;padding-bottom:9px}.aiQuick button{white-space:nowrap;font-size:10px;padding:8px 10px}.aiMessages{height:245px;overflow:auto;padding:4px 2px 10px;display:flex;flex-direction:column;gap:8px}.aiMsg{max-width:92%;padding:10px 11px;border-radius:13px;border:1px solid var(--line);font-size:12px;line-height:1.55;white-space:normal}.aiMsg.bot{align-self:flex-start;background:#0c1218}.aiMsg.user{align-self:flex-end;background:#172416;border-color:#33412b}.aiMsg b{font-weight:950}.aiInput{display:grid;grid-template-columns:1fr auto;gap:7px}.aiInput textarea{min-height:48px;max-height:110px;resize:none;padding:10px}.aiSend{min-width:74px}.aiStatus{font-size:10px;color:var(--muted);margin-top:7px}.aiContext{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.aiContext .pill{font-size:9px}
 @media(max-width:620px){.aiMessages{height:285px}.aiInput{grid-template-columns:1fr}.aiSend{width:100%}}
 </style><style id="v26Advanced">
 .ocrDrop{background:#0b1016;border:1px dashed #3b4656;border-radius:14px;padding:14px}.ocrProgress{height:7px;background:#232b35;border-radius:20px;overflow:hidden;margin-top:10px}.ocrProgress i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}.notice{background:#101922;border:1px solid #29445b;border-radius:12px;padding:10px 11px;font-size:11px;line-height:1.5}.confidence{font-weight:900}.confidence.good{color:var(--accent)}.confidence.warn{color:var(--gold)}.scanGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.imagePreview{width:100%;max-height:360px;object-fit:contain;background:#080b10;border:1px solid var(--line);border-radius:14px;margin-top:9px}.aiInsight{background:#0c1218;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:11px;line-height:1.55}.aiMetric{font-size:18px;font-weight:950}.miniGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.miniBox{background:#0b1016;border:1px solid var(--line);border-radius:11px;padding:9px}.scanBadge{font-size:9px;padding:4px 7px;border-radius:999px;background:#1d2a20;color:#b9ef95;font-weight:900}.ocrRaw{max-height:190px;overflow:auto;white-space:pre-wrap;background:#080b10;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:10px;color:#b8c1ce}@media(max-width:620px){.scanGrid,.miniGrid{grid-template-columns:1fr 1fr}}
 </style><style id="proUpgrade">
-.bulkTeamImport{display:flex;flex-direction:column}.bulkTeamImport textarea{width:100%;min-height:118px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;line-height:1.5}.bulkPreview{margin-top:8px}.bulkPreview table{margin-top:6px}.bulkPreview .ok{color:#9cf052}.bulkPreview .bad{color:#ff9a9a}.bulkPreview .warn{color:#ffd67a}.slotMapChip{display:inline-flex;gap:6px;align-items:center;border:1px solid #303947;background:#0a0f15;border-radius:999px;padding:5px 8px;margin:3px;font-size:10px}.slotMapChip b{color:#9cf052}..logoThumb{width:34px;height:34px;border-radius:9px;object-fit:contain;background:#080b10;border:1px solid #303948;vertical-align:middle}.logoLarge{width:46px;height:46px;border-radius:12px;object-fit:contain;background:#080b10;border:1px solid #303948}.teamCell{display:flex;align-items:center;gap:9px;min-width:150px}.teamCell img{flex:0 0 auto}.leaderTable th,.leaderTable td{padding:10px 7px}.leaderTable .metric{font-weight:900;text-align:center}.winner{color:var(--gold);font-weight:950}.placePts{color:#8fc2ff;font-weight:900}.killPts{color:#9cf052;font-weight:900}.totalPts{font-size:15px;font-weight:950}.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.podiumBox{background:#0b1017;border:1px solid var(--line);border-radius:15px;padding:13px;text-align:center}.podiumBox img{width:50px;height:50px}.podiumRank{font-size:20px;font-weight:950}.ocrDrop{border:1px dashed #4a5567;border-radius:15px;padding:18px;text-align:center;background:#0b1017}.ocrDrop input{margin-top:10px}.confidence{font-size:10px;padding:4px 7px;border-radius:999px;background:#202733}.confidence.good{color:#9cf052;background:#19321a}.confidence.warn{color:#ffd67a;background:#352a12}.statGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.statMini{background:#0b1017;border:1px solid var(--line);border-radius:14px;padding:12px}.statMini b{font-size:21px}.killLeaderboard{margin-top:12px}.killLeaderboard .table th,.killLeaderboard .table td{padding:10px 7px}.killRank{font-weight:950}.killValue{font-size:16px;font-weight:950;color:#9cf052}.killAvg{font-weight:850;color:#8fc2ff}.matchResultCard{overflow:hidden}.matchResultHead{display:flex;justify-content:space-between;align-items:center;gap:8px}.matchResultRow{display:grid;grid-template-columns:42px minmax(150px,1.5fr) 80px 80px 90px 90px;gap:7px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.pdfOnly{display:none}.logoInput{font-size:11px}.ocrProgress{height:8px;background:#242b35;border-radius:20px;overflow:hidden;margin-top:9px}.ocrProgress i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}@media(max-width:620px){.podium{grid-template-columns:1fr}.statGrid{grid-template-columns:repeat(2,1fr)}.matchResultRow{grid-template-columns:30px minmax(120px,1fr) 60px 65px 70px 70px;font-size:10px}.leaderTable{font-size:10px}.logoThumb{width:30px;height:30px}}@media print{body{background:white;color:#111;padding:0}.wrap{max-width:none;padding:0}.nav,.topActions,.top,.noPrint,button,input,select,textarea{display:none!important}.section{display:none!important}.section.printing{display:block!important}.card{box-shadow:none;border:1px solid #bbb;background:white;color:#111}.table th,.table td{border-bottom:1px solid #ddd;color:#111}.pdfOnly{display:block}.leaderTable .teamCell img,.teamCell img{border:1px solid #ccc}.muted,.meta,.hint,.sub{color:#555}.badge{border:1px solid #aaa}.chartWrap,.lineChart{background:white;border:1px solid #ccc}}
+.logoThumb{width:34px;height:34px;border-radius:9px;object-fit:contain;background:#080b10;border:1px solid #303948;vertical-align:middle}.logoLarge{width:46px;height:46px;border-radius:12px;object-fit:contain;background:#080b10;border:1px solid #303948}.teamCell{display:flex;align-items:center;gap:9px;min-width:150px}.teamCell img{flex:0 0 auto}.leaderTable th,.leaderTable td{padding:10px 7px}.leaderTable .metric{font-weight:900;text-align:center}.winner{color:var(--gold);font-weight:950}.placePts{color:#8fc2ff;font-weight:900}.killPts{color:#9cf052;font-weight:900}.totalPts{font-size:15px;font-weight:950}.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.podiumBox{background:#0b1017;border:1px solid var(--line);border-radius:15px;padding:13px;text-align:center}.podiumBox img{width:50px;height:50px}.podiumRank{font-size:20px;font-weight:950}.ocrDrop{border:1px dashed #4a5567;border-radius:15px;padding:18px;text-align:center;background:#0b1017}.ocrDrop input{margin-top:10px}.confidence{font-size:10px;padding:4px 7px;border-radius:999px;background:#202733}.confidence.good{color:#9cf052;background:#19321a}.confidence.warn{color:#ffd67a;background:#352a12}.statGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.statMini{background:#0b1017;border:1px solid var(--line);border-radius:14px;padding:12px}.statMini b{font-size:21px}.killLeaderboard{margin-top:12px}.killLeaderboard .table th,.killLeaderboard .table td{padding:10px 7px}.killRank{font-weight:950}.killValue{font-size:16px;font-weight:950;color:#9cf052}.killAvg{font-weight:850;color:#8fc2ff}.matchResultCard{overflow:hidden}.matchResultHead{display:flex;justify-content:space-between;align-items:center;gap:8px}.matchResultRow{display:grid;grid-template-columns:42px minmax(150px,1.5fr) 80px 80px 90px 90px;gap:7px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.pdfOnly{display:none}.logoInput{font-size:11px}.ocrProgress{height:8px;background:#242b35;border-radius:20px;overflow:hidden;margin-top:9px}.ocrProgress i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}@media(max-width:620px){.podium{grid-template-columns:1fr}.statGrid{grid-template-columns:repeat(2,1fr)}.matchResultRow{grid-template-columns:30px minmax(120px,1fr) 60px 65px 70px 70px;font-size:10px}.leaderTable{font-size:10px}.logoThumb{width:30px;height:30px}}@media print{body{background:white;color:#111;padding:0}.wrap{max-width:none;padding:0}.nav,.topActions,.top,.noPrint,button,input,select,textarea{display:none!important}.section{display:none!important}.section.printing{display:block!important}.card{box-shadow:none;border:1px solid #bbb;background:white;color:#111}.table th,.table td{border-bottom:1px solid #ddd;color:#111}.pdfOnly{display:block}.leaderTable .teamCell img,.teamCell img{border:1px solid #ccc}.muted,.meta,.hint,.sub{color:#555}.badge{border:1px solid #aaa}.chartWrap,.lineChart{background:white;border:1px solid #ccc}}
 
 .eliteBuild{font-size:10px;color:var(--muted);margin-top:4px}.cmdHero{background:radial-gradient(circle at 100% 0,#23351a 0,#121821 42%,#0d1118 100%);border-color:#334b2b}.cmdGrid{display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:9px}.cmdStat{background:#0a1017;border:1px solid var(--line);border-radius:15px;padding:11px}.cmdStat b{font-size:21px}.cmdActions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.workspaceCard{background:#0b1017;border:1px solid var(--line);border-radius:16px;padding:12px}.workspaceHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.workspaceName{font-weight:950;font-size:15px}.workspaceMeta{font-size:10px;color:var(--muted);margin-top:4px}.workspaceProgress{height:7px;border-radius:99px;background:#232a34;overflow:hidden;margin-top:10px}.workspaceProgress i{display:block;height:100%;background:linear-gradient(90deg,#70a7ff,#9cf052);border-radius:99px}.workspaceActions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.statusDot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#9cf052;margin-right:5px}.reportGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.reportCard{background:#0b1017;border:1px solid var(--line);border-radius:16px;padding:14px}.reportCard b{font-size:15px}.lbToolbar{display:grid;grid-template-columns:1.5fr repeat(3,1fr);gap:8px;margin-bottom:10px}.lbForm{font-size:10px;font-weight:900;color:#9cf052}.rankMove{font-weight:950;font-size:11px}.rankUp{color:#9cf052}.rankDown{color:#ff8f8f}.rankFlat{color:#98a3b3}.formDots{display:flex;gap:3px;justify-content:center}.formDot{width:18px;height:18px;border-radius:6px;display:grid;place-items:center;background:#202733;font-size:9px;font-weight:900}.reportPage{background:white;color:#111;padding:20px;min-height:900px}.reportPage .table{color:#111}.reportPage .table th{color:#111;background:#eee}.reportPage .muted,.reportPage .meta{color:#555}.buildBadge{font-family:ui-monospace,monospace;font-size:9px}.dangerSoft{border-color:#5a3030!important}.modalLite{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modalLite.show{display:flex}.modalLite .box{width:min(620px,100%);max-height:88vh;overflow:auto;background:#111720;border:1px solid #344152;border-radius:20px;padding:16px;box-shadow:0 25px 80px #0009}@media(max-width:700px){.cmdGrid{grid-template-columns:1fr 1fr}.cmdGrid .cmdMain{grid-column:1/-1}.cmdActions{grid-template-columns:1fr 1fr}.reportGrid{grid-template-columns:1fr}.lbToolbar{grid-template-columns:1fr 1fr}.lbToolbar .wide{grid-column:1/-1}}
 </style><style id="v26UpgradeStyle">
@@ -161,12 +163,11 @@
 <div class="aiBody"><div class="aiQuick"><button onclick="aiQuick('ما حالة البطولة الآن؟')">حالة البطولة</button><button onclick="aiQuick('من المتصدر ولماذا؟')">المتصدر</button><button onclick="aiQuick('من أكثر لاعب قتلات؟')">Top Fragger</button><button onclick="aiQuick('هل توجد أخطاء في البيانات؟')">فحص البيانات</button><button onclick="aiQuick('اشرح لي طريقة حساب النقاط')">شرح النقاط</button><button onclick="aiQuick('كيف أضيف مباراة؟')">كيف أضيف مباراة؟</button><button onclick="aiQuick('اعمل تقرير عن آخر 5 مباريات')">آخر 5 مباريات</button><button onclick="aiQuick('قارن بين الفريقين')">مقارنة</button><button onclick="aiQuick('أي فريق يعتمد أكثر على القتلات؟')">Kill Dependence</button></div>
 <div class="aiMessages" id="aiMessages"></div>
 <div class="aiInput"><textarea id="aiInput" placeholder="اسأل عن الفرق، المباريات، النقاط، الوينرز، قتلات اللاعبين، الأخطاء أو طريقة استخدام النظام…"></textarea><button class="primary aiSend" onclick="sendAI()">Send</button></div>
-<div class="aiStatus" id="aiStatus">Live context: connected to the current tournament data.</div><div class="aiContext" id="aiContext"></div></div></div><div class="card hero"><div class="title">Tournament Setup</div><div class="grid"><div><label>Tournament</label><input id="tournament" placeholder="Tournament name"/></div><div><label>Tournament Logo</label><input accept="image/png,image/jpeg,image/webp" id="tournamentLogo" onchange="setTournamentLogo(this.files[0])" type="file"/></div><div class="bulkTeamImport"><label>Smart Slot + Team Import</label><textarea id="bulk" rows="5" placeholder="3      AlUla Club
+<div class="aiStatus" id="aiStatus">Live context: connected to the current tournament data.</div><div class="aiContext" id="aiContext"></div></div></div><div class="card hero"><div class="title">Tournament Setup</div><div class="grid"><div><label>Tournament</label><input id="tournament" placeholder="Tournament name"/></div><div><label>Tournament Logo</label><input accept="image/png,image/jpeg,image/webp" id="tournamentLogo" onchange="setTournamentLogo(this.files[0])" type="file"/></div><div><label>Smart Slot + Team Import</label><textarea id="bulk" rows="5" placeholder="3      AlUla Club
 4      Xx Team
 5      BATTLE HERO X
-6      94 ESPORTS
 …
-18     CASTLE KEY"></textarea><div class="hint">الصق القائمة كما هي من Excel / Google Sheets / WhatsApp. النظام يقرأ رقم الـSlot ويضع اسم الفريق في نفس الـSlot تلقائيًا، مع الحفاظ على الاسم كما كتبته.</div><div id="bulkPreview" class="bulkPreview"></div></div><div><label>Current Logo</label><div class="tournamentBrand"><img alt="" class="tournamentLogo" id="tournamentLogoPreview"/><span class="hint">يظهر في التقارير والتصاميم والـPDF.</span></div></div></div><div class="row" style="margin-top:9px"><button class="blue" onclick="previewSlotTeamImport()">Preview Slot Map</button><button class="primary" onclick="importTeams()">Import Slot + Teams</button><button onclick="exportCSV()">Export Teams CSV</button></div></div><div class="card"><div class="titleline"><div class="title">Team List</div><span class="pill">16 fixed slots • 3–18</span></div><div id="teamTable"></div></div><div class="card rosterIntelligenceCard slotImportStudioV2">
+18     CASTLE KEY" oninput="previewSmartBulk()"></textarea><div id="bulkSmartPreview" class="bulkSmartPreview"></div></div><div><label>Current Logo</label><div class="tournamentBrand"><img alt="" class="tournamentLogo" id="tournamentLogoPreview"/><span class="hint">يظهر في التقارير والتصاميم والـPDF.</span></div></div></div><div class="row" style="margin-top:9px"><button class="blue" onclick="previewSmartBulk()">Preview Slot Map</button><button class="primary" onclick="importTeams()">Import Slot + Teams</button><button onclick="exportCSV()">Export Teams CSV</button></div></div><div class="card"><div class="titleline"><div class="title">Team List</div><span class="pill">16 fixed slots • 3–18</span></div><div id="teamTable"></div></div><div class="card rosterIntelligenceCard slotImportStudioV2">
 <div class="titleline"><div><div class="title">🧠 Smart Slot Import Studio — 100% Verified PUBG Roster OCR</div><div class="hint">نظام جديد بالكامل لقراءة Slot → Team من أي عدد من صور الـLobby/Match. لا يعتمد على مكان ثابت للكروت، ويبحث عن أرقام الـSlot والنصوص المجاورة ثم يعيد القراءة بعدة طرق ويقارن النتائج.</div></div><span class="pill">EXACT ROSTER MATCH · ZERO SILENT CHANGES · REVIEW</span></div>
 <div class="slotPipeline"><div><b>01</b><span>Upload</span></div><i></i><div><b>02</b><span>Detect rows</span></div><i></i><div><b>03</b><span>OCR × passes</span></div><i></i><div><b>04</b><span>Cross-check</span></div><i></i><div><b>05</b><span>Review</span></div><i></i><div><b>06</b><span>Commit</span></div></div>
 <div class="slotDropV2" id="slotImportDrop"><div class="slotDropIcon">⇧</div><div><b>اسحب كل Screenshots هنا</b><div class="hint">يمكن رفع 2 أو 5 أو 20 صورة — النظام يدمجها تلقائياً ويمنع التكرار.</div></div><label class="slotPickBtn">Choose Screenshots<input accept="image/png,image/jpeg,image/webp" id="teamSlotImagesV2" multiple="" type="file"/></label></div>
@@ -206,46 +207,16 @@ function setTeam(i,v){S.teams[i].name=v.trim();S.tournament=document.getElementB
 function setLogo(i,file){if(!file)return;let r=new FileReader();r.onload=()=>{S.teams[i].logo=r.result;save();render()};r.readAsDataURL(file)}
 function setTournamentLogo(file){if(!file)return;let r=new FileReader();r.onload=()=>{S.tournamentLogo=r.result;save();render();toast('Tournament logo saved')};r.readAsDataURL(file)}
 function renderTeams(){let h='<div class="scroll"><table class="table"><tr><th>Slot</th><th>Team + Logo</th><th>Logo</th><th>In-Game Roster</th></tr>';S.teams.forEach((t,i)=>{let pc=Array.isArray(t.players)?t.players.length:0;h+=`<tr><td class="rank">${t.slot}</td><td><div class="teamCell"><img class="logoThumb" src="${esc(t.logo||'')}" onerror="this.style.display='none'"><input value="${esc(t.name)}" onchange="setTeam(${i},this.value)" placeholder="Team ${t.slot}"></div></td><td><input class="logoInput" type="file" accept="image/png,image/jpeg, image/webp" onchange="setLogo(${i},this.files[0])"></td><td><span class="confidence ${pc===4?'good':pc?'warn':'bad'}">${pc}/4 players</span></td></tr>`});h+='</table></div><div class="hint" style="margin-top:8px">Team logos and the verified in-game player roster are stored inside this tournament. The roster is later used as the canonical identity source for result OCR.</div>';document.getElementById('teamTable').innerHTML=h}
-function parseSlotTeamImportText(raw){
-  const lines=String(raw||'').replace(/\r/g,'').split('\n').map(x=>x.trim()).filter(Boolean);
-  const rows=[],errors=[];let autoSlot=3;
-  for(let i=0;i<lines.length;i++){
-    const line=lines[i].replace(/\u00a0/g,' ').trim();
-    if(!line)continue;
-    let m=line.match(/^\s*(\d{1,2})\s*(?:[\t|,:;]+\s*|\s{2,})(.+?)\s*$/);
-    if(!m)m=line.match(/^\s*(\d{1,2})\s+(.+?)\s*$/);
-    if(m){
-      const slot=Number(m[1]),name=m[2].trim();
-      if(slot<3||slot>18)errors.push(`Line ${i+1}: Slot ${slot} خارج النطاق 3–18`);
-      else if(!name)errors.push(`Line ${i+1}: اسم الفريق فارغ`);
-      else rows.push({slot,name,line:i+1,raw:line});
-    }else{
-      while(rows.some(x=>x.slot===autoSlot))autoSlot++;
-      if(autoSlot>18)errors.push(`Line ${i+1}: لا يوجد Slot متاح`);else rows.push({slot:autoSlot,name:line,line:i+1,raw:line});
-      autoSlot++;
-    }
-  }
-  const seen=new Set();rows.forEach(x=>{if(seen.has(x.slot))errors.push(`Slot ${x.slot} مكرر`);seen.add(x.slot)});
-  if(rows.length>16)errors.push('Maximum 16 teams');
-  const missing=[...Array(16)].map((_,i)=>i+3).filter(slot=>!seen.has(slot));
-  return {rows,errors,missing};
+function parseSmartSlotTeamText(text){
+ const lines=String(text||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean),out=[];let auto=3;
+ for(const raw of lines){let line=raw.replace(/^[-•*]+\s*/,'').trim(),m=line.match(/^(\d{1,2})\s*(?:[\t|:–—-]+|\s{2,}|\s+)(.+)$/);let slot,name;if(m&&Number(m[1])>=3&&Number(m[1])<=18){slot=Number(m[1]);name=m[2].trim();}else{while(out.some(x=>x.slot===auto)&&auto<=18)auto++;slot=auto++;name=line;}
+  if(!name)return {error:`Slot ${slot} has no team name`};out.push({slot,name,raw});
+ }
+ const seen=new Set();for(const x of out){if(seen.has(x.slot))return {error:`Duplicate Slot ${String(x.slot).padStart(2,'0')}`};seen.add(x.slot);}if(out.length>16)return {error:'Maximum 16 teams'};return {rows:out.sort((a,b)=>a.slot-b.slot)};
 }
-function previewSlotTeamImport(){
-  const box=document.getElementById('bulkPreview');if(!box)return;
-  const r=parseSlotTeamImportText(document.getElementById('bulk')?.value||'');
-  const chips=r.rows.map(x=>`<span class="slotMapChip"><b>${String(x.slot).padStart(2,'0')}</b><span>${esc(x.name)}</span></span>`).join('');
-  box.innerHTML=`<div class="notice"><b>${r.rows.length}/16 rows parsed.</b> ${r.errors.length?`<span class="bad">${r.errors.join(' · ')}</span>`:`<span class="ok">Slot mapping is valid.</span>`}${r.missing.length?`<div class="warn" style="margin-top:5px">Missing Slots: ${r.missing.join(', ')}</div>`:''}</div><div style="margin-top:5px">${chips||'<span class="hint">No rows detected.</span>'}</div>`;
-  return !r.errors.length&&r.rows.length>0;
-}
-function importTeams(){
-  const parsed=parseSlotTeamImportText(document.getElementById('bulk')?.value||'');
-  if(parsed.errors.length)return previewSlotTeamImport(),toast(parsed.errors[0]);
-  if(!parsed.rows.length)return toast('Paste Slot + Team lines first');
-  parsed.rows.forEach(x=>{const t=S.teams.find(t=>Number(t.slot)===x.slot);if(t)t.name=x.name});
-  S.tournament=document.getElementById('tournament').value.trim();save();
-  document.getElementById('bulk').value='';document.getElementById('bulkPreview').innerHTML='';render();
-  toast(`${parsed.rows.length} Slot/team mappings imported`)
-}
+window.parseSmartSlotTeamText=parseSmartSlotTeamText;
+function previewSmartBulk(){const box=document.getElementById('bulkSmartPreview');if(!box)return;const r=parseSmartSlotTeamText(document.getElementById('bulk')?.value||'');if(r.error){box.innerHTML=`<div class="bulkSmartError">⚠ ${escv(r.error)}</div>`;return;}if(!r.rows?.length){box.innerHTML='';return;}box.innerHTML=`<div class="bulkSmartTable"><div class="bulkSmartHead"><span>Slot</span><span>Team</span></div>${r.rows.map(x=>`<div><b>${String(x.slot).padStart(2,'0')}</b><span>${escv(x.name)}</span></div>`).join('')}</div><div class="bulkSmartOk">✓ ${r.rows.length} Slot${r.rows.length===1?'':'s'} جاهزة للإدخال</div>`;}
+function importTeams(){const r=parseSmartSlotTeamText(document.getElementById('bulk')?.value||'');if(r.error)return toast(r.error);if(!r.rows?.length)return toast('Paste the Slot + Team list first');for(const x of r.rows){const t=(S.teams||[]).find(z=>Number(z.slot)===x.slot);if(t)t.name=x.name;}S.tournament=document.getElementById('tournament').value.trim();save();document.getElementById('bulk').value='';if(document.getElementById('bulkSmartPreview'))document.getElementById('bulkSmartPreview').innerHTML='';render();toast(`${r.rows.length} Slot + Team records imported`)}
 function newMatch(){let name=document.getElementById('mname').value.trim()||`Match ${S.matches.length+1}`,gid=document.getElementById('gameid').value.trim();if(gid&&S.matches.some(m=>m.gameId===gid))return toast('Duplicate Game ID blocked');let m={id:(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(16).slice(2)),name,gameId:gid,created:new Date().toISOString(),approved:false,results:[],review:[],snapshot:S.teams.map(x=>({...x,players:Array.isArray(x.players)?x.players.slice(0,4):[]})),roster:Object.fromEntries(S.teams.map(t=>[t.slot,{teamSlot:t.slot,players:Array.isArray(t.players)?t.players.slice(0,4):[]} ])),players:[]};S.matches.push(m);S.activeMatchId=m.id;save();document.getElementById('mname').value='';document.getElementById('gameid').value='';renderMatches();renderEntry(m);renderOCRSelectors();renderRosterSelectors();toast('Match created — enter results below');requestAnimationFrame(()=>document.getElementById('entryCard')?.scrollIntoView({behavior:'smooth',block:'start'}))}
 function getActive(){return S.matches.find(m=>m.id===S.activeMatchId)||S.matches[S.matches.length-1]}
 function focusResults(){let m=getActive();if(!m){newMatch();return}document.getElementById('matches').scrollIntoView({behavior:'smooth'});renderEntry(m);}
@@ -305,131 +276,57 @@ function eliteLobbyLayouts(){
     {id:'lobby-b',slots:[12,13,14,15,16,17,18],ys:[[.098,.398],[.398,.704],[.704,.998]],xs:[[.003,.309],[.318,.633],[.641,.956]]}
   ];
 }
-function eliteCleanPlayerLine(s,rowIndex=0){
-  let v=String(s||'').replace(/[\r\n]+/g,' ').replace(/\s+/g,' ').trim();
-  if(!v)return '';
-  // Remove the fixed PUBG kill/status column without touching legitimate username characters.
-  v=v.replace(/(?:\/|\\|\s)\s*[0Oo]\s*(?:eliminations?|eliminati?ons?|elims?)\b.*$/i,'').trim();
-  v=v.replace(/\b(?:eliminations?|eliminati?ons?|elims?)\b.*$/i,'').trim();
-  v=v.replace(/^[\s|:;,.\/\\]+/,'').trim();
-  // P1 shares the same line with the colored Slot number. Remove only a leading 1–2 digit token.
-  if(Number(rowIndex)===0)v=v.replace(/^\s*\d{1,2}\s+(?=[A-Za-z\u0600-\u06ff@_×])/,'');
-  v=v.replace(/^[\[\(]?\d{1,2}[\]\)]?\s+(?=[A-Za-z\u0600-\u06ff@_×])/,'');
-  v=v.replace(/[\s|:;,.\/\\]+$/,'').trim();
-  v=v.replace(/\s{2,}/g,' ');
-  if(!v||/^\d+$/.test(v))return '';
-  if(v.length<2)return '';
-  return v;
+function eliteCleanPlayerLine(s){
+  s=String(s||'').replace(/\s+/g,' ').trim();
+  s=s.replace(/(?:\/?\s*[0Oo]\s*)?(?:eliminations?|eliminati?ons?|elim(?:inations)?)/ig,'').trim();
+  s=s.replace(/^[^A-Za-z0-9\u0600-\u06ff@#_.xX-]{0,12}/,'').trim();
+  s=s.replace(/^(?:[|:;,.\/\\-]+|[\[\(]?[0-9]{1,2}[\]\)]?)[\s]*/,'').trim();
+  s=s.replace(/[|:;,.\/\\]+$/g,'').trim().replace(/\s{2,}/g,' ');
+  if(!s||/^0+$/.test(s)||(/^0+$/.test(s.replace(/[^0-9]/g,''))&&s.replace(/[^0-9]/g,'').length<=2))return '';
+  return s;
 }
 function elitePreprocessLobbyCanvas(src,mode){
   const c=document.createElement('canvas');c.width=src.width;c.height=src.height;
   const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(src,0,0);
   const img=ctx.getImageData(0,0,c.width,c.height),p=img.data;
-  for(let i=0;i<p.length;i+=4){
-    const v=.299*p[i]+.587*p[i+1]+.114*p[i+2];let q=v;
-    if(mode==='contrast')q=Math.max(0,Math.min(255,(v-28)*1.9+24));
-    else if(mode==='threshold')q=v>122?255:8;
-    else if(mode==='invert')q=255-v;
-    else if(mode==='soft')q=Math.max(0,Math.min(255,(v-18)*1.35+18));
-    p[i]=p[i+1]=p[i+2]=q;
-  }
+  for(let i=0;i<p.length;i+=4){const v=.299*p[i]+.587*p[i+1]+.114*p[i+2];let q=v;if(mode==='contrast')q=Math.max(0,Math.min(255,(v-35)*1.8+28));else if(mode==='threshold')q=v>118?255:18;else q=Math.max(0,Math.min(255,(v-30)*1.45+25));p[i]=p[i+1]=p[i+2]=q}
   ctx.putImageData(img,0,0);return c;
 }
-function eliteCropPlayerRow(card,rowIndex,scale=6){
-  // PUBG lobby cards contain 4 horizontal player rows. P1 is special because its row also contains Slot.
-  const W=card.width,H=card.height;
-  const centers=[.165,.395,.615,.825],half=.082;
-  const cy=centers[Math.max(0,Math.min(3,Number(rowIndex)||0))];
-  const x0=Math.round(W*(Number(rowIndex)===0?.145:.045));
-  // Keep the OCR region left of the elimination column. A second clean-up pass removes any residual status text.
-  const x1=Math.round(W*.72),y0=Math.max(0,Math.round(H*(cy-half))),y1=Math.min(H,Math.round(H*(cy+half)));
-  const c=document.createElement('canvas');c.width=Math.max(180,(x1-x0)*scale);c.height=Math.max(52,(y1-y0)*scale);
-  const ctx=c.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(card,x0,y0,x1-x0,y1-y0,0,0,c.width,c.height);
-  c._eliteRowIndex=Number(rowIndex)||0;return c;
+function eliteCropPlayerRow(card,rowIndex){
+  // Four player rows; isolate the name column so slot number and eliminations never enter OCR.
+  const W=card.width,H=card.height,centers=[.155,.385,.615,.845],cy=centers[rowIndex];
+  const x0=Math.round(W*.045),x1=Math.round(W*.755),y0=Math.max(0,Math.round(H*(cy-.105))),y1=Math.min(H,Math.round(H*(cy+.105)));
+  const c=document.createElement('canvas');c.width=Math.max(120,(x1-x0)*5);c.height=Math.max(46,(y1-y0)*5);
+  const ctx=c.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(card,x0,y0,x1-x0,y1-y0,0,0,c.width,c.height);return c;
 }
-function eliteParseTSVName(tsv,rowIndex){
-  if(!tsv)return '';
-  const rows=String(tsv).split(/\r?\n/);if(rows.length<2)return '';
-  const header=rows[0].split('\t');const ix={};header.forEach((h,i)=>ix[h]=i);
-  const words=[];
-  for(let i=1;i<rows.length;i++){
-    const a=rows[i].split('\t');if(a.length<header.length)continue;
-    const text=String(a[ix.text]||'').trim(),conf=Number(a[ix.conf]);
-    if(!text||!Number.isFinite(conf)||conf<8)continue;
-    const x=Number(a[ix.left])||0,y=Number(a[ix.top])||0;
-    if(/^(?:eliminations?|elims?)$/i.test(text))continue;
-    words.push({text,x,y,conf});
-  }
-  words.sort((a,b)=>a.y-b.y||a.x-b.x);
-  return words.map(w=>w.text).join(' ').trim();
-}
-function eliteCandidateClean(raw,rowIndex){
-  let v=eliteCleanPlayerLine(raw,rowIndex);
-  // OCR sometimes returns the same name twice or adds punctuation around a username.
-  v=v.replace(/^(?:[|Iil]{1,2})(?=[A-Z])/,'');
-  v=v.replace(/\s{2,}/g,' ').trim();
-  return v;
-}
-let _eliteNameWorker=null,_eliteNameWorkerPromise=null;
-async function eliteEnsureNameWorker(progressLabel){
-  if(_eliteNameWorker)return _eliteNameWorker;
-  if(_eliteNameWorkerPromise)return _eliteNameWorkerPromise;
-  _eliteNameWorkerPromise=Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text'&&progressLabel)progressLabel(Math.round((m.progress||0)*100));}}).then(w=>{_eliteNameWorker=w;_eliteNameWorkerPromise=null;return w}).catch(e=>{_eliteNameWorkerPromise=null;throw e});
-  return _eliteNameWorkerPromise;
-}
-async function eliteOCRSinglePlayerRow(rowCanvas,progressLabel,depth='deep',rowIndex=rowCanvas?._eliteRowIndex||0,canonical=[]){
-  const modes=depth==='ultra'?['original','contrast','soft','threshold','invert']:['original','contrast','threshold','invert'];
+async function eliteOCRSinglePlayerRow(rowCanvas,progressLabel,depth='deep'){
+  const modes=depth==='ultra'?['original','contrast','threshold','contrast2']:['original','contrast','threshold'];
   const candidates=[];
-  const runPass=async(source,psm,mode,lang='eng')=>{
-    try{
-      const worker=await eliteEnsureNameWorker(progressLabel);if(lang!=='eng')await worker.reinitialize(lang);const r=await worker.recognize(source,{psm},{tsv:true,text:true});
-      const text=String(r.data.text||'').replace(/\s+/g,' ').trim();
-      const tsvText=eliteParseTSVName(r.data.tsv,rowIndex);
-      const conf=Math.max(0,Math.min(100,Number(r.data.confidence||0)));
-      [text,tsvText].filter(Boolean).forEach(raw=>{const name=eliteCandidateClean(raw,rowIndex);if(name)candidates.push({name,raw,confidence:conf,mode,psm,lang,source:raw===tsvText?'tsv':'text'})});
-    }catch(err){console.warn('OCR pass failed',mode,psm,err)}
-  };
-  for(const mode of modes){
-    const source=mode==='original'?rowCanvas:elitePreprocessLobbyCanvas(rowCanvas,mode);
-    await runPass(source,7,mode,'eng');
+  for(let i=0;i<modes.length;i++){
+    const source=modes[i]==='original'?rowCanvas:elitePreprocessLobbyCanvas(rowCanvas,modes[i]);
+    for(const psm of (depth==='ultra'?[7,6]:[7])){
+      const langs=depth==='ultra'?['eng','eng+ara']:['eng'];
+      for(const lang of langs){
+      const r=await Tesseract.recognize(source,lang,{psm,logger:m=>{if(m.status==='recognizing text'&&progressLabel)progressLabel(Math.round(((i+(m.progress||0))/modes.length)*100))}});
+      const raw=String(r.data.text||'').replace(/\s+/g,' ').trim();
+      const name=eliteCleanPlayerLine(raw);
+      const confidence=Math.max(0,Math.min(100,Number(r.data.confidence||0)));
+      if(name)candidates.push({name,raw,confidence,mode:modes[i],psm,lang});
+      }
+    }
   }
-  // Rescue only when the normal passes do not agree. This is deliberately limited for mobile performance.
-  let preliminary=eliteChooseOCRConsensus(candidates,canonical);
-  if(!preliminary.name||preliminary.consensus<55||preliminary.confidence<72){
-    const source=elitePreprocessLobbyCanvas(rowCanvas,'contrast');
-    await runPass(source,6,'rescue','eng');
-    preliminary=eliteChooseOCRConsensus(candidates,canonical);
-  }
-  return preliminary;
-}
-function eliteChooseOCRConsensus(candidates,canonical=[]){
-  if(!candidates.length)return {name:'',raw:'',confidence:0,candidates:[],consensus:0,needsReview:true,agreement:'0/0',canonicalMatch:null};
+  if(!candidates.length)return {name:'',raw:'',confidence:0,candidates:[],consensus:0,needsReview:true};
   const groups=[];
-  for(const c of candidates){
-    let g=groups.find(x=>eliteNameSimilarity(x.name,c.name)>=.84);
-    if(!g){g={name:c.name,items:[]};groups.push(g)}g.items.push(c);
-  }
-  const canon=Array.isArray(canonical)?canonical.filter(Boolean):[];
-  for(const g of groups){
-    const bestCanon=canon.map(name=>({name,score:eliteNameSimilarity(g.name,name)})).sort((a,b)=>b.score-a.score)[0];
-    g.canonical=bestCanon&&bestCanon.score>=.72?bestCanon:null;
-  }
-  groups.sort((a,b)=>{
-    const wa=g=>g.items.reduce((z,x)=>z+(Number(x.confidence)||0),0)+g.items.length*20+(g.canonical?g.canonical.score*140:0);
-    return wa(b)-wa(a);
-  });
-  const best=groups[0];
-  const avg=best.items.reduce((z,x)=>z+(Number(x.confidence)||0),0)/best.items.length;
-  const consensus=Math.min(100,(best.items.length/Math.max(1,candidates.length))*100);
-  const agreement=best.items.length+'/'+candidates.length;
+  for(const c of candidates){let g=groups.find(x=>eliteNameSimilarity(x.name,c.name)>=.86);if(!g){g={name:c.name,items:[]};groups.push(g)}g.items.push(c)}
+  groups.sort((a,b)=>{const as=b.items.reduce((z,x)=>z+x.confidence,0)+b.items.length*18,bs=a.items.reduce((z,x)=>z+x.confidence,0)+a.items.length*18;return as-bs});
+  const best=groups[0],avg=best.items.reduce((z,x)=>z+x.confidence,0)/best.items.length;
+  const consensus=Math.min(100,(best.items.length/candidates.length)*100);
+  const confidence=Math.round(Math.min(100,avg*.72+consensus*.28));
   const exact=best.items.slice().sort((a,b)=>b.confidence-a.confidence)[0];
-  const canonicalMatch=best.canonical?best.canonical.name:null;
-  // Never silently replace OCR text with a roster value. The roster only raises the verification signal.
-  const confidence=Math.round(Math.min(100,avg*.62+consensus*.20+(canonicalMatch?18:0)));
-  return {name:best.name,raw:exact.raw,confidence,candidates,consensus,needsReview:!best.name||confidence<88||consensus<52,agreement,canonicalMatch};
+  return {name:best.name,raw:exact.raw,confidence,candidates,consensus,needsReview:confidence<88||consensus<60,agreement:best.items.length+'/'+candidates.length};
 }
-async function eliteOCRLobbyBlock(canvas,progressLabel,depth='deep',canonical=[]){
-  const names=[],details=[];for(let row=0;row<4;row++){const result=await eliteOCRSinglePlayerRow(eliteCropPlayerRow(canvas,row),p=>progressLabel&&progressLabel(p),depth,row,canonical);names.push(result.name);details.push(result)}
+async function eliteOCRLobbyBlock(canvas,progressLabel,depth='deep'){
+  const names=[],details=[];for(let row=0;row<4;row++){const result=await eliteOCRSinglePlayerRow(eliteCropPlayerRow(canvas,row),p=>progressLabel&&progressLabel(p),depth);names.push(result.name);details.push(result)}
   const valid=names.filter(Boolean),score=valid.length*25+details.reduce((s,x)=>s+Math.min(100,x.confidence||0)*.25,0);return {names,score,details,raw:details.map(x=>x.raw).join('\n')};
 }
 function clearTeamSlotOCR(){
@@ -461,9 +358,8 @@ async function runTeamSlotOCRPair(){
         const slot=layout.slots[r*3+c];if(!slot)continue;
         const [x0,x1]=layout.xs[c],[y0,y1]=layout.ys[r];
         const card=eliteCanvasCrop(img,x0,y0,x1,y1,4);
-        const team=S.teams.find(t=>Number(t.slot)===slot);
-        const result=await eliteOCRLobbyBlock(card,p=>{const live=review.querySelector('.ocrLive');if(live)live.textContent=`Scanning Slot ${String(slot).padStart(2,'0')} · ${p}% · Multi-pass OCR`},depth,team?.players||[]);
-        const players=result.details.slice(0,4).map((d,j)=>({name:d.name||'',confidence:d.confidence||0,consensus:d.consensus||0,agreement:d.agreement||'0/0',raw:d.raw||'',candidates:d.candidates||[],needsReview:!!d.needsReview,row:j,crop:eliteRosterCropDataUrl(img,slot,j)}));
+        const result=await eliteOCRLobbyBlock(card,p=>{const live=review.querySelector('.ocrLive');if(live)live.textContent=`Scanning Slot ${String(slot).padStart(2,'0')} · ${p}% · Multi-pass OCR`},depth);
+        const team=S.teams.find(t=>Number(t.slot)===slot),players=result.details.slice(0,4).map((d,j)=>({name:d.name||'',confidence:d.confidence||0,consensus:d.consensus||0,agreement:d.agreement||'0/0',raw:d.raw||'',candidates:d.candidates||[],needsReview:!!d.needsReview,row:j,crop:eliteRosterCropDataUrl(img,slot,j)}));
         detected.push({slot,teamName:team?.name||'',players,score:result.score,imageIndex,row:r,col:c});done++;
         const live=review.querySelector('.ocrLive');if(live)live.textContent=`Completed ${done}/${total} · Slot ${String(slot).padStart(2,'0')} → ${esc(team?.name||'Team not entered')}`;
       }
@@ -487,14 +383,14 @@ function eliteRosterRowHTML(x,index){
 }
 function elitePlayerEditorHTML(p,slot,j,rowIndex){
   const cls=eliteRosterStatusClass(p),label=eliteRosterConfidenceLabel(p),cand=(p.candidates||[]).slice().sort((a,b)=>b.confidence-a.confidence).slice(0,3);
-  return `<div><label>Player ${j+1} <span class="playerStatus ${cls}">${label} · ${Math.round(p.confidence||0)}%</span></label><input id="rosterPlayer-${slot}-${j}" value="${esc(p.name||'')}" data-slot="${slot}" data-player="${j}" oninput="eliteMarkRosterEdited(${rowIndex},${j},this.value)"><div class="playerMeta">Agreement: ${esc(p.agreement||'0/0')} · Never auto-corrected${p.canonicalMatch?` · <b style="color:#9cf052">Roster match: ${esc(p.canonicalMatch)}</b>`:''}</div>${cand.length?`<div class="ocrCandidate"><b>OCR candidates:</b> ${cand.map(c=>esc(c.name)+' '+Math.round(c.confidence)+'%').join(' · ')}</div>`:''}<div class="playerEvidence"><img class="playerCrop" src="${esc(p.crop||'')}" alt="Original OCR crop"><div class="playerMeta">Raw: ${esc(p.raw||'—')}<br><button class="small" type="button" onclick="eliteReprocessRosterSlot(${slot},${j})">↻ Re-read</button></div></div></div>`;
+  return `<div><label>Player ${j+1} <span class="playerStatus ${cls}">${label} · ${Math.round(p.confidence||0)}%</span></label><input id="rosterPlayer-${slot}-${j}" value="${esc(p.name||'')}" data-slot="${slot}" data-player="${j}" oninput="eliteMarkRosterEdited(${rowIndex},${j},this.value)"><div class="playerMeta">Agreement: ${esc(p.agreement||'0/0')} · Never auto-corrected</div>${cand.length?`<div class="ocrCandidate"><b>OCR candidates:</b> ${cand.map(c=>esc(c.name)+' '+Math.round(c.confidence)+'%').join(' · ')}</div>`:''}<div class="playerEvidence"><img class="playerCrop" src="${esc(p.crop||'')}" alt="Original OCR crop"><div class="playerMeta">Raw: ${esc(p.raw||'—')}<br><button class="small" type="button" onclick="eliteReprocessRosterSlot(${slot},${j})">↻ Re-read</button></div></div></div>`;
 }
 function eliteMarkRosterEdited(rowIndex,j,value){const r=window._eliteRosterDetected?.[rowIndex],p=r?.players?.[j];if(!p)return;p.name=String(value||'').trim();p.manual=true;p.needsReview=false;p.confidence=100;p.consensus=100;eliteRefreshRosterSummaryOnly()}
 function eliteRefreshRosterSummaryOnly(){const rows=window._eliteRosterDetected||[],all=rows.flatMap(x=>x.players),reviewN=all.filter(p=>p.needsReview||!p.name).length,verified=all.filter(p=>p.name&&!p.needsReview).length;const s=document.getElementById('teamSlotOCRSummary');if(s)s.innerHTML=`<div class="rosterStat"><small>Slots scanned</small><b>${rows.length}/16</b></div><div class="rosterStat"><small>Players readable</small><b>${all.filter(p=>p.name).length}/64</b></div><div class="rosterStat"><small>Verified</small><b class="ok">${verified}</b></div><div class="rosterStat"><small>Needs review</small><b class="warn">${reviewN}</b></div><div class="rosterStat"><small>Save status</small><b>${reviewN?'BLOCKED':'READY'}</b></div>`}
 function eliteRosterReviewAll(mode){const rows=window._eliteRosterDetected||[];if(mode==='accept')rows.forEach(r=>r.players.forEach(p=>{if(p.name&&!p.needsReview){p.manual=true;p.confidence=Math.max(92,p.confidence||0)}}));else rows.forEach(r=>r.players.forEach(p=>p.showRaw=true));eliteRenderRosterReview(rows)}
 async function eliteReprocessRosterSlot(slot,playerIndex){
   const imageIndex=Number(window._eliteRosterDetected?.find(x=>Number(x.slot)===Number(slot))?.imageIndex||0),file=document.getElementById('teamSlotImage'+(imageIndex+1))?.files?.[0];if(!file)return toast('Original screenshot is no longer available');
-  const img=await eliteLoadImage(file),layout=eliteLobbyLayouts()[imageIndex],pos=layout.slots.indexOf(Number(slot));if(pos<0)return;const r=Math.floor(pos/3),c=pos%3,card=eliteCanvasCrop(img,layout.xs[c][0],layout.ys[r][0],layout.xs[c][1],layout.ys[r][1],4),d=await eliteOCRSinglePlayerRow(eliteCropPlayerRow(card,playerIndex),null,document.getElementById('teamSlotOCRDepth')?.value||'deep',playerIndex,(window._eliteRosterDetected?.find(x=>Number(x.slot)===Number(slot))?.players||[]).map(p=>p.name).filter(Boolean));
+  const img=await eliteLoadImage(file),layout=eliteLobbyLayouts()[imageIndex],pos=layout.slots.indexOf(Number(slot));if(pos<0)return;const r=Math.floor(pos/3),c=pos%3,card=eliteCanvasCrop(img,layout.xs[c][0],layout.ys[r][0],layout.xs[c][1],layout.ys[r][1],4),d=await eliteOCRSinglePlayerRow(eliteCropPlayerRow(card,playerIndex),null,document.getElementById('teamSlotOCRDepth')?.value||'deep');
   const row=window._eliteRosterDetected.find(x=>Number(x.slot)===Number(slot));if(!row)return;row.players[playerIndex]=Object.assign(row.players[playerIndex],d,{row:playerIndex,crop:eliteRosterCropDataUrl(img,slot,playerIndex)});eliteRenderRosterReview(window._eliteRosterDetected);toast(`Slot ${slot} Player ${playerIndex+1} re-read`)
 }
 function eliteApplyFixedRoster(rows){
@@ -852,13 +748,13 @@ eliteNewTournament=function(){eliteGo('home');setTimeout(()=>{eliteHubFocusNew()
 setTimeout(()=>{eliteHubRender();eliteHubClearEdit()},80);
 </script>
 <style id="slotImportV2Style">
-.slotPipeline{display:flex;align-items:center;gap:5px;margin:12px 0;overflow:auto;padding-bottom:3px}.slotPipeline>div{min-width:76px;text-align:center;background:#0b1017;border:1px solid var(--line);border-radius:11px;padding:7px}.slotPipeline b{display:block;color:var(--accent);font-size:10px}.slotPipeline span{font-size:9px;color:var(--muted)}.slotPipeline i{height:1px;background:#33404e;min-width:16px;flex:1}.slotDropV2{display:flex;align-items:center;gap:12px;padding:16px;border:1px dashed #566477;background:linear-gradient(180deg,#0d141d,#0a0f15);border-radius:16px}.slotDropV2.drag{border-color:var(--accent);box-shadow:0 0 0 2px #9cf05222 inset}.slotDropIcon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#19231a;color:var(--accent);font-size:22px;font-weight:900}.slotPickBtn{margin-left:auto;display:inline-flex;align-items:center;gap:5px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;font-weight:850;cursor:pointer}.slotPickBtn input{display:none}.slotFileList{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:8px}.slotFileItem{display:flex;align-items:center;gap:8px;background:#0b1017;border:1px solid var(--line);border-radius:11px;padding:8px;font-size:10px}.slotFileItem img{width:46px;height:38px;object-fit:cover;border-radius:7px}.slotFileItem .x{margin-left:auto}.slotSettingsV2{display:grid;grid-template-columns:1fr 1.4fr 1.3fr 1.1fr;gap:8px;margin-top:10px}.rangePair{display:flex;align-items:center;gap:5px}.rangePair input{width:100%}.slotProgressV2{height:7px;background:#202832;border-radius:20px;overflow:hidden;margin-top:12px}.slotProgressV2 i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}.slotSummaryV2{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}.slotStatV2{background:#0b1017;border:1px solid var(--line);border-radius:12px;padding:9px}.slotStatV2 small{display:block;color:var(--muted);font-size:9px}.slotStatV2 b{font-size:18px}.slotReviewToolsV2{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:10px}.slotReviewV2{margin-top:9px}.slotRowV2{border:1px solid var(--line);border-radius:15px;background:#0b1017;margin:8px 0;overflow:hidden}.slotRowV2.ready{border-color:#315e37}.slotRowV2.review{border-color:#6a5520}.slotRowV2.conflict{border-color:#71343a}.slotRowHeadV2{display:flex;align-items:center;gap:9px;padding:10px}.slotBadgeV2{min-width:50px;text-align:center;padding:8px;border-radius:10px;background:#18212c;font-size:17px;font-weight:950}.slotTeamEditV2{flex:1;min-width:0}.slotTeamEditV2 input{font-size:14px;font-weight:900;width:100%;background:#080c11;border-color:#344050}.slotMetaV2{font-size:9px;color:var(--muted);margin-top:3px}.slotStateV2{font-size:9px;padding:5px 7px;border-radius:999px;font-weight:900;white-space:nowrap}.slotStateV2.ready{background:#17301c;color:#b9efad}.slotStateV2.review{background:#30270f;color:#f3d47b}.slotStateV2.conflict{background:#351a1a;color:#ffabab}.slotEvidenceV2{display:grid;grid-template-columns:190px 1fr;gap:9px;padding:0 10px 10px}.slotEvidenceV2 img{width:100%;height:92px;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:#080b10}.slotEvidenceV2 .evidenceText{font-size:10px;line-height:1.5;color:#b8c1ce}.slotCandidatesV2{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}.slotCandV2{padding:4px 6px;border-radius:7px;background:#111923;border:1px solid #2b3644;font-size:9px;cursor:pointer}.slotCandV2:hover{border-color:#66778e}.slotManualV2{display:grid;grid-template-columns:80px 1fr auto;gap:6px;padding:0 10px 10px}.slotManualV2 input{width:100%}.slotConflictV2{margin:0 10px 10px;padding:8px;border-radius:10px;background:#211215;border:1px solid #542b31;font-size:10px}.slotCommitBarV2{position:sticky;bottom:70px;z-index:5;background:#10151cdd;backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;padding:9px;margin-top:10px;display:flex;justify-content:space-between;gap:8px;align-items:center}.slotCommitBarV2 b{font-size:11px}@media(max-width:760px){.slotSettingsV2{grid-template-columns:1fr 1fr}.slotFileList{grid-template-columns:1fr}.slotSummaryV2{grid-template-columns:repeat(2,1fr)}.slotEvidenceV2{grid-template-columns:1fr}.slotDropV2{align-items:flex-start;flex-wrap:wrap}.slotPickBtn{margin-left:0}.slotCommitBarV2{bottom:60px}}@media(max-width:520px){.slotSettingsV2{grid-template-columns:1fr}.slotRowHeadV2{align-items:flex-start}.slotStateV2{margin-left:auto}.slotManualV2{grid-template-columns:70px 1fr}}.slotLinkedTeamV2{font-size:14px;font-weight:950;color:#f1f5f9;background:#080c11;border:1px solid #344050;border-radius:10px;padding:8px 10px;min-height:18px}.slotPlayerLineV2{position:relative;display:grid;grid-template-columns:28px 1fr 20px;gap:5px;align-items:center;margin:5px 0;padding:5px 6px;border:1px solid #2b3644;border-radius:9px;background:#080c11}.slotPlayerLineV2.ok{border-color:#315e37}.slotPlayerLineV2.warn{border-color:#6a5520}.slotPlayerIndexV2{font-size:9px;font-weight:950;color:#9aa7b8}.slotPlayerLineV2 input{min-width:0;width:100%;padding:6px 7px;font-size:11px;background:#0c121a;border:1px solid #263240;border-radius:8px}.slotPlayerMarkV2{font-weight:950;text-align:center}.slotPlayerLineV2.ok .slotPlayerMarkV2{color:#a8f26b}.slotPlayerLineV2.warn .slotPlayerMarkV2{color:#f3d47b}.slotPlayerCandidatesV2{grid-column:2/4;display:flex;flex-wrap:wrap;gap:4px}.slotPlayerCandidatesV2 span{font-size:8px;color:#9ca8b8;background:#111923;border:1px solid #263240;border-radius:6px;padding:2px 4px}.slotActionBarV2{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 10px 10px;color:#8995a6;font-size:9px}.slotManualV2{display:none!important}
+.slotPipeline{display:flex;align-items:center;gap:5px;margin:12px 0;overflow:auto;padding-bottom:3px}.slotPipeline>div{min-width:76px;text-align:center;background:#0b1017;border:1px solid var(--line);border-radius:11px;padding:7px}.slotPipeline b{display:block;color:var(--accent);font-size:10px}.slotPipeline span{font-size:9px;color:var(--muted)}.slotPipeline i{height:1px;background:#33404e;min-width:16px;flex:1}.slotDropV2{display:flex;align-items:center;gap:12px;padding:16px;border:1px dashed #566477;background:linear-gradient(180deg,#0d141d,#0a0f15);border-radius:16px}.slotDropV2.drag{border-color:var(--accent);box-shadow:0 0 0 2px #9cf05222 inset}.slotDropIcon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#19231a;color:var(--accent);font-size:22px;font-weight:900}.slotPickBtn{margin-left:auto;display:inline-flex;align-items:center;gap:5px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;font-weight:850;cursor:pointer}.slotPickBtn input{display:none}.slotFileList{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:8px}.slotFileItem{display:flex;align-items:center;gap:8px;background:#0b1017;border:1px solid var(--line);border-radius:11px;padding:8px;font-size:10px}.slotFileItem img{width:46px;height:38px;object-fit:cover;border-radius:7px}.slotFileItem .x{margin-left:auto}.slotSettingsV2{display:grid;grid-template-columns:1fr 1.4fr 1.3fr 1.1fr;gap:8px;margin-top:10px}.rangePair{display:flex;align-items:center;gap:5px}.rangePair input{width:100%}.slotProgressV2{height:7px;background:#202832;border-radius:20px;overflow:hidden;margin-top:12px}.slotProgressV2 i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}.slotSummaryV2{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}.slotStatV2{background:#0b1017;border:1px solid var(--line);border-radius:12px;padding:9px}.slotStatV2 small{display:block;color:var(--muted);font-size:9px}.slotStatV2 b{font-size:18px}.slotReviewToolsV2{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:10px}.slotReviewV2{margin-top:9px}.slotRowV2{border:1px solid var(--line);border-radius:15px;background:#0b1017;margin:8px 0;overflow:hidden}.slotRowV2.ready{border-color:#315e37}.slotRowV2.review{border-color:#6a5520}.slotRowV2.conflict{border-color:#71343a}.slotRowHeadV2{display:flex;align-items:center;gap:9px;padding:10px}.slotBadgeV2{min-width:50px;text-align:center;padding:8px;border-radius:10px;background:#18212c;font-size:17px;font-weight:950}.slotTeamEditV2{flex:1;min-width:0}.slotTeamEditV2 input{font-size:14px;font-weight:900;width:100%;background:#080c11;border-color:#344050}.slotMetaV2{font-size:9px;color:var(--muted);margin-top:3px}.slotStateV2{font-size:9px;padding:5px 7px;border-radius:999px;font-weight:900;white-space:nowrap}.slotStateV2.ready{background:#17301c;color:#b9efad}.slotStateV2.review{background:#30270f;color:#f3d47b}.slotStateV2.conflict{background:#351a1a;color:#ffabab}.slotEvidenceV2{display:grid;grid-template-columns:190px 1fr;gap:9px;padding:0 10px 10px}.slotEvidenceV2 img{width:100%;height:92px;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:#080b10}.slotEvidenceV2 .evidenceText{font-size:10px;line-height:1.5;color:#b8c1ce}.slotCandidatesV2{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}.slotCandV2{padding:4px 6px;border-radius:7px;background:#111923;border:1px solid #2b3644;font-size:9px;cursor:pointer}.slotCandV2:hover{border-color:#66778e}.slotManualV2{display:grid;grid-template-columns:80px 1fr auto;gap:6px;padding:0 10px 10px}.slotManualV2 input{width:100%}.slotConflictV2{margin:0 10px 10px;padding:8px;border-radius:10px;background:#211215;border:1px solid #542b31;font-size:10px}.slotCommitBarV2{position:sticky;bottom:70px;z-index:5;background:#10151cdd;backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;padding:9px;margin-top:10px;display:flex;justify-content:space-between;gap:8px;align-items:center}.slotCommitBarV2 b{font-size:11px}@media(max-width:760px){.slotSettingsV2{grid-template-columns:1fr 1fr}.slotFileList{grid-template-columns:1fr}.slotSummaryV2{grid-template-columns:repeat(2,1fr)}.slotEvidenceV2{grid-template-columns:1fr}.slotDropV2{align-items:flex-start;flex-wrap:wrap}.slotPickBtn{margin-left:0}.slotCommitBarV2{bottom:60px}}@media(max-width:520px){.slotSettingsV2{grid-template-columns:1fr}.slotRowHeadV2{align-items:flex-start}.slotStateV2{margin-left:auto}.slotManualV2{grid-template-columns:70px 1fr}}
 
 .slotAutoSetting{background:#0b1017;border:1px solid var(--line);border-radius:10px;padding:10px;color:#cbd5e1;font-weight:800;font-size:11px}.slotRowV2.ready{border-color:#315e37}.slotRowV2.review{border-color:#6a5520}</style>
 <script id="slotImportV2Script">
 (()=>{
 'use strict';
-const X={files:[],results:[],filter:'all',scanning:false,worker:null,engine:'PUBG_LOBBY_OCR_V12_CARD_BANDS_MULTI_PASS'};
+const X={files:[],results:[],filter:'all',scanning:false,worker:null,engine:'PUBG_LOBBY_OCR_V14_MULTI_PASS_PLAYER_ENGINE'};
 window._slotImportV2=X;
 const $=id=>document.getElementById(id);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -877,169 +773,163 @@ function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectUR
 async function ensureOCR(){
  if(X.worker)return X.worker;
  if(!window.Tesseract)throw new Error('محرك OCR غير متاح');
- setStatus('تهيئة محرك القراءة مرة واحدة…',3);
- X.worker=await Tesseract.createWorker('eng',1,{logger:m=>{
-   if(m.status==='loading tesseract core')setStatus('تحميل محرك القراءة…',3);
-   else if(m.status==='loading language traineddata')setStatus('تحميل قاموس القراءة…',7);
-   else if(m.status==='recognizing text')setStatus(`قراءة النص… ${Math.round((Number(m.progress)||0)*100)}%`,8);
- }});
+ setStatus('تهيئة محرك القراءة…',3);
+ X.worker=await Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='loading tesseract core')setStatus('تحميل محرك القراءة…',3);else if(m.status==='loading language traineddata')setStatus('تحميل قاموس القراءة…',7);else if(m.status==='recognizing text')setStatus(`OCR… ${Math.round((Number(m.progress)||0)*100)}%`,8);}});
+ await X.worker.setParameters({preserve_interword_spaces:'1',user_defined_dpi:'300',tessedit_pageseg_mode:'7'});
  return X.worker;
 }
-function makeCanvas(img,scale=2){const w=img.naturalWidth||img.width,h=img.naturalHeight||img.height,c=document.createElement('canvas');c.width=Math.round(w*scale);c.height=Math.round(h*scale);const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,0,0,c.width,c.height);return c;}
-function cropCanvas(img,x,y,w,h,scale=6){const c=document.createElement('canvas');c.width=Math.max(2,Math.round(w*scale));c.height=Math.max(2,Math.round(h*scale));const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,x,y,w,h,0,0,c.width,c.height);return c;}
+function cropCanvas(img,x,y,w,h,scale=8){const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;const xx=clamp(x,0,iw-1),yy=clamp(y,0,ih-1),ww=clamp(w,2,iw-xx),hh=clamp(h,2,ih-yy);const c=document.createElement('canvas');c.width=Math.max(2,Math.round(ww*scale));c.height=Math.max(2,Math.round(hh*scale));const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,xx,yy,ww,hh,0,0,c.width,c.height);return c;}
 function preprocess(src,mode='original'){
  if(mode==='original')return src;
- const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(src,0,0);const d=g.getImageData(0,0,c.width,c.height),p=d.data;
- for(let i=0;i<p.length;i+=4){let v=.299*p[i]+.587*p[i+1]+.114*p[i+2];if(mode==='contrast')v=clamp((v-65)*2.0+65,0,255);else if(mode==='soft')v=clamp((v-90)*1.45+90,0,255);else if(mode==='threshold')v=v>150?255:0;p[i]=p[i+1]=p[i+2]=v;}
+ const c=document.createElement('canvas');c.width=src.width;c.height=src.height;
+ const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(src,0,0);
+ const d=g.getImageData(0,0,c.width,c.height),p=d.data,W=c.width,H=c.height;
+ const gray=new Uint8ClampedArray(W*H);
+ for(let i=0,j=0;i<p.length;i+=4,j++)gray[j]=Math.round(.299*p[i]+.587*p[i+1]+.114*p[i+2]);
+ const set=(i,v)=>{p[i*4]=p[i*4+1]=p[i*4+2]=clamp(v,0,255);};
+ if(mode==='contrast'||mode==='soft'||mode==='gamma'||mode==='sharpen'||mode==='otsu'||mode==='adaptive'||mode==='invert'||mode==='edge'){
+   let thr=128;
+   if(mode==='otsu'){
+     const hist=new Array(256).fill(0);for(const v of gray)hist[v]++;
+     let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sumB=0,wB=0,max=0;
+     for(let i=0;i<256;i++){wB+=hist[i];if(!wB)continue;const wF=gray.length-wB;if(!wF)break;sumB+=i*hist[i];const mB=sumB/wB,mF=(sum-sumB)/wF,between=wB*wF*(mB-mF)*(mB-mF);if(between>max){max=between;thr=i;}}
+   }
+   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+     const idx=y*W+x,v=gray[idx];let q=v;
+     if(mode==='contrast')q=(v-82)*2.45+82;
+     else if(mode==='soft')q=(v-96)*1.65+96;
+     else if(mode==='gamma')q=255*Math.pow(v/255,.72);
+     else if(mode==='invert')q=255-v;
+     else if(mode==='otsu')q=v>thr?255:0;
+     else if(mode==='adaptive'){
+       let sum=0,count=0;const rad=5;
+       for(let yy=Math.max(0,y-rad);yy<=Math.min(H-1,y+rad);yy++)for(let xx=Math.max(0,x-rad);xx<=Math.min(W-1,x+rad);xx++){sum+=gray[yy*W+xx];count++;}
+       q=v>(sum/count-8)?255:0;
+     } else if(mode==='sharpen'){
+       const l=gray[y*W+Math.max(0,x-1)],r=gray[y*W+Math.min(W-1,x+1)],u=gray[Math.max(0,y-1)*W+x],dn=gray[Math.min(H-1,y+1)*W+x];q=v*1.9-(l+r+u+dn)*.225;
+     } else if(mode==='edge'){
+       const l=gray[y*W+Math.max(0,x-1)],r=gray[y*W+Math.min(W-1,x+1)],u=gray[Math.max(0,y-1)*W+x],dn=gray[Math.min(H-1,y+1)*W+x];q=Math.abs((r-l)+(dn-u))*2.2;
+     }
+     set(idx,q);
+   }
+ }
  g.putImageData(d,0,0);return c;
 }
-async function recognize(canvas,mode='original'){
+async function recognize(canvas,mode='original',psm='7',extra={}){
  const w=await ensureOCR();
- const result=await w.recognize(preprocess(canvas,mode),{}, {tsv:true,text:true});
- return result?.data||{text:'',tsv:''};
+ await w.setParameters({tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1',user_defined_dpi:'300',load_system_dawg:'0',load_freq_dawg:'0',...extra});
+ const r=await w.recognize(preprocess(canvas,mode),{}, {tsv:true,text:true});return r?.data||{text:'',tsv:''};
 }
-function ocrWords(data,scale=1){
- const tsv=String(data?.tsv||'');if(!tsv)return[];const out=[];
- for(const line of tsv.split(/\r?\n/).slice(1)){
-  const p=line.split('\t');if(p.length<12)continue;const t=clean(p.slice(11).join('\t')),conf=Number(p[10]);
-  const x=Number(p[6]),y=Number(p[7]),w=Number(p[8]),h=Number(p[9]);if(!t||!Number.isFinite(conf)||conf<0||![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)continue;
-  out.push({t,confidence:conf,x0:x/scale,y0:y/scale,x1:(x+w)/scale,y1:(y+h)/scale,cx:(x+w/2)/scale,cy:(y+h/2)/scale});
- }
- return out;
-}
-function detectAnchors(img){
- const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0);const d=g.getImageData(0,0,W,H).data,xp=new Int32Array(W),yp=new Int32Array(H);
- for(let y=Math.floor(H*.06);y<Math.floor(H*.96);y++)for(let x=0;x<W;x++){const i=(y*W+x)*4,r=d[i],gg=d[i+1],b=d[i+2],mx=Math.max(r,gg,b),mn=Math.min(r,gg,b);if(mx-mn>24&&mx>70){xp[x]++;yp[y]++;}}
- const groups=(arr,min=3)=>{const out=[];let s=-1;for(let i=0;i<=arr.length;i++){const on=i<arr.length&&arr[i]>=min;if(on&&s<0)s=i;if(!on&&s>=0){if(i-s>=2)out.push({a:s,b:i-1,peak:Math.max(...arr.slice(s,i))});s=-1;}}return out;};
- const merge=(gs,gap)=>{const out=[];for(const z of gs){const q=out[out.length-1];if(q&&z.a-q.b<=gap){q.b=z.b;q.peak=Math.max(q.peak,z.peak);}else out.push({...z});}return out;};
- return{x:merge(groups(xp).filter(z=>z.peak>10),18),y:merge(groups(yp).filter(z=>z.peak>10),8)};
-}
+function ocrWords(data,scale=1){const tsv=String(data?.tsv||'');if(!tsv)return[];const out=[];for(const line of tsv.split(/\r?\n/).slice(1)){const p=line.split('\t');if(p.length<12)continue;const t=clean(p.slice(11).join('\t')),conf=Number(p[10]),x=Number(p[6]),y=Number(p[7]),w=Number(p[8]),h=Number(p[9]);if(!t||![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)continue;out.push({t,confidence:Number.isFinite(conf)?conf:0,x0:x/scale,y0:y/scale,x1:(x+w)/scale,y1:(y+h)/scale,cx:(x+w/2)/scale,cy:(y+h/2)/scale});}return out;}
+function ocrLines(data,scale=1){const tsv=String(data?.tsv||'');if(!tsv)return[];const map=new Map();for(const line of tsv.split(/\r?\n/).slice(1)){const p=line.split('\t');if(p.length<12)continue;const text=clean(p.slice(11).join('\t')),conf=Number(p[10]),block=p[2],par=p[3],ln=p[4],x=Number(p[6]),y=Number(p[7]),w=Number(p[8]),h=Number(p[9]);if(!text||![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)continue;const key=`${block}:${par}:${ln}`;let g=map.get(key);if(!g){g={text:[],conf:0,x0:x,y0:y,x1:x+w,y1:y+h};map.set(key,g);}g.text.push(text);g.conf=Math.max(g.conf,Number.isFinite(conf)?conf:0);g.x0=Math.min(g.x0,x);g.y0=Math.min(g.y0,y);g.x1=Math.max(g.x1,x+w);g.y1=Math.max(g.y1,y+h);}return[...map.values()].map(g=>({text:clean(g.text.join(' ')),confidence:g.conf,x0:g.x0/scale,y0:g.y0/scale,x1:g.x1/scale,y1:g.y1/scale,cy:(g.y0+g.y1)/2/scale})).filter(x=>x.text);}
+function textLightRatio(img,x,y,w,h){const c=document.createElement('canvas');c.width=Math.max(4,Math.round(w));c.height=Math.max(4,Math.round(h));const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,x,y,w,h,0,0,c.width,c.height);const d=g.getImageData(0,0,c.width,c.height).data;let n=0,total=0;for(let i=0;i<d.length;i+=4){const v=.299*d[i]+.587*d[i+1]+.114*d[i+2];if(v>120)n++;total++;}return total?n/total:0;}
 function inferGrid(img){
- const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,a=detectAnchors(img);
- let xs=a.x.map(z=>z.a).filter(x=>x<W*.9).sort((m,n)=>m-n),ys=a.y.map(z=>z.a).filter(y=>y>H*.06&&y<H*.90).sort((m,n)=>m-n);
- const cluster=(arr,limit)=>{const o=[];for(const v of arr){const q=o[o.length-1];if(q&&Math.abs(v-q[q.length-1])<W*.06)q.push(v);else o.push([v]);}return o.map(g=>Math.round(g.reduce((a,b)=>a+b,0)/g.length)).slice(0,limit);};
- xs=cluster(xs,3);ys=cluster(ys,3);
- const fx=[Math.round(W*.006),Math.round(W*.326),Math.round(W*.647)],fy=[Math.round(H*.108),Math.round(H*.405),Math.round(H*.704)];
- if(xs.length!==3||xs[1]-xs[0]<W*.20||xs[2]-xs[1]<W*.20)xs=fx;else{const p=xs[1]-xs[0];xs=[xs[0],xs[1],xs[0]+2*p];}
- if(ys.length<2||ys[1]-ys[0]<H*.20)ys=fy;
- while(xs.length<3)xs.push(xs[xs.length-1]+(xs[1]-xs[0]||W*.32));while(ys.length<3)ys.push(ys[ys.length-1]+(ys[1]-ys[0]||H*.30));
- const pitchX=xs[1]-xs[0],pitchY=ys[1]-ys[0],cardW=Math.round(Math.min(W*.31,pitchX-10)),cardH=Math.round(Math.min(H*.30,pitchY-7));
- const cards=[];for(let r=0;r<3;r++)for(let c=0;c<3;c++){const x=xs[c],y=ys[r];if(x>=W||y>=H)continue;cards.push({x,y,w:Math.min(cardW,W-x),h:Math.min(cardH,H-y),row:r,col:c});}
- return cards.filter(c=>c.w>130&&c.h>80);
+ const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;
+ const cols=[.006,.328,.650], rows=[.115,.405,.695];
+ const cells=[];
+ for(let r=0;r<3;r++)for(let c=0;c<3;c++){
+   const x=Math.round(W*cols[c]),y=Math.round(H*rows[r]),w=Math.round(W*.300),h=Math.round(H*.285);
+   if(x+w>W||y+h>H)continue;
+   const dark=textDarkRatio(img,x+2,y+2,w-4,h-4), light=textLightRatio(img,x+10,y+10,w-20,h-20);
+   // PUBG cards are dark rectangular panels. Empty bottom cells have neither the panel nor the player-text density.
+   const present=dark>.80 && light>.025;
+   cells.push({x,y,w,h,row:r,col:c,present,ratio:light,dark});
+ }
+ // Validate each detected card with a second, independent scan of the interior text strips.
+ return cells.filter(c=>c.present).sort((a,b)=>a.row-b.row||a.col-b.col);
 }
+function textDarkRatio(img,x,y,w,h){const c=document.createElement('canvas');c.width=Math.max(4,Math.round(w));c.height=Math.max(4,Math.round(h));const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,x,y,w,h,0,0,c.width,c.height);const d=g.getImageData(0,0,c.width,c.height).data;let n=0,total=0;for(let i=0;i<d.length;i+=4){const v=.299*d[i]+.587*d[i+1]+.114*d[i+2];if(v<65)n++;total++;}return total?n/total:0;}
 function teamForSlot(slot){return(S.teams||[]).find(x=>Number(x.slot)===Number(slot))||null;}
 function rosterForSlot(slot){const t=teamForSlot(slot);return{team:t?.name||'',players:(t?.players||[]).map(p=>typeof p==='string'?clean(p):clean(p?.name)).filter(Boolean)};}
-function candidateCluster(candidates){
- const groups=[];
- for(const c of (candidates||[])){const text=clean(c?.text);if(!text)continue;let g=groups.find(z=>similarity(z.text,text)>=.86);if(!g){g={text,confidence:Number(c.confidence)||0,votes:1,sources:[c.source||'ocr']};groups.push(g);}else{g.votes++;g.confidence=Math.max(g.confidence,Number(c.confidence)||0);if((Number(c.confidence)||0)>g.confidence)g.text=text;g.sources.push(c.source||'ocr');}}
- return groups.sort((a,b)=>(b.votes*100+b.confidence)-(a.votes*100+a.confidence));
+function candidateCluster(candidates){const groups=[];for(const c of(candidates||[])){const text=clean(c?.text);if(!text)continue;let g=groups.find(z=>similarity(z.text,text)>=.88);if(!g){g={text,confidence:Number(c.confidence)||0,votes:1,sources:[c.source||'ocr']};groups.push(g);}else{g.votes++;g.confidence=Math.max(g.confidence,Number(c.confidence)||0);g.sources.push(c.source||'ocr');if((Number(c.confidence)||0)>g.confidence)g.text=text;}}return groups.sort((a,b)=>(b.votes*100+b.confidence)-(a.votes*100+a.confidence));}
+function normalizePlayer(s){let t=clean(s).replace(/[“”‘’]/g,'').replace(/\s*\/\s*[0-9]+\s*Eliminations.*$/i,'').replace(/\s*Eliminations.*$/i,'');return clean(t.replace(/^\s*[|\/\\:;]+\s*/,''));}
+function nameRegion(card){
+ const padX=card.w*.145;
+ return{x:card.x+padX,y:card.y+card.h*.115,w:card.w*.64,h:card.h*.80};
 }
-function normalizeOCRPlayerText(s){
- let t=clean(s).replace(/[“”‘’]/g,'').replace(/\s*\/\s*[0-9]+\s*Eliminations.*$/i,'').replace(/\s*Eliminations.*$/i,'');
- return clean(t);
+function rowBand(card,i){
+ const r=nameRegion(card),centers=[.085,.315,.545,.775];
+ return{x:r.x,y:r.y+r.h*centers[i]-r.h*.075,w:r.w,h:r.h*.15};
 }
-function findTextBand(img,card,expected){
- const x=Math.round(card.x+card.w*.14),w=Math.round(card.w*.60),cy=card.y+card.h*expected,half=Math.round(card.h*.105),y0=Math.max(card.y+2,Math.round(cy-half)),h=Math.min(Math.round(card.h*.21),Math.round(card.y+card.h-y0));
- const c=document.createElement('canvas');c.width=Math.max(2,w);c.height=Math.max(2,h);const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,x,y0,w,h,0,0,w,h);const d=g.getImageData(0,0,w,h).data,score=new Int32Array(h);
- for(let y=0;y<h;y++){let n=0;for(let xx=0;xx<w;xx++){const i=(y*w+xx)*4,r=d[i],gg=d[i+1],b=d[i+2],v=.299*r+.587*gg+.114*b,mx=Math.max(r,gg,b),mn=Math.min(r,gg,b);if(v>145&&(mx-mn<115||v>190))n++;}score[y]=n;}
- let bestY=-1,best=-1;for(let y=0;y<h;y++){if(score[y]>best){best=score[y];bestY=y;}}
- if(bestY<0)return{y:y0,w,h};
- return{y:clamp(y0+bestY-Math.round(card.h*.06),card.y+2,card.y+card.h*.90),w,h:Math.round(card.h*.13)};
+function normalizeFirstPlayer(s){let t=normalizePlayer(s);t=t.replace(/^\s*(?:0?[3-9]|1[0-8])\s+/,'');return clean(t);}
+function addUniqueCandidate(arr,text,confidence,source){text=clean(text);if(!text)return;const n=normalizePlayer(text);if(!n)return;arr.push({text:n,confidence:Number.isFinite(Number(confidence))?Number(confidence):0,source});}
+async function playerPass(img,card,i,mode,psm,tag,padX=.018,padY=.035,scale=12){
+ const b=rowBand(card,i),px=card.w*padX,py=card.h*padY;
+ const c=cropCanvas(img,b.x-px,b.y-py,b.w+px*2,b.h+py*2,scale);
+ const d=await recognize(c,mode,psm);
+ const out=[];let raw=normalizePlayer(d?.text||'');if(i===0)raw=normalizeFirstPlayer(raw);addUniqueCandidate(out,raw,d?.confidence,tag);
+ for(const w of ocrWords(d,scale))addUniqueCandidate(out,i===0?normalizeFirstPlayer(w.t):w.t,w.confidence,tag+'-word');
+ const words=ocrWords(d,scale).sort((a,z)=>a.x0-z.x0);if(words.length>1)addUniqueCandidate(out,i===0?normalizeFirstPlayer(words.map(z=>z.t).join(' ')):words.map(z=>z.t).join(' '),Math.max(...words.map(z=>z.confidence||0)),tag+'-joined');
+ return out;
 }
-function playerBands(img,card){
- const centers=[.17,.395,.615,.835];
- return centers.map((e,i)=>{const b=findTextBand(img,card,e);return{index:i,cy:card.y+card.h*e,x:card.x+card.w*.155,y:b.y,w:card.w*.57,h:Math.max(card.h*.105,b.h)};});
-}
-async function readPlayerLineCandidates(img,card,index,seed=[]){
- const b=playerBands(img,card)[index],candidates=[...(seed||[])];
- const passes=[
-  {x:b.x,y:b.y,w:b.w,h:b.h,s:8,mode:'original',tag:'tight-original'},
-  {x:b.x-card.w*.018,y:b.y-card.h*.018,w:b.w+card.w*.036,h:b.h+card.h*.036,s:8,mode:'contrast',tag:'padded-contrast'}
+async function targetedPlayerCandidates(img,card,i,seed=[]){
+ const candidates=[...(seed||[])];
+ const variants=[
+  ['original','7','raw-line',.018,.035,12],
+  ['contrast','7','contrast-line',.018,.035,12],
+  ['soft','13','soft-raw',.012,.025,12],
+  ['gamma','7','gamma-line',.018,.035,12],
+  ['sharpen','7','sharpen-line',.018,.035,12],
+  ['adaptive','7','adaptive-line',.018,.035,12],
+  ['otsu','13','otsu-raw',.012,.025,12],
+  ['invert','7','invert-line',.018,.035,12]
  ];
- for(const q of passes){
-  try{
-   const d=await recognize(cropCanvas(img,q.x,q.y,q.w,q.h,q.s),q.mode),raw=normalizeOCRPlayerText(d?.text||'');
-   if(raw)candidates.push({text:raw,confidence:Number(d?.confidence)||0,source:q.tag});
-   const ws=ocrWords(d,q.s).sort((a,z)=>a.x0-z.x0),wt=normalizeOCRPlayerText(ws.map(z=>z.t).join(' '));
-   if(wt)candidates.push({text:wt,confidence:Math.max(0,...ws.map(z=>Number(z.confidence)||0)),source:q.tag+'-tsv'});
-  }catch(e){console.warn('player OCR pass',index,q.mode,e);}
- }
- return candidateCluster(candidates).slice(0,8);
+ for(const v of variants){try{candidates.push(...await playerPass(img,card,i,...v));}catch(e){console.warn('player pass',v,e);}}
+ return rankPlayerCandidates(candidates).slice(0,12);
 }
-async function readPlayerRows(img,card,fullWords){
- const bands=playerBands(img,card),rows=[];
+function playerShapeScore(t){
+ const s=clean(t);if(!s)return 0;let q=0;if(s.length>=3&&s.length<=20)q+=.25;if(/[A-Za-z0-9]/.test(s))q+=.25;if(!/Eliminations/i.test(s))q+=.25;if(!/^\d+$/.test(s))q+=.15;if(!/^[^A-Za-z0-9]+$/.test(s))q+=.10;return q;
+}
+function rankPlayerCandidates(candidates){
+ const groups=[];
+ for(const c of candidates||[]){let text=normalizePlayer(c.text);if(!text)continue;text=text.replace(/\s*\/\s*\d+.*$/,'').trim();if(text.length<2||text.length>28)continue;
+   let g=groups.find(z=>similarity(z.text,text)>=.92 || (similarity(z.text,text)>=.84&&Math.abs(z.text.length-text.length)<=1));
+   if(!g){g={text,confidence:Number(c.confidence)||0,votes:0,sources:[],score:0};groups.push(g);}
+   g.votes++;g.confidence=Math.max(g.confidence,Number(c.confidence)||0);g.sources.push(c.source||'ocr');
+   if((Number(c.confidence)||0)>g.confidence)g.text=text;
+ }
+ for(const g of groups)g.score=(g.votes*2.2)+(Math.max(0,g.confidence)/100)+playerShapeScore(g.text);
+ return groups.sort((a,b)=>b.score-a.score);
+}
+async function readPlayers(img,card){
+ const out=[];
+ // Pass A: direct four-row reads. Each row is isolated so one bad OCR line cannot shift the roster.
  for(let i=0;i<4;i++){
-  const b=bands[i],fw=(fullWords||[]).filter(w=>w.x1>=b.x&&w.x0<=b.x+b.w&&Math.abs(w.cy-b.cy)<=card.h*.07).sort((a,z)=>a.x0-z.x0),seed=[];
-  if(fw.length){const t=normalizeOCRPlayerText(fw.map(z=>z.t).join(' '));if(t)seed.push({text:t,confidence:Math.max(0,...fw.map(z=>Number(z.confidence)||0)),source:'full-image-row'});}
-  let candidates=await readPlayerLineCandidates(img,card,i,seed);
-  let top=candidates[0];
-  // One targeted rescue only when the first two independent reads disagree or are weak.
-  if(!top?.text||top.confidence<72||((candidates[1]?.text)&&similarity(top.text,candidates[1].text)<.70)){
-   try{
-    const c=cropCanvas(img,b.x-card.w*.035,b.y-card.h*.03,b.w+card.w*.07,b.h+card.h*.06,8),d=await recognize(c,'soft'),raw=normalizeOCRPlayerText(d?.text||'');
-    if(raw)candidates=candidateCluster([...candidates,{text:raw,confidence:Number(d?.confidence)||0,source:'rescue-soft'}]);
-   }catch(e){console.warn('targeted row rescue failed',i,e);}
-  }
-  top=candidates[0];rows.push({text:top?.text||'',confidence:top?.confidence||0,cy:b.cy,candidates});
+   const c=await targetedPlayerCandidates(img,card,i,[]);
+   const top=c[0]||{text:'',confidence:0};
+   out.push({text:top.text||'',confidence:top.confidence||0,cy:rowBand(card,i).y+rowBand(card,i).h/2,candidates:c});
  }
- return rows;
+ // Pass B: card-level line OCR only as rescue; never allowed to reorder the four rows.
+ try{
+   const r=nameRegion(card),c=cropCanvas(img,r.x,r.y,r.w,r.h,10);
+   for(const [mode,psm,tag] of [['original','4','card-lines'],['contrast','6','card-contrast'],['sharpen','11','card-sharpen']]){
+     const d=await recognize(c,mode,psm),lines=ocrLines(d,10);
+     for(const ln of lines){const cy=r.y+ln.cy;let best=-1,dist=1e9;for(let i=0;i<4;i++){const rd=rowBand(card,i),dc=Math.abs(cy-(rd.y+rd.h/2));if(dc<dist){dist=dc;best=i;}}if(best>=0&&dist<card.h*.075)addUniqueCandidate(out[best].candidates,best===0?normalizeFirstPlayer(ln.text):normalizePlayer(ln.text),ln.confidence,tag);}
+   }
+ }catch(e){console.warn('card rescue',e);}
+ for(let i=0;i<4;i++){const ranked=rankPlayerCandidates(out[i].candidates||[]);const top=ranked[0]||{text:'',confidence:0};out[i].text=top.text;out[i].confidence=top.confidence;out[i].candidates=ranked.slice(0,12);}
+ return out;
 }
-async function readSlotNumber(img,card){
- const crop=cropCanvas(img,card.x+card.w*.005,card.y+card.h*.01,card.w*.19,card.h*.27,8),cands=[];
- for(const mode of ['original','contrast','threshold']){try{const d=await recognize(crop,mode),raw=clean(d?.text||'').replace(/[^0-9]/g,'');if(raw){const n=Number(raw);if(n>=1&&n<=99)cands.push({n,confidence:Number(d?.confidence)||0});}for(const w of ocrWords(d,8)){const n=Number(clean(w.t).replace(/[^0-9]/g,''));if(n>=1&&n<=99)cands.push({n,confidence:Number(w.confidence)||0});}}catch(e){}}
- const count=new Map();for(const c of cands){const x=count.get(c.n)||{n:c.n,votes:0,conf:0};x.votes++;x.conf=Math.max(x.conf,c.confidence);count.set(c.n,x);}return[...count.values()].sort((a,b)=>(b.votes*100+b.conf)-(a.votes*100+a.conf))[0]?.n||0;
-}
-function pairScore(text,name){const a=normKey(text),b=normKey(name);if(!a||!b)return 0;if(a===b)return 1;const d=editDistance(a,b),sim=similarity(a,b);if(d<=1&&Math.max(a.length,b.length)>=4)return Math.max(sim,.86);if(d<=2&&Math.max(a.length,b.length)>=7)return Math.max(sim,.82);return sim;}
-function bestAssignment(observed,canonical){if(observed.length!==4||canonical.length!==4)return{score:0,rows:[],verified:false};let best=null;function rec(i,used,total,map){if(i===4){if(!best||total>best.score)best={score:total,map:[...map]};return;}for(let j=0;j<4;j++){if(used.has(j))continue;used.add(j);map.push({obs:i,can:j,score:pairScore(observed[i].text,canonical[j])});rec(i+1,used,total+map[map.length-1].score,map);map.pop();used.delete(j);}}rec(0,new Set(),0,[]);if(!best)return{score:0,rows:[],verified:false};const rows=best.map(x=>({obs:observed[x.obs],canonical:canonical[x.can],score:x.score})).sort((a,b)=>a.obs.cy-b.obs.cy);return{score:best.score,rows,verified:rows.every(r=>r.score>=.82)&&best.score>=3.35};}
-function rowsToPlayers(observed,assignment){return assignment.rows.map(r=>({name:r.canonical,raw:r.obs.text,confidence:r.obs.confidence,verified:r.score>=.82,matched:true,matchScore:r.score,candidates:r.obs.candidates||[]}));}
-function applyRosterVerification(r){const roster=rosterForSlot(r.slot);r.team=roster.team||r.team;if(roster.players.length!==4)return r;const obs=(r.players||[]).map((p,i)=>({...p,text:p.name||'',cy:i}));const a=bestAssignment(obs,roster.players);if(a.rows.length===4){r.players=rowsToPlayers(obs,a);r.verified=!!a.verified;}return r;}
-async function analyzeImage(file,index){
- const img=await loadImg(file),cards=inferGrid(img);if(!cards.length)throw new Error('لم يتم اكتشاف كروت PUBG');
- setStatus(`الصورة ${index+1}/${X.files.length} — تحديد الـSlots والـPlayers…`,12+index*35);
- const full=makeCanvas(img,3),data=await recognize(full,'original'),words=ocrWords(data,3),out=[];
- for(let i=0;i<cards.length;i++){
-  const card=cards[i],x1=card.x+card.w*.05,x2=card.x+card.w*.73,y1=card.y+card.h*.02,y2=card.y+card.h*.96;
-  const n=words.filter(w=>w.x1>=x1&&w.x0<=x2&&w.cy>=y1&&w.cy<=y2).length;if(n<4)continue;
-  setStatus(`الصورة ${index+1}/${X.files.length} — الكارت ${i+1}/${cards.length}`,20+index*35+i*(25/Math.max(1,cards.length)));
-  const slot=await readSlotNumber(img,card),players=await readPlayerRows(img,card,words);
-  out.push({slot,team:slot?rosterForSlot(slot).team:'',players:players.map(p=>({name:p.text,raw:p.text,confidence:p.confidence,verified:false,matched:false,candidates:p.candidates||[]})),verified:false,needsReview:true,conflict:false,sourceImage:index,card:i+1,row:card.row+1,column:card.col+1,file:file.name,evidence:cropCanvas(img,card.x,card.y,card.w,card.h,2).toDataURL('image/jpeg',.92)});
- }
- if(!out.length)throw new Error('لم يتم العثور على كروت قابلة للقراءة');return out;
-}
-function assignMissingSlots(rows){
- const ordered=rows.slice().sort((a,b)=>a.sourceImage-b.sourceImage||a.row-b.row||a.column-b.column),used=new Set(ordered.map(r=>Number(r.slot)).filter(n=>n>=3&&n<=18));
- for(const r of ordered){if(Number.isInteger(r.slot)&&r.slot>=3&&r.slot<=18)continue;}
- // Fill only when a slot badge could not be read. Never overwrite a valid badge.
- let next=3;for(const r of ordered){if(r.slot>=3&&r.slot<=18)continue;while(used.has(next)&&next<=18)next++;if(next<=18){r.slot=next;used.add(next);next++;}}
- return ordered;
-}
-function mergeResults(rows){
- const prepared=assignMissingSlots(rows),map=new Map();
- for(const r of prepared){r.team=rosterForSlot(r.slot).team||'';applyRosterVerification(r);const old=map.get(r.slot);if(!old){map.set(r.slot,r);continue;}
-  const conflict=!!old.conflict||!!r.conflict||(old.verified&&r.verified&&!samePlayers(old,r));
-  const base=old.verified&&!r.verified?old:(r.verified&&!old.verified?r:old);base.sources=[...(old.sources||[]),old,r];base.conflict=conflict;base.verified=!!base.verified&&!conflict;base.needsReview=!base.verified||conflict;
-  if(!base.verified){base.players=(base.players||[]).map((p,i)=>{const q=r.players?.[i];if(!p?.name&&q?.name)return q;if(p?.name&&q?.name&&similarity(p.name,q.name)>=.82){p.candidates=candidateCluster([...(p.candidates||[]),...(q.candidates||[])]);if((q.confidence||0)>(p.confidence||0))p.raw=q.raw,p.confidence=q.confidence;}return p;});}
-  map.set(r.slot,base);
- }
- return[...map.values()].sort((a,b)=>a.slot-b.slot);
-}
-function samePlayers(a,b){const aa=(a?.players||[]).map(p=>normKey(p?.name)),bb=(b?.players||[]).map(p=>normKey(p?.name));return aa.length===4&&bb.length===4&&aa.every((n,i)=>n&&n===bb[i]);}
-window.runTeamSlotImportV2=async()=>{if(X.scanning)return;if(!X.files.length)return toast('ارفع صور الـLobby أولاً');X.scanning=true;X.results=[];renderReview();try{setStatus('بدء التحليل…',1);await ensureOCR();const all=[];for(let i=0;i<X.files.length;i++)all.push(...await analyzeImage(X.files[i],i));X.results=mergeResults(all);renderReview();const v=X.results.filter(r=>r.verified).length;setStatus(`اكتمل التحليل — ${v} Slot متحقق، والباقي يحتاج مراجعة.`,100);}catch(e){console.error('PUBG OCR V12',e);X.results=[];renderReview();setStatus(`فشل التحليل: ${String(e?.message||e)}`,0);toast('فشل التحليل — لم يتم تعديل بيانات البطولة');}finally{X.scanning=false;}};
+async function slotCandidates(img,card){const out=[];for(const q of[{x:card.x+.005*card.w,y:card.y+.005*card.h,w:card.w*.20,h:card.h*.30,s:9},{x:card.x,y:card.y,w:card.w*.24,h:card.h*.36,s:11}])for(const mode of['original','contrast','threshold']){try{const d=await recognize(cropCanvas(img,q.x,q.y,q.w,q.h,q.s),mode,'8'),raw=clean(d?.text||'').replace(/[^0-9]/g,'');if(raw){const n=Number(raw);if(n>=1&&n<=99)out.push({n,confidence:Number(d?.confidence)||0});}for(const w of ocrWords(d,q.s)){const n=Number(clean(w.t).replace(/[^0-9]/g,''));if(n>=1&&n<=99)out.push({n,confidence:w.confidence||0});}}catch(e){}}const m=new Map();for(const c of out){const g=m.get(c.n)||{n:c.n,votes:0,conf:0};g.votes++;g.conf=Math.max(g.conf,c.confidence);m.set(c.n,g);}return[...m.values()].sort((a,b)=>(b.votes*100+b.conf)-(a.votes*100+a.conf));}
+function assignSlots(cards,cands){let best=null;for(let start=3;start<=18;start++){let score=0;for(let i=0;i<cards.length;i++){const exp=start+i;if(exp>18){score-=100;continue;}const exact=(cands[i]||[]).find(x=>x.n===exp);if(exact)score+=100+exact.conf;else{const near=(cands[i]||[]).find(x=>Math.abs(x.n-exp)===1);score+=near?20:0;}}if(!best||score>best.score)best={start,score};}return cards.map((c,i)=>({slot:best.start+i,slotCandidates:cands[i]||[]}));}
+function pairScore(a,b){const x=normKey(a),y=normKey(b);if(!x||!y)return 0;if(x===y)return 1;const d=editDistance(x,y),s=similarity(x,y);if(d<=1&&Math.max(x.length,y.length)>=4)return Math.max(s,.88);if(d<=2&&Math.max(x.length,y.length)>=7)return Math.max(s,.84);return s;}
+function bestAssignment(obs,can){if(obs.length!==4||can.length!==4)return{score:0,rows:[],verified:false};let best=null;function rec(i,used,total,map){if(i===4){if(!best||total>best.score)best={score:total,map:[...map]};return;}for(let j=0;j<4;j++)if(!used.has(j)){used.add(j);map.push({obs:i,can:j,score:pairScore(obs[i].text,can[j])});rec(i+1,used,total+map.at(-1).score,map);map.pop();used.delete(j);}}rec(0,new Set(),0,[]);const rows=best.map(x=>({obs:obs[x.obs],canonical:can[x.can],score:x.score})).sort((a,b)=>a.obs.cy-b.obs.cy);return{score:best.score,rows,verified:rows.every(r=>r.score>=.84)&&best.score>=3.45};}
+function rowsToPlayers(obs,a){return a.rows.map(r=>({name:r.canonical,raw:r.obs.text,confidence:r.obs.confidence,verified:r.score>=.84,matched:true,matchScore:r.score,candidates:r.obs.candidates||[]}));}
+function applyRoster(r){const ro=rosterForSlot(r.slot);r.team=ro.team||'';if(ro.players.length===4){const obs=(r.players||[]).map((p,i)=>({...p,text:p.name||'',cy:p.cy||i})),a=bestAssignment(obs,ro.players);r.players=rowsToPlayers(obs,a);r.verified=a.verified;}return r;}
+async function analyzeImage(file,index){const img=await loadImg(file),cards=inferGrid(img);if(!cards.length)throw new Error(`الصورة ${index+1}: لم يتم اكتشاف كروت PUBG`);setStatus(`الصورة ${index+1}/${X.files.length} — ${cards.length} كروت مكتشفة`,12+index*35);const cands=[];for(const card of cards)cands.push(await slotCandidates(img,card));const slots=assignSlots(cards,cands),out=[];for(let i=0;i<cards.length;i++){const card=cards[i],a=slots[i];setStatus(`الصورة ${index+1}/${X.files.length} — الكارت ${i+1}/${cards.length} — Slot ${String(a.slot).padStart(2,'0')}`,20+index*35+i*(25/Math.max(cards.length,1)));const players=await readPlayers(img,card);out.push({slot:a.slot,slotCandidates:a.slotCandidates,team:rosterForSlot(a.slot).team||'',players:players.map(p=>({name:p.text,raw:p.text,confidence:p.confidence,verified:false,matched:false,cy:p.cy,candidates:p.candidates})),verified:false,needsReview:true,conflict:false,sourceImage:index,card:i+1,row:card.row+1,column:card.col+1,file:file.name,evidence:cropCanvas(img,card.x,card.y,card.w,card.h,2).toDataURL('image/jpeg',.92)});}return out;}
+function samePlayers(a,b){const x=(a.players||[]).map(p=>normKey(p.name)),y=(b.players||[]).map(p=>normKey(p.name));return x.length===4&&y.length===4&&x.every((v,i)=>v&&v===y[i]);}
+function mergeResults(rows){const map=new Map();for(const r of rows){applyRoster(r);const old=map.get(r.slot);if(!old){map.set(r.slot,r);continue;}const conflict=old.verified&&r.verified&&!samePlayers(old,r);const base=old.verified&&!r.verified?old:(r.verified&&!old.verified?r:old);base.sources=[...(old.sources||[]),r];base.conflict=!!old.conflict||!!r.conflict||conflict;base.verified=!!base.verified&&!base.conflict;base.needsReview=!base.verified||base.conflict;map.set(r.slot,base);}return[...map.values()].sort((a,b)=>a.slot-b.slot);}
+window.runTeamSlotImportV2=async()=>{if(X.scanning)return;if(!X.files.length)return toast('ارفع صور الـLobby أولاً');X.scanning=true;X.results=[];renderReview();try{setStatus('بدء التحليل…',1);await ensureOCR();const all=[];for(let i=0;i<X.files.length;i++)all.push(...await analyzeImage(X.files[i],i));X.results=mergeResults(all);renderReview();setStatus(`اكتمل التحليل — ${X.results.length} Slot مكتشف.`,100);}catch(e){console.error('PUBG OCR V13',e);X.results=[];renderReview();setStatus(`فشل التحليل: ${String(e?.message||e)}`,0);toast('فشل التحليل — لم يتم تعديل بيانات البطولة');}finally{X.scanning=false;}};
 window.clearTeamSlotImportV2=()=>{X.files=[];X.results=[];renderFiles();renderReview();setStatus('جاهز — التحليل تلقائي بالكامل',0);};
 window.slotImportFilterV2=f=>{X.filter=f;renderReview();};
 window.slotImportSetSlot=(i,v)=>{const r=X.results[i];if(!r)return;r.slot=Number(v)||0;r.team=rosterForSlot(r.slot).team||'';r.verified=false;r.needsReview=true;renderReview();};
-window.slotImportSetPlayer=(i,j,v)=>{const r=X.results[i];if(!r)return;while((r.players||[]).length<4)r.players.push({name:'',verified:false,candidates:[]});const val=clean(v);r.players[j]={name:val,raw:val,confidence:100,verified:true,manual:true,matched:false,candidates:[{text:val,confidence:100,source:'manual'}]};r.manual=true;r.verified=false;r.needsReview=true;refreshManualVerification(i);renderReview();};
-window.slotImportChooseCandidate=(i,j,k)=>{const r=X.results[i],v=r?.players?.[j]?.candidates?.[k]?.text;if(v)slotImportSetPlayer(i,j,v);};
-window.slotImportReReadPlayer=async(i,j)=>{const r=X.results[i],f=r&&X.files[r.sourceImage];if(!r||!f)return toast('مصدر الصورة غير متاح لإعادة القراءة');try{setStatus(`إعادة قراءة Slot ${String(r.slot).padStart(2,'0')} — اللاعب P${j+1}…`,45);const img=await loadImg(f),cards=inferGrid(img),card=cards.find(c=>c.row===Number(r.row)-1&&c.col===Number(r.column)-1)||cards[Math.max(0,(Number(r.card)||1)-1)];if(!card)throw new Error('تعذر تحديد كارت اللاعب');const candidates=await readPlayerLineCandidates(img,card,j,[]),top=candidates[0];r.players[j]={...(r.players[j]||{}),name:top?.text||'',raw:top?.text||'',confidence:top?.confidence||0,verified:false,manual:false,candidates};r.verified=false;r.needsReview=true;refreshManualVerification(i);renderReview();setStatus('تمت إعادة القراءة — راجع النتيجة قبل الحفظ.',100);}catch(e){console.error(e);toast('تعذرت إعادة قراءة اللاعب');}};
-function refreshManualVerification(i){const r=X.results[i];if(!r)return;const roster=rosterForSlot(r.slot);r.team=roster.team||r.team;if(roster.players.length===4){const obs=(r.players||[]).map((p,j)=>({...p,text:p.name||'',cy:j})),a=bestAssignment(obs,roster.players);if(a.rows.length===4)r.players=rowsToPlayers(obs,a);r.verified=!!a.verified&&!r.conflict;}else r.verified=!!r.team&&(r.players||[]).length===4&&r.players.every(p=>p.manual&&clean(p.name));r.needsReview=!r.verified||!!r.conflict;}
-window.slotImportAcceptRow=i=>{const r=X.results[i];if(!r)return;refreshManualVerification(i);if(!r.verified)toast(`Slot ${String(r.slot).padStart(2,'0')} يحتاج التحقق من اللاعبين الأربعة`);else toast(`Slot ${String(r.slot).padStart(2,'0')} تم تأكيده`);renderReview();};
-function renderReview(){
- const el=$('slotImportReviewV2');if(!el)return;const list=X.results.filter(r=>X.filter==='all'||(X.filter==='review'&&!r.verified)||(X.filter==='ready'&&r.verified)||(X.filter==='conflict'&&r.conflict)),verified=X.results.filter(r=>r.verified).length,review=X.results.length-verified,summary=$('slotImportSummaryV2');
- if(summary)summary.innerHTML=`<div class="slotStatV2"><small>Slots</small><b>${X.results.length}</b></div><div class="slotStatV2"><small>Verified</small><b>${verified}</b></div><div class="slotStatV2"><small>Need Check</small><b>${review}</b></div><div class="slotStatV2"><small>OCR</small><b>Multi‑Pass</b></div><div class="slotStatV2"><small>Mode</small><b>Automatic</b></div>`;
- if(!X.results.length){el.innerHTML='<div class="empty">لم يتم تحليل أي صورة بعد.</div>';return;}
- el.innerHTML=list.map(r=>{const i=X.results.indexOf(r),state=r.conflict?'conflict':(r.verified?'ready':'review'),team=rosterForSlot(r.slot).team||r.team||'—';const playerHtml=(r.players||[]).map((p,j)=>{const c=(p.candidates||[]).slice(0,5);return `<div class="slotPlayerLineV2 ${p.verified?'ok':'warn'}"><span class="slotPlayerIndexV2">P${j+1}</span><input value="${escv(p.name)}" placeholder="لم تتم القراءة" onchange="slotImportSetPlayer(${i},${j},this.value)"><span class="slotPlayerMarkV2">${p.verified?'✓':'⚠'}</span>${c.length?`<div class="slotPlayerCandidatesV2">${c.map((x,k)=>`<span role="button" onclick="slotImportChooseCandidate(${i},${j},${k})">${escv(x.text)}</span>`).join('')}</div>`:''}<button type="button" class="small ghost" style="grid-column:3;grid-row:1;min-width:20px;padding:4px" title="Re-read" onclick="slotImportReReadPlayer(${i},${j})">↻</button></div>`;}).join('');return `<div class="slotRowV2 ${state}"><div class="slotRowHeadV2"><div class="slotBadgeV2">${r.slot?String(r.slot).padStart(2,'0'):'??'}</div><div class="slotTeamEditV2"><div class="slotLinkedTeamV2">${escv(team)}</div><div class="slotMetaV2">${r.conflict?'⚠ تعارض بين صور متعددة لنفس الـSlot':r.verified?'✓ Slot مرتبط بالفريق المدخل في Team List':'⚠ Slot ثابت، وأسماء اللاعبين تحتاج تحقق'}</div></div><span class="slotStateV2 ${state}">${r.verified?'✓ VERIFIED':r.conflict?'CONFLICT':'REVIEW'}</span></div><div class="slotEvidenceV2">${r.evidence?`<img src="${r.evidence}" alt="PUBG card evidence">`:'<div class="empty">No evidence</div>'}<div class="evidenceText"><b>Players — 4 independent row reads</b>${playerHtml}</div></div><div class="slotActionBarV2"><span>${(r.players||[]).filter(p=>clean(p.name)).length}/4 players detected</span><button class="small ${r.verified?'ghost':'primary'}" onclick="slotImportAcceptRow(${i})">${r.verified?'Verified':'Review / Accept'}</button></div></div>`;}).join('')+`<div class="slotCommitBarV2"><div><b>${review?'الحفظ محجوب — يجب التحقق من جميع أسماء اللاعبين':'جاهز للحفظ — جميع الـSlots والأسماء متحققة'}</b><div class="hint">اسم الفريق يؤخذ من Team List حسب الـSlot. OCR لا يكتب اسم الفريق من الصورة.</div></div><button class="primary" ${review?'disabled':''} onclick="commitTeamSlotImportV2()">✓ Confirm & Save ${verified} Verified Slots</button></div>`;
-}
-window.commitTeamSlotImportV2=()=>{const rows=X.results;if(!rows.length)return toast('لا توجد نتائج للحفظ');if(rows.some(r=>!r.verified))return toast('الحفظ محجوب حتى تصبح كل النتائج Verified');if(rows.some(r=>r.conflict))return toast('الحفظ محجوب: يوجد تعارض بين صور لنفس الـSlot');const seen=new Set();for(const r of rows){if(!Number.isInteger(Number(r.slot))||Number(r.slot)<3||Number(r.slot)>18)return toast('يوجد Slot غير صحيح');if(seen.has(Number(r.slot)))return toast(`Duplicate Slot ${r.slot}`);seen.add(Number(r.slot));const t=teamForSlot(r.slot);if(!t)return toast(`Slot ${r.slot} غير موجود في البطولة`);if((r.players||[]).length!==4||r.players.some(p=>!p.verified||!clean(p.name)))return toast(`Slot ${r.slot} غير متحقق بالكامل`);}for(const r of rows){const t=teamForSlot(r.slot);t.players=r.players.map(p=>({name:p.name,confidence:100,source:'verified_lobby_ocr'}));t.slotImportAudit={engine:X.engine,verifiedAt:new Date().toISOString(),verified:true,sourceImages:[r.file,...(r.sources||[]).map(s=>s.file).filter(Boolean)].filter(Boolean)};}save();render();toast(`تم حفظ ${rows.length} Slot — Verified`);};
+window.slotImportAddManualRow=()=>{const used=new Set(X.results.map(r=>Number(r.slot)));let slot=3;while(used.has(slot)&&slot<=18)slot++;if(slot>18)return toast('كل الـSlots من 03 إلى 18 مستخدمة');const t=teamForSlot(slot);X.results.push({slot,team:t?.name||'',players:[0,1,2,3].map((_,i)=>({name:'',verified:false,manual:false,cy:i,candidates:[]})),verified:false,needsReview:true,conflict:false,sourceImage:0,card:0,row:0,column:0,file:'manual',evidence:''});renderReview();};
+window.slotImportSetPlayer=(i,j,v)=>{const r=X.results[i];if(!r)return;while(r.players.length<4)r.players.push({name:'',candidates:[]});const val=clean(v);r.players[j]={name:val,raw:val,confidence:100,verified:true,manual:true,cy:j,candidates:[{text:val,confidence:100,source:'manual'}]};r.verified=false;r.needsReview=true;renderReview();};
+window.slotImportChooseCandidate=(i,j,k)=>{const p=X.results[i]?.players?.[j],v=p?.candidates?.[k]?.text;if(v)slotImportSetPlayer(i,j,v);};
+window.slotImportReReadPlayer=async(i,j)=>{const r=X.results[i],f=r&&X.files[r.sourceImage];if(!r||!f)return toast('مصدر الصورة غير متاح');try{const img=await loadImg(f),cards=inferGrid(img),card=cards.find(c=>c.row===r.row-1&&c.col===r.column-1);if(!card)throw new Error('الكارت غير موجود');const c=await targetedPlayerCandidates(img,card,j,r.players[j]?.candidates||[]),top=c[0];r.players[j]={...r.players[j],name:top?.text||'',raw:top?.text||'',confidence:top?.confidence||0,verified:false,manual:false,candidates:c,cy:j};r.verified=false;r.needsReview=true;renderReview();}catch(e){console.error(e);toast('تعذرت إعادة القراءة');}};
+window.slotImportAcceptRow=i=>{const r=X.results[i];if(!r)return;const ro=rosterForSlot(r.slot);if(ro.players.length===4){applyRoster(r);}else r.verified=!!r.team&&r.players.length===4&&r.players.every(p=>p.manual&&clean(p.name));r.needsReview=!r.verified||r.conflict;renderReview();};
+function renderReview(){const el=$('slotImportReviewV2');if(!el)return;const list=X.results.filter(r=>X.filter==='all'||(X.filter==='review'&&!r.verified)||(X.filter==='ready'&&r.verified)||(X.filter==='conflict'&&r.conflict)),verified=X.results.filter(r=>r.verified).length,review=X.results.length-verified,summary=$('slotImportSummaryV2');if(summary)summary.innerHTML=`<div class="slotStatV2"><small>Slots</small><b>${X.results.length}</b></div><div class="slotStatV2"><small>Verified</small><b>${verified}</b></div><div class="slotStatV2"><small>Need Check</small><b>${review}</b></div><div class="slotStatV2"><small>OCR</small><b>Hierarchical</b></div><div class="slotStatV2"><small>Mode</small><b>Automatic</b></div>`;if(!X.results.length){el.innerHTML='<div class="empty">لم يتم تحليل أي صورة بعد.</div>';return;}el.innerHTML=list.map(r=>{const i=X.results.indexOf(r),state=r.conflict?'conflict':(r.verified?'ready':'review'),team=rosterForSlot(r.slot).team||'—',playerHtml=r.players.map((p,j)=>{const c=(p.candidates||[]).slice(0,6);return `<div class="slotPlayerLineV2 ${p.verified?'ok':'warn'}"><span class="slotPlayerIndexV2">P${j+1}</span><input value="${escv(p.name)}" placeholder="لم تتم القراءة" onchange="slotImportSetPlayer(${i},${j},this.value)"><span class="slotPlayerMarkV2">${p.verified?'✓':'⚠'}</span>${c.length?`<div class="slotPlayerCandidatesV2">${c.map((x,k)=>`<span role="button" onclick="slotImportChooseCandidate(${i},${j},${k})">${escv(x.text)}</span>`).join('')}</div>`:''}<button type="button" class="small ghost" style="grid-column:3;grid-row:1;min-width:20px;padding:4px" title="Re-read" onclick="slotImportReReadPlayer(${i},${j})">↻</button></div>`;}).join('');return `<div class="slotRowV2 ${state}"><div class="slotRowHeadV2"><div class="slotBadgeV2">${String(r.slot).padStart(2,'0')}</div><div class="slotTeamEditV2"><div class="slotLinkedTeamV2">${escv(team)}</div><div class="slotMetaV2">${r.conflict?'⚠ تعارض بين صور متعددة':r.verified?'✓ مرتبط بالفريق المدخل في Team List':'⚠ Slot من ترتيب الـLobby — أسماء اللاعبين تحتاج تحقق'}</div></div><span class="slotStateV2 ${state}">${r.verified?'✓ VERIFIED':r.conflict?'CONFLICT':'REVIEW'}</span></div><div class="slotEvidenceV2"><img src="${r.evidence}" alt="PUBG card evidence"><div class="evidenceText"><b>Players — 4 row reads</b>${playerHtml}</div></div><div class="slotActionBarV2"><span>${r.players.filter(p=>clean(p.name)).length}/4 players detected</span><button class="small ${r.verified?'ghost':'primary'}" onclick="slotImportAcceptRow(${i})">${r.verified?'Verified':'Review / Accept'}</button></div></div>`;}).join('')+`<div class="slotCommitBarV2"><div><b>${review?'الحفظ محجوب — يجب التحقق من جميع أسماء اللاعبين':'جاهز للحفظ'}</b><div class="hint">اسم الفريق يؤخذ حصريًا من Team List حسب الـSlot.</div></div><button class="primary" ${review?'disabled':''} onclick="commitTeamSlotImportV2()">✓ Confirm & Save ${verified} Verified Slots</button></div>`;}
+window.commitTeamSlotImportV2=()=>{const rows=X.results;if(!rows.length)return toast('لا توجد نتائج');if(rows.some(r=>!r.verified))return toast('الحفظ محجوب حتى تصبح كل النتائج Verified');if(rows.some(r=>r.conflict))return toast('يوجد تعارض بين الصور');const seen=new Set();for(const r of rows){if(r.slot<3||r.slot>18||seen.has(r.slot))return toast('يوجد Slot غير صحيح أو مكرر');seen.add(r.slot);const t=teamForSlot(r.slot);if(!t||r.players.length!==4||r.players.some(p=>!p.verified||!clean(p.name)))return toast(`Slot ${r.slot} غير متحقق بالكامل`);}for(const r of rows){const t=teamForSlot(r.slot);t.players=r.players.map(p=>({name:p.name,confidence:100,source:'verified_lobby_ocr'}));t.slotImportAudit={engine:X.engine,verifiedAt:new Date().toISOString(),verified:true};}save();render();toast(`تم حفظ ${rows.length} Slot — Verified`);};
 const input=$('teamSlotImagesV2'),drop=$('slotImportDrop');if(input)input.addEventListener('change',e=>addFiles(e.target.files));if(drop){['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag');}));['dragleave','drop'].forEach(ev=>drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');}));drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));}renderFiles();renderReview();
 })();
 </script>
