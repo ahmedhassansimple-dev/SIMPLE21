@@ -1865,3 +1865,115 @@ setTimeout(()=>{try{window.runSystemDiagnosticsV35()}catch(e){}},350);
 </script>
 
 </body><!-- V35 PRO FINAL ENGINEERING BUILD --></html>
+
+<!-- V37 FINAL ROSTER PERSISTENCE: independent roster journal + workspace reconciliation -->
+<script>
+(function(){
+  'use strict';
+  const ROSTER_JOURNAL_KEY='pubg_tm_v21_roster_journal_v37';
+  const now=()=>new Date().toISOString();
+  const clean=x=>String(x??'').trim();
+  const safeClone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return x}};
+  function readJournal(){try{const x=JSON.parse(localStorage.getItem(ROSTER_JOURNAL_KEY)||'null');return x&&typeof x==='object'?x:null}catch{return null}}
+  function writeJournal(payload){
+    const slim={version:37,tournament:String(S?.tournament||''),workspaceId:String(typeof workspaceId==='function'?workspaceId():''),updated:now(),slots:{}};
+    for(const r of (payload||[])){
+      const slot=Number(r.slot), t=(typeof teamForSlot==='function'?teamForSlot(slot):S.teams.find(x=>Number(x.slot)===slot));
+      if(!t)continue;
+      slim.slots[String(slot)]={
+        team:String(t.name||''),
+        players:(t.players||[]).slice(0,4).map(p=>({name:clean(p?.name||p),confidence:Number(p?.confidence)||100,source:String(p?.source||'lobby_ocr'),aliases:Array.isArray(p?.aliases)?p.aliases.slice(0,8).map(clean).filter(Boolean):[]})),
+        verified:true,
+        updated:now()
+      };
+    }
+    const raw=JSON.stringify(slim);
+    localStorage.setItem(ROSTER_JOURNAL_KEY,raw);
+    const check=readJournal();
+    if(!check||Object.keys(check.slots||{}).length!==Object.keys(slim.slots).length)throw new Error('Roster journal verification failed');
+    return true;
+  }
+  function applyJournal(){
+    const j=readJournal(); if(!j||!j.slots)return false;
+    let applied=0;
+    for(const [k,v] of Object.entries(j.slots)){
+      const slot=Number(k), t=S.teams.find(x=>Number(x.slot)===slot); if(!t)continue;
+      if(v.team && !t.name)t.name=v.team;
+      if(Array.isArray(v.players)&&v.players.length===4){
+        t.players=v.players.map(p=>({name:clean(p.name),confidence:Number(p.confidence)||100,source:p.source||'lobby_ocr',aliases:Array.isArray(p.aliases)?p.aliases.slice(0,8):[]}));
+        t.rosterVerified=true;t.rosterSource='V37_PERSISTENT_ROSTER_JOURNAL';t.rosterUpdated=v.updated||j.updated;
+        applied++;
+      }
+    }
+    if(applied){
+      try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){/* journal remains authoritative */}
+      return true;
+    }
+    return false;
+  }
+  function persistWorkspaceLight(){
+    try{
+      const id=typeof workspaceId==='function'?workspaceId():''; if(!id)return false;
+      const map=typeof workspaceMap==='function'?workspaceMap():{};
+      const current=map[id]||{};
+      const st=safeClone(S);
+      if(Array.isArray(st.ocrEvidence))st.ocrEvidence=st.ocrEvidence.map(e=>{const y={...e};delete y.crop;delete y.raw;return y}).slice(0,40);
+      if(Array.isArray(st.snapshots))st.snapshots=[];
+      st.matches=(st.matches||[]).map(m=>{const y={...m}; if(y.resultOCR){y.resultOCR={...y.resultOCR}; delete y.resultOCR.evidence; delete y.resultOCR.raw; delete y.resultOCR.crops;} return y});
+      const next={...map,[id]:{...current,id,name:S.tournament||current.name||'Tournament',state:st,created:current.created||Date.now(),updated:Date.now(),archived:false}};
+      localStorage.setItem(WORKSPACE_KEY,JSON.stringify(next));
+      const verify=safeJSON(WORKSPACE_KEY,{})?.[id];
+      return !!(verify&&Array.isArray(verify.state?.teams));
+    }catch(e){console.warn('V37 workspace light save failed',e);return false}
+  }
+  window.v37RestoreRosterJournal=applyJournal;
+  window.v37PersistRoster=function(rows){
+    try{
+      writeJournal(rows);
+      persistWorkspaceLight();
+      try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){/* journal is the fallback */}
+      const journal=readJournal();
+      const count=Object.keys(journal?.slots||{}).length;
+      if(count!==16)throw new Error('Only '+count+'/16 roster slots were persisted');
+      return true;
+    }catch(e){console.error('V37 persist failed',e);return false}
+  };
+  window.commitTeamSlotImportV2=function(){
+    const X=window._slotImportV2, rows=(X?.results||[]).map(r=>{if(typeof autoVerifySlotRow==='function')autoVerifySlotRow(r);return r;});
+    if(rows.length!==16)return toast(`لا يمكن الحفظ: تم تحليل ${rows.length}/16 Slot`);
+    const seen=new Set();
+    for(const r of rows){
+      const slot=Number(r.slot); if(!Number.isInteger(slot)||slot<3||slot>18)return toast(`Slot ${r.slot||'?'} غير صحيح`);
+      if(seen.has(slot))return toast(`Slot ${slot} مكرر`); seen.add(slot);
+      const t=typeof teamForSlot==='function'?teamForSlot(slot):null; if(!t)return toast(`Slot ${slot} غير موجود في Team List`);
+      if(!Array.isArray(r.players)||r.players.length!==4||r.players.some(p=>!clean(p?.name)))return toast(`Slot ${slot} يحتاج 4 أسماء لاعبين`);
+    }
+    try{
+      for(const r of rows){
+        const t=teamForSlot(Number(r.slot));
+        t.players=r.players.slice(0,4).map(p=>({name:clean(p.name),confidence:Number(p.confidence)||100,source:p.manual?'manual_review':'lobby_ocr',ocrQuality:Number(p.quality)||0,consensus:Number(p.consensus)||0,evidenceCount:Number(p.votes)||0,aliases:(p.candidates||[]).map(c=>clean(c?.text||c?.name)).filter(Boolean).slice(0,8)}));
+        t.rosterVerified=true;t.rosterSource='V37_PERSISTENT_ROSTER_JOURNAL';t.rosterUpdated=now();
+      }
+      S.proMeta=S.proMeta||{};S.proMeta.lastOCRCommit=now();S.proMeta.ocrCommitCount=(Number(S.proMeta.ocrCommitCount)||0)+1;
+      S.audit=Array.isArray(S.audit)?S.audit:[];S.audit.unshift({id:'audit_'+Date.now(),action:'Roster OCR confirmed',detail:'16 slots · 64 players',time:now()});S.audit=S.audit.slice(0,200);
+      if(!window.v37PersistRoster(rows))throw new Error('Roster persistence verification failed');
+      rows.forEach(r=>{r.verified=true;r.saveable=true;r.needsReview=false});
+      try{render()}catch(e){console.warn(e)}
+      try{renderTeamTournamentSelectorV27()}catch(e){console.warn(e)}
+      try{setTimeout(()=>renderSlotReview(),0)}catch(e){}
+      toast('✓ تم الحفظ بنجاح — تم تثبيت 16 Slot و64 لاعبًا داخل البطولة');
+      return true;
+    }catch(e){console.error('V37 commit failed',e);toast('فشل الحفظ — تم الاحتفاظ بالبيانات ويمكن إعادة المحاولة');return false}
+  };
+  // Reconcile the independent journal after the application finishes loading a workspace.
+  setTimeout(()=>{
+    try{
+      if(window.v37RestoreRosterJournal()){
+        try{render()}catch(e){}
+        try{renderTeamTournamentSelectorV27()}catch(e){}
+      }
+    }catch(e){console.warn('V37 startup reconcile',e)}
+  },1200);
+})();
+</script>
+
