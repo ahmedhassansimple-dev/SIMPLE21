@@ -1641,4 +1641,140 @@ window.renderTeams();
   }
 })();
 </script>
-</body><!-- V34 PRO FINAL REVIEWED BUILD --></html>
+<script id="v35FinalEngineeringPatch">
+(()=>{
+'use strict';
+const BUILD='V35_PRO_FINAL_ENGINEERING';
+const V35KEY='PUBG_TM_V35_BOOT';
+const $=id=>document.getElementById(id);
+const clean=s=>String(s??'').replace(/[\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim();
+const norm=s=>clean(s).toLowerCase().normalize('NFKC').replace(/[\u200B-\u200D\uFEFF]/g,'').replace(/[^\p{L}\p{N}]+/gu,'');
+function sim(a,b){a=norm(a);b=norm(b);if(!a||!b)return 0;if(a===b)return 1;const la=a.length,lb=b.length;const prev=Array.from({length:lb+1},(_,i)=>i);for(let i=1;i<=la;i++){let cur=[i];for(let j=1;j<=lb;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));for(let j=0;j<=lb;j++)prev[j]=cur[j]}return 1-(prev[lb]/Math.max(la,lb));}
+function cloneSafe(x){try{return JSON.parse(JSON.stringify(x))}catch{return x}}
+function normalizeStateV35(st){
+  const base=(typeof BASE!=='undefined'?BASE:{tournament:'',tournamentLogo:'',teams:[],matches:[],rules:{place:[0,10,6,5,4,3,2,1,1],kill:1},activeMatchId:null});
+  const y=Object.assign(cloneSafe(base),st||{});
+  y.tournament=clean(y.tournament);y.tournamentLogo=String(y.tournamentLogo||'');
+  const incoming=Array.isArray(y.teams)?y.teams:[];
+  y.teams=Array.from({length:16},(_,i)=>{
+    const slot=i+3, src=incoming.find(t=>Number(t?.slot)===slot)||incoming[i]||{};
+    const t=Object.assign({slot,name:'',players:[]},src||{});t.slot=slot;t.name=clean(t.name);
+    t.players=(Array.isArray(t.players)?t.players:[]).map(p=>typeof p==='string'?{name:clean(p)}:Object.assign({},p,{name:clean(p?.name)})).filter(p=>p.name).slice(0,4);
+    return t;
+  });
+  y.matches=Array.isArray(y.matches)?y.matches:[];
+  y.matches=y.matches.map((m,i)=>Object.assign({id:'match_'+Date.now()+'_'+i,name:`Match ${i+1}`,results:[],approved:false},m||{}));
+  y.rules=Object.assign({place:[0,10,6,5,4,3,2,1,1],kill:1},y.rules||{});
+  if(!Array.isArray(y.rules.place)||y.rules.place.length<17){const p=Array.isArray(y.rules.place)?y.rules.place.slice():[];while(p.length<17)p.push(0);y.rules.place=p;}
+  y.rules.kill=Number.isFinite(Number(y.rules.kill))?Number(y.rules.kill):1;
+  y.audit=Array.isArray(y.audit)?y.audit.slice(0,200):[];
+  return y;
+}
+function stateIssuesV35(st){
+  const issues=[];if(!st||!Array.isArray(st.teams)||st.teams.length!==16)issues.push('Team structure');
+  const slots=(st?.teams||[]).map(t=>Number(t.slot));if(new Set(slots).size!==slots.length||slots.some((x,i)=>x!==i+3))issues.push('Slot sequence');
+  (st?.matches||[]).forEach((m,i)=>{if(!m.id)issues.push(`Match ${i+1} missing id`);if(m.approved&&(!Array.isArray(m.results)||m.results.length!==16))issues.push(`Approved match ${m.name||i+1} has incomplete results`)});
+  return issues;
+}
+window.PUBG_TM_BUILD=BUILD;
+window.runSystemDiagnosticsV35=function(){
+  const before=stateIssuesV35(S);S=normalizeStateV35(S);const after=stateIssuesV35(S);
+  const teams=S.teams.filter(t=>t.name).length,complete=S.teams.filter(t=>t.name&&t.players.length===4).length;
+  const out={ok:after.length===0,build:BUILD,issues:after,autoRepaired:before.length>after.length,teams,completeRosters:complete,matches:S.matches.length,approved:S.matches.filter(m=>m.approved).length,workspace:typeof workspaceId==='function'?workspaceId():''};
+  try{localStorage.setItem(V35KEY,JSON.stringify({lastRun:Date.now(),issues:after}))}catch(e){}
+  console.info('PUBG Tournament Manager V35 diagnostics',out);toast(out.ok?`V35 Health Check: ${teams}/16 teams · ${complete}/16 rosters · Healthy`:`V35 Health Check: ${after.length} issue(s) remain`);return out;
+};
+
+// Harden the public save path without changing the existing workspace architecture.
+const oldSaveV35=window.save;
+window.save=function(){
+  try{S=normalizeStateV35(S);}
+  catch(e){console.warn('V35 normalize before save',e)}
+  let ok=true;try{if(typeof oldSaveV35==='function')ok=oldSaveV35()!==false;else localStorage.setItem(KEY,JSON.stringify(S));}catch(e){ok=false;console.error('V35 save',e)}
+  if(!ok)toast('تعذر الحفظ — صدّر Backup قبل متابعة العمل');
+  return ok;
+};
+
+// Result OCR identity engine: use canonical roster + saved OCR aliases.
+function rosterEntries(team){
+  return (Array.isArray(team?.players)?team.players:[]).map((p,i)=>{
+    const canonical=typeof p==='string'?clean(p):clean(p?.name);
+    const aliases=typeof p==='object'&&Array.isArray(p?.aliases)?p.aliases.map(clean).filter(Boolean):[];
+    return {index:i,canonical,aliases:[canonical,...aliases.filter(x=>norm(x)!==norm(canonical))]};
+  }).filter(x=>x.canonical);
+}
+function aliasScore(observed,entry){
+  if(!observed||!entry?.canonical)return 0;
+  let best=sim(observed,entry.canonical);
+  for(const a of entry.aliases||[])best=Math.max(best,sim(observed,a)*0.985);
+  const on=norm(observed),cn=norm(entry.canonical);
+  if(on&&cn&&on===cn)best=1;
+  return best;
+}
+function matchV35(card,team){
+  const roster=rosterEntries(team),ps=card?.players||[];if(roster.length!==4||ps.length!==4)return{score:0,matched:0,mapping:[]};
+  const M=ps.map(p=>roster.map(r=>aliasScore(p?.name,r)));let best={sum:-1,map:[]};
+  function rec(i,used,sum,map){if(i===4){if(sum>best.sum)best={sum,map:map.slice()};return}for(let j=0;j<roster.length;j++)if(!used.has(j)){used.add(j);map.push({player:i,roster:roster[j].index,score:M[i][j]});rec(i+1,used,sum+M[i][j],map);map.pop();used.delete(j)}}
+  rec(0,new Set(),0,[]);const matched=best.map.filter(x=>x.score>=.62).length,avg=best.sum/4;
+  return{score:Math.min(1,avg),matched,mapping:best.map};
+}
+function canonicalV35(row,team){
+  const roster=rosterEntries(team),evidenceCards=[row,...(row.duplicates||[])],m=(()=>{const scores=evidenceCards.map(c=>matchV35(c,team));let best=scores[0]||{score:0,matched:0,mapping:[]};for(const z of scores)if((z.matched*2+z.score)>(best.matched*2+best.score))best=z;return best})(),used=new Set(),players=(row.players||[]).map((p,i)=>{
+    const z=m.mapping.find(x=>x.player===i),entry=roster.find(x=>x.index===z?.roster);if(z&&z.score>=.55)used.add(z.roster);
+    return Object.assign({},p,{name:entry&&z.score>=.55?entry.canonical:p.name,ocrName:p.ocrName||p.name,matchScore:z?.score||0,needsReview:!(z&&z.score>=.55)});
+  });
+  if(m.matched>=3&&roster.length===4){const missing=roster.map(x=>x.index).filter(i=>!used.has(i)),weak=players.map((p,i)=>({p,i})).filter(x=>x.p.needsReview||!x.p.name);if(missing.length===1&&weak.length===1){players[weak[0].i].name=roster.find(x=>x.index===missing[0])?.canonical||players[weak[0].i].name;players[weak[0].i].recoveredFromRoster=true;players[weak[0].i].needsReview=false;players[weak[0].i].matchScore=Math.max(players[weak[0].i].matchScore||0,.70)}}
+  return Object.assign({},row,{players,match:{score:m.score,matched:m.matched,mapping:m.mapping},slot:Number(team.slot),team:team.name});
+}
+function aggregateV35(cards,teams){
+  return teams.map(team=>{const ev=cards.map(c=>({card:c,m:matchV35(c,team)})).sort((a,b)=>b.m.score-a.m.score||b.m.matched-a.m.matched),top=ev.slice(0,Math.min(5,ev.length));const score=top.reduce((s,x)=>s+x.m.score,0)/Math.max(1,top.length);return{slot:Number(team.slot),team:team.name,score,matched:Math.max(0,...top.map(x=>x.m.matched)),evidence:top}}).sort((a,b)=>b.score-a.score||b.matched-a.matched);
+}
+function assignV35(rows,teams){
+  const n=rows.length;if(n!==16)return rows;const cand=rows.map(r=>{const arr=aggregateV35([r,...(r.duplicates||[])],teams);return teams.map(t=>arr.find(x=>Number(x.slot)===Number(t.slot))||{slot:Number(t.slot),team:t.name,score:0,matched:0,evidence:[]})});
+  const N=16,dp=new Map([[0,{score:0,slots:[]}]]);
+  for(let i=0;i<n;i++){const next=new Map();for(const [mask,state] of dp){for(let j=0;j<N;j++){if(mask&(1<<j))continue;const c=cand[i][j],nm=mask|(1<<j),bonus=(c.matched>=3?.10:c.matched===2?.025:0)+(c.score>=.92?.06:0),ns=state.score+c.score+bonus,old=next.get(nm);if(!old||ns>old.score)next.set(nm,{score:ns,slots:[...state.slots,c]})}}dp.clear();for(const [k,v] of next)dp.set(k,v)}
+  let best=null;for(const st of dp.values())if(!best||st.score>best.score)best=st;if(!best)return rows;
+  return rows.map((r,i)=>{const c=best.slots[i],team=teams.find(t=>Number(t.slot)===Number(c.slot));return team?canonicalV35(Object.assign({},r,{match:c}),team):r});
+}
+function mergePlacementV35(cards){
+  const groups=new Map();for(const c of cards||[]){const p=Number(c?.placement);if(p>=1&&p<=16){const a=groups.get(p)||[];a.push(c);groups.set(p,a)}}
+  const rows=[];for(const [p,g] of groups){g.sort((a,b)=>((b.players||[]).filter(x=>x?.name).length-(a.players||[]).filter(x=>x?.name).length)+(Number(b.placementConfidence||0)-Number(a.placementConfidence||0))/1000);const base=g[0],row=Object.assign({},base,{placement:Number(p),duplicates:g});
+    row.players=Array.from({length:4},(_,j)=>{const vals=g.map(c=>c.players?.[j]).filter(x=>x?.name);if(!vals.length)return Object.assign({},base.players?.[j]||{name:''});vals.sort((a,b)=>(Number(b.confidence)||0)-(Number(a.confidence)||0));const best=vals[0];return Object.assign({},best,{candidates:vals.flatMap(x=>x.candidates||[]).slice(0,24),evidenceCount:vals.length});});rows.push(row)}
+  return rows.sort((a,b)=>a.placement-b.placement);
+}
+
+window.v35MatchScore=matchV35;window.v35GlobalAssign=assignV35;window.v35MergePlacement=mergePlacementV35;window.v35Canonicalize=canonicalV35;
+
+// Final result runner: never discard a valid placement just because another screenshot was processed later.
+window.runResultOCRPro=async function(){
+  const r=window._resultOCRPro;if(!r||r.scanning)return;const m=S.matches.find(x=>x.id===S.activeMatchId);if(!m)return toast('اختر المباراة أولًا');
+  r.activeMatch=m.id;r.files=r.files||[];if(!r.files.length){try{r.files=await mediaGet(m.id)}catch(e){r.files=[]}if(typeof renderResultFiles==='function')renderResultFiles()}
+  if(!r.files.length)return toast('ارفع صور نتائج هذه المباراة أولًا');
+  const teams=S.teams.filter(t=>t.name&&Array.isArray(t.players)&&t.players.length===4);if(teams.length!==16)return toast('أكمل حفظ الـ16 Slot والـ4 لاعبين لكل Slot أولًا');
+  r.scanning=true;r.rows=[];try{
+    const cards=[];for(let fi=0;fi<r.files.length;fi++){const file=r.files[fi],img=await loadImageR(file);for(const [ci,L] of resultLayouts().entries()){statusR(`تحليل ${fi+1}/${r.files.length} — بطاقة ${ci+1}/5`,Math.round((fi/r.files.length)*70));const c=await readCardR(img,L,file,fi,ci);if(c)cards.push(c)}}
+    const rows=mergePlacementV35(cards);const missing=[];for(let p=1;p<=16;p++)if(!rows.some(x=>Number(x.placement)===p))missing.push(p);if(missing.length)throw Error(`لم يتم اكتشاف Placements: ${missing.join(', ')}. تأكد من رفع صور النتائج كاملة وبالدقة الأصلية.`);
+    statusR('مطابقة اللاعبين مع Roster + OCR aliases…',84);const assigned=assignV35(rows,teams);
+    for(const row of assigned){row.kills=(row.players||[]).reduce((a,p)=>a+Number(p.kills||0),0);row.matchReady=!!row.slot&&row.players?.length===4&&row.players.every(p=>clean(p.name));row.reviewReason=[];if(!row.slot)row.reviewReason.push('Slot unresolved');if(row.players?.length!==4||row.players.some(p=>!clean(p.name)))row.reviewReason.push('Missing player identity')}
+    r.rows=assigned;renderResultSummary(assigned);renderResultReview(assigned);statusR('اكتمل التحليل — تمت مطابقة النتائج مع الـRoster.',100);toast('تم تحليل النتائج وربطها بالـSlots تلقائيًا');
+  }catch(e){console.error('V35 Result OCR',e);r.rows=[];renderResultSummary([]);renderResultReview([]);statusR(`فشل التحليل: ${e.message||e}`,0);toast(`لم يكتمل تحليل النتائج: ${e.message||'خطأ غير معروف'}`)}finally{r.scanning=false}
+};
+
+const oldCommitV35=window.resultOCRCommit;
+window.resultOCRCommit=function(){
+  const r=window._resultOCRPro,m=S.matches.find(x=>x.id===r?.activeMatch||x.id===S.activeMatchId),rows=r?.rows||[];if(!m)return toast('اختر المباراة أولًا');
+  if(rows.length!==16)return toast(`لا يمكن الحفظ — تم اكتشاف ${rows.length}/16 نتائج`);
+  const places=new Set(rows.map(x=>Number(x.placement))),slots=new Set(rows.map(x=>Number(x.slot)));if(places.size!==16||slots.size!==16)return toast('لا يمكن الحفظ — يوجد Placement أو Slot مكرر');
+  if(rows.some(x=>!x.slot||x.players?.length!==4||x.players.some(p=>!clean(p.name))))return toast('لا يمكن الحفظ — توجد هوية لاعب ناقصة');
+  try{const result=rows.map(row=>({slot:Number(row.slot),team:String(row.team||S.teams.find(t=>Number(t.slot)===Number(row.slot))?.name||''),placement:Number(row.placement),kills:(row.players||[]).reduce((a,p)=>a+Number(p.kills||0),0),players:(row.players||[]).map(p=>({name:clean(p.name),kills:Number(p.kills)||0,ocrName:p.ocrName||p.name,matchScore:Number(p.matchScore)||0,source:'result_screenshot'})),ocrSource:'result_screenshot',ocrEvidence:(row.duplicates||[]).map(x=>x.evidence).filter(Boolean).slice(0,5),rosterMatched:Number(row.match?.matched)||0,matchScore:Number(row.match?.score)||0}));m.results=result;m.resultOCR=Object.assign({},m.resultOCR||{},{images:r.files.map(f=>f.name),imageCount:r.files.length,analyzedAt:new Date().toISOString(),engine:BUILD,status:'COMMITTED',matchId:m.id,validation:{placements:16,slots:16,players:64}});m.approved=false;m.review=[{reason:'OCR results committed. Review & Approve the match before publishing.'}];S.activeMatchId=m.id;save();if(typeof syncCurrentWorkspace==='function')syncCurrentWorkspace();render();if(typeof renderEntry==='function')renderEntry(m);if(typeof renderMatches==='function')renderMatches();toast(`تم حفظ نتائج ${m.name} بنجاح — راجع واعتمد المباراة`)}catch(e){console.error('V35 result commit',e);toast('تعذر حفظ النتائج — تم الاحتفاظ بالتحليل الحالي')}};
+
+// Team OCR: preserve the automatic confirmation policy while retaining a strong audit trail.
+if(window._slotImportV2){const X=window._slotImportV2;const oldRun=window.runTeamSlotImportV2;if(typeof oldRun==='function'&&!oldRun.__v35Wrapped){const wrapped=async function(){const out=await oldRun.apply(this,arguments);try{(X.results||[]).forEach(r=>{r.players=(r.players||[]).slice(0,4).map((p,i)=>Object.assign({},p,{name:clean(p?.name||p?.text),verified:!!clean(p?.name||p?.text),cy:p?.cy??i}));while(r.players.length<4)r.players.push({name:'',verified:false,cy:r.players.length,candidates:[]});r.verified=r.players.every(p=>clean(p.name));r.needsReview=!r.verified;r.saveable=r.verified});window.renderSlotReview?.()}catch(e){console.warn('V35 slot post-process',e)}return out};wrapped.__v35Wrapped=true;window.runTeamSlotImportV2=wrapped;}}
+
+// Safe page-load repair for older workspaces.
+try{S=normalizeStateV35(S);if(typeof oldSaveV35==='function')oldSaveV35();}catch(e){console.warn('V35 boot normalization',e)}
+setTimeout(()=>{try{window.runSystemDiagnosticsV35()}catch(e){}},350);
+})();
+</script>
+
+</body><!-- V35 PRO FINAL ENGINEERING BUILD --></html>
