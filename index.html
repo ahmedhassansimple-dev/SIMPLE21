@@ -1864,7 +1864,6 @@ setTimeout(()=>{try{window.runSystemDiagnosticsV35()}catch(e){}},350);
 })();
 </script>
 
-</body><!-- V35 PRO FINAL ENGINEERING BUILD --></html>
 
 <!-- V37 FINAL ROSTER PERSISTENCE: independent roster journal + workspace reconciliation -->
 <script>
@@ -1977,3 +1976,131 @@ setTimeout(()=>{try{window.runSystemDiagnosticsV35()}catch(e){}},350);
 })();
 </script>
 
+<!-- V38 PRO FINAL — Unified IndexedDB persistence for roster + result media -->
+<script id="v38UnifiedPersistence">
+(function(){
+  'use strict';
+  const DB='PUBG_TOURNAMENT_MANAGER_V38';
+  const VERSION=1;
+  const ROSTER='rosters', MEDIA='resultMedia';
+  const $id=id=>document.getElementById(id);
+  const str=x=>String(x??'').trim();
+  const activeKey=()=>{try{return String((typeof workspaceId==='function'&&workspaceId())||S?.tournament||'default')}catch{return 'default'}};
+  function openDB(){return new Promise((resolve,reject)=>{
+    if(!window.indexedDB)return reject(new Error('IndexedDB unavailable'));
+    const req=indexedDB.open(DB,VERSION);
+    req.onupgradeneeded=()=>{const db=req.result;
+      if(!db.objectStoreNames.contains(ROSTER))db.createObjectStore(ROSTER,{keyPath:'id'});
+      if(!db.objectStoreNames.contains(MEDIA))db.createObjectStore(MEDIA,{keyPath:'id'});
+    };
+    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error||new Error('IndexedDB open failed'));
+  })}
+  async function txPut(store,value){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).put(value);tx.oncomplete=()=>{db.close();resolve(true)};tx.onerror=()=>{const e=tx.error;db.close();reject(e||new Error('IndexedDB write failed'))}})}
+  async function txGet(store,id){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readonly');const q=tx.objectStore(store).get(id);q.onsuccess=()=>{const v=q.result;db.close();resolve(v||null)};q.onerror=()=>{const e=q.error;db.close();reject(e)}})}
+  async function txGetAll(store){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readonly');const q=tx.objectStore(store).getAll();q.onsuccess=()=>{const v=q.result||[];db.close();resolve(v)};q.onerror=()=>{const e=q.error;db.close();reject(e)}})}
+  async function txDeleteWhere(store,pred){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readwrite'),st=tx.objectStore(store),q=st.openCursor();q.onsuccess=()=>{const c=q.result;if(!c)return;c.value&&pred(c.value)&&c.delete();c.continue()};q.onerror=()=>reject(q.error);tx.oncomplete=()=>{db.close();resolve(true)};tx.onerror=()=>{const e=tx.error;db.close();reject(e)}})}
+
+  function rosterPayload(rows){
+    const slots={};
+    for(const r of (rows||[])){
+      const slot=Number(r?.slot); const t=(typeof teamForSlot==='function'?teamForSlot(slot):S.teams.find(x=>Number(x.slot)===slot));
+      if(!t)continue;
+      slots[String(slot)]={slot,team:str(t.name),players:(t.players||[]).slice(0,4).map(p=>({name:str(p?.name||p),confidence:Number(p?.confidence)||100,source:str(p?.source||'lobby_ocr'),aliases:Array.isArray(p?.aliases)?p.aliases.slice(0,8).map(str).filter(Boolean):[]})),updated:Date.now()};
+    }
+    return {id:activeKey(),tournament:str(S.tournament),updated:Date.now(),slots};
+  }
+  async function saveRoster(rows){
+    const payload=rosterPayload(rows);
+    if(Object.keys(payload.slots).length!==16)throw new Error('Roster requires 16 slots');
+    await txPut(ROSTER,payload);
+    const check=await txGet(ROSTER,payload.id);
+    if(!check||Object.keys(check.slots||{}).length!==16)throw new Error('Roster verification failed');
+    return true;
+  }
+  async function restoreRoster(){
+    let rec=null; try{rec=await txGet(ROSTER,activeKey())}catch(e){console.warn('V38 roster DB read',e)}
+    if(!rec){
+      try{const all=await txGetAll(ROSTER);rec=all.sort((a,b)=>(b.updated||0)-(a.updated||0))[0]||null}catch(e){}
+    }
+    if(!rec?.slots)return false;
+    let applied=0;
+    for(const [k,v] of Object.entries(rec.slots)){
+      const t=S.teams.find(x=>Number(x.slot)===Number(k)); if(!t||!Array.isArray(v.players)||v.players.length!==4)continue;
+      if(v.team)t.name=v.team;
+      t.players=v.players.map(p=>({name:str(p.name),confidence:Number(p.confidence)||100,source:p.source||'lobby_ocr',aliases:Array.isArray(p.aliases)?p.aliases.slice(0,8):[]}));
+      t.rosterVerified=true;t.rosterSource='V38_INDEXEDDB_ROSTER';t.rosterUpdated=v.updated||rec.updated;applied++;
+    }
+    if(applied===16){try{localStorage.setItem(typeof KEY!=='undefined'?KEY:'pubg_tm_v21_pro',JSON.stringify(S))}catch(e){};try{if(typeof syncCurrentWorkspace==='function')syncCurrentWorkspace()}catch(e){};return true}
+    return false;
+  }
+  window.v38SaveRoster=saveRoster;
+  window.v38RestoreRoster=restoreRoster;
+
+  function isImageFile(f){const type=str(f?.type).toLowerCase(),name=str(f?.name).toLowerCase();return type.startsWith('image/')||/\.(png|jpe?g|webp|heic|heif|avif)$/i.test(name)}
+  function mediaId(matchId,f){return `${activeKey()}|${String(matchId)}|${str(f.name)}|${Number(f.size)||0}|${Number(f.lastModified)||0}`}
+  async function saveMedia(matchId,files){
+    const db=await openDB();
+    await new Promise((resolve,reject)=>{const tx=db.transaction(MEDIA,'readwrite'),st=tx.objectStore(MEDIA);for(const f of files)st.put({id:mediaId(matchId,f),workspace:activeKey(),matchId:String(matchId),name:str(f.name)||'result-image',type:str(f.type)||'image/jpeg',size:Number(f.size)||0,lastModified:Number(f.lastModified)||0,blob:f.slice(0,f.size||f.size,'application/octet-stream'),savedAt:Date.now()});tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{const e=tx.error;db.close();reject(e||new Error('Media write failed'))}});
+    const got=await loadMedia(matchId); if(got.length<files.length)throw new Error('Media verification failed');
+    return got;
+  }
+  async function loadMedia(matchId){
+    let arr=[]; try{arr=await txGetAll(MEDIA)}catch(e){return []}
+    return arr.filter(v=>v.workspace===activeKey()&&String(v.matchId)===String(matchId)).sort((a,b)=>(a.savedAt||0)-(b.savedAt||0)).map(v=>new File([v.blob],v.name,{type:v.type||'image/jpeg',lastModified:v.lastModified||Date.now()}));
+  }
+  async function clearMedia(matchId){try{await txDeleteWhere(MEDIA,v=>v.workspace===activeKey()&&String(v.matchId)===String(matchId))}catch(e){}}
+  window.v38SaveResultMedia=saveMedia; window.v38LoadResultMedia=loadMedia; window.v38ClearResultMedia=clearMedia;
+
+  // Final, single roster commit handler. It is deliberately independent from UI rendering.
+  window.commitTeamSlotImportV2=async function(){
+    const X=window._slotImportV2,rows=(X?.results||[]).map(r=>{try{if(typeof autoVerifySlotRow==='function')autoVerifySlotRow(r)}catch(e){};return r});
+    if(rows.length!==16)return toast(`لا يمكن الحفظ: تم تحليل ${rows.length}/16 Slot`);
+    const seen=new Set();
+    for(const r of rows){const slot=Number(r?.slot);if(!Number.isInteger(slot)||slot<3||slot>18)return toast(`Slot ${r?.slot||'?'} غير صحيح`);if(seen.has(slot))return toast(`Slot ${slot} مكرر`);seen.add(slot);const t=teamForSlot(slot);if(!t)return toast(`Slot ${slot} غير موجود في Team List`);if(!Array.isArray(r.players)||r.players.length!==4||r.players.some(p=>!str(p?.name)))return toast(`Slot ${slot} يحتاج 4 أسماء لاعبين`)}
+    try{
+      for(const r of rows){const t=teamForSlot(Number(r.slot));t.players=r.players.slice(0,4).map(p=>({name:str(p.name),confidence:Number(p.confidence)||100,source:p.manual?'manual_review':'lobby_ocr',ocrQuality:Number(p.quality)||0,consensus:Number(p.consensus)||0,evidenceCount:Number(p.votes)||0,aliases:(p.candidates||[]).map(c=>str(c?.text||c?.name)).filter(Boolean).slice(0,8)}));t.rosterVerified=true;t.rosterSource='V38_INDEXEDDB_ROSTER';t.rosterUpdated=new Date().toISOString()}
+      S.proMeta=S.proMeta||{};S.proMeta.lastOCRCommit=Date.now();S.proMeta.ocrCommitCount=(Number(S.proMeta.ocrCommitCount)||0)+1;
+      await saveRoster(rows);
+      try{localStorage.setItem(typeof KEY!=='undefined'?KEY:'pubg_tm_v21_pro',JSON.stringify(S))}catch(e){}
+      try{if(typeof syncCurrentWorkspace==='function')syncCurrentWorkspace()}catch(e){}
+      rows.forEach(r=>{r.verified=true;r.saveable=true;r.needsReview=false});
+      try{render()}catch(e){} try{renderTeamTournamentSelectorV27()}catch(e){} try{setTimeout(()=>window.renderSlotReview?.(),0)}catch(e){}
+      toast('✓ تم الحفظ بنجاح — تم تثبيت 16 Slot و64 لاعبًا');return true;
+    }catch(e){console.error('V38 roster commit',e);toast('تعذر الحفظ الدائم — البيانات لم تُحذف، حاول مرة أخرى');return false}
+  };
+
+  // Final result-image handler: supports iOS image types/extensions and verifies persistence before UI success.
+  window.addResultFiles=async function(list){
+    const m=S.matches.find(x=>x.id===S.activeMatchId); if(!m)return toast('اختر المباراة أولًا قبل رفع الصور');
+    const incoming=Array.from(list||[]).filter(isImageFile); if(!incoming.length)return toast('لم يتم العثور على ملفات صور صالحة');
+    const R=window._resultOCRPro||{}; R.files=Array.isArray(R.files)?R.files:[]; R.activeMatch=m.id;
+    const key=f=>`${str(f.name)}|${Number(f.size)||0}|${Number(f.lastModified)||0}`;
+    const fresh=incoming.filter(f=>!R.files.some(x=>key(x)===key(f))); if(!fresh.length)return toast('هذه الصور مضافة بالفعل');
+    try{
+      R.files.push(...fresh);R.matchFiles=R.matchFiles||{};R.matchFiles[m.id]=R.files.slice();
+      const stored=await saveMedia(m.id,fresh);R.files=stored;R.matchFiles[m.id]=stored.slice();
+      m.resultOCR=m.resultOCR||{};m.resultOCR.sessionFiles=stored.map(f=>f.name);m.resultOCR.sourceMode='screenshots';m.resultOCR.imageCount=stored.length;m.resultOCR.matchId=m.id;m.resultOCR.workspaceId=activeKey();m.resultOCR.storage='V38_INDEXEDDB';m.resultOCR.updated=Date.now();
+      try{save()}catch(e){} try{syncCurrentWorkspace()}catch(e){}
+      try{renderResultFiles()}catch(e){}
+      try{statusR(`${stored.length} صورة محفوظة ومتحقق منها — جاهزة للتحليل.`,0)}catch(e){}
+      toast(`✓ تم حفظ ${stored.length} صورة للـMatch`);return true;
+    }catch(e){console.error('V38 media upload',e);R.files=await loadMedia(m.id);try{renderResultFiles()}catch(x){};toast('فشل حفظ صور النتائج — لم يتم اعتبارها محفوظة');return false}
+  };
+  window.resultOCRLoadMatch=async function(id){
+    const R=window._resultOCRPro; if(!R)return;
+    R.activeMatch=id; let files=[]; try{files=await loadMedia(id)}catch(e){}
+    if(!files.length){try{files=await mediaGet(id)}catch(e){files=[]}}
+    R.files=files;R.matchFiles=R.matchFiles||{};R.matchFiles[id]=files.slice();
+    try{renderResultFiles()}catch(e){}
+    const m=S.matches.find(x=>x.id===id); if(m?.resultOCR?.imageCount)try{statusR(`${files.length||m.resultOCR.imageCount} صورة محفوظة لهذه المباراة.`,0)}catch(e){}
+    return files;
+  };
+
+  window.resultOCRClear=async function(){const id=S.activeMatchId;if(!id)return;try{await clearMedia(id)}catch(e){};const R=window._resultOCRPro;if(R){R.files=[];R.rows=[];R.matchFiles=R.matchFiles||{};R.matchFiles[id]=[]}const m=S.matches.find(x=>x.id===id);if(m?.resultOCR){m.resultOCR.imageCount=0;m.resultOCR.sessionFiles=[];m.resultOCR.updated=Date.now()}try{save()}catch(e){}try{renderResultFiles()}catch(e){}try{statusR('تم حذف صور هذه المباراة.',0)}catch(e){}};
+
+  // Restore roster and result media after the whole document is parsed.
+  const boot=async()=>{try{await restoreRoster();try{render()}catch(e){}try{renderTeamTournamentSelectorV27()}catch(e){}}catch(e){console.warn('V38 roster restore',e)};try{const id=S.activeMatchId;if(id)await window.resultOCRLoadMatch(id)}catch(e){}};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,250));else setTimeout(boot,250);
+})();
+</script>
+</body></html>
