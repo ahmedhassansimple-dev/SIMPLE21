@@ -2069,4 +2069,95 @@ if(typeof oldRun==='function'&&!oldRun.__v43wrapped){
 window.__V43_FINAL__=true;
 })();
 </script>
+
+<style id="v44WorldClassUI">
+/* V44 — professional OCR workspace layer */
+.ocrProHeaderV44{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:14px 16px;margin:10px 0;border:1px solid #293542;border-radius:18px;background:linear-gradient(135deg,#101821,#0b1118)}
+.ocrProHeaderV44 h3{margin:0;font-size:15px;letter-spacing:.1px}.ocrProHeaderV44 p{margin:4px 0 0;color:#8f9aaa;font-size:10px;line-height:1.5}.ocrHealthV44{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.ocrHealthV44 span{padding:6px 9px;border-radius:999px;background:#111b16;border:1px solid #304b36;color:#b9e9a8;font-size:9px;font-weight:900;white-space:nowrap}
+.slotSummaryV2 .slotStatV2{min-height:58px}.slotStatV2 b{display:block;margin-top:2px}
+.slotPlayerLineV2.ok{border-color:#294b32}.slotPlayerLineV2.warn{border-color:#5d4b20}.slotPlayerLineV2 .slotPlayerIndexV2{font-weight:900}.slotPlayerLineV2 input{min-width:0}
+.slotCommitBarV2{box-shadow:0 -10px 28px rgba(0,0,0,.16)}.slotCommitBarV2 button{min-height:42px;font-weight:950}
+.v44Hint{padding:9px 11px;border-radius:12px;background:#0c141c;border:1px solid #263442;color:#9aa7b6;font-size:10px;line-height:1.55;margin-top:8px}.v44Hint strong{color:#dfe8f2}
+@media(max-width:640px){.ocrProHeaderV44{grid-template-columns:1fr}.ocrHealthV44{justify-content:flex-start}.slotCommitBarV2{position:sticky;bottom:56px}.slotCommitBarV2 .commitInfo{min-width:0}.slotCommitBarV2 button{width:100%}}
+</style>
+<script>
+/* V44 WORLD CLASS — accuracy recovery + professional workflow */
+(function(){
+'use strict';
+const X=()=>window._slotImportV2;
+const txt=v=>String(v??'').replace(/[\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim();
+const esc44=v=>txt(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function normalizePlayer44(p,i){p=(p&&typeof p==='object')?p:{name:typeof p==='string'?p:''};return {...p,name:txt(p.name??p.text??p.raw??''),raw:p.raw??p.name??'',confidence:Number(p.confidence)||0,candidates:Array.isArray(p.candidates)?p.candidates:[],cy:p.cy??i,verified:!!txt(p.name??p.text??p.raw??'')};}
+function normalizeRow44(r,i){r=(r&&typeof r==='object')?r:{};let ps=Array.isArray(r.players)?r.players.slice(0,4):[];while(ps.length<4)ps.push({name:'',candidates:[],cy:ps.length});ps=ps.map(normalizePlayer44);return {...r,slot:Number(r.slot)||0,players:ps,verified:ps.every(p=>!!p.name),saveable:ps.every(p=>!!p.name),needsReview:ps.some(p=>!p.name)};}
+function playerBand44(card,j){
+  /* Calibrated to the actual PUBG lobby card: row centers ≈ 8.5%,31.5%,54.5%,77.5% of card height. */
+  const centers=[.085,.315,.545,.775],cy=card.y+card.h*centers[j],h=card.h*.145;
+  return {x:card.x+card.w*.135,y:Math.max(card.y,cy-h/2),w:card.w*.73,h:Math.min(h,card.y+card.h-(cy-h/2))};
+}
+async function readBand44(img,b){
+  const c=crop42(img,b.x,b.y,b.w,b.h,6.5),w=await worker42();
+  await w.setParameters({tessedit_pageseg_mode:'7',preserve_interword_spaces:'1',user_defined_dpi:'300'});
+  const d=(await w.recognize(c,{}, {tsv:true,text:true}))?.data||{};const a=[];candidate42(a,d.text,d.confidence,'target-v44');for(const q of parseTSV42(d,6.5))candidate42(a,q.text,q.confidence,'target-word-v44');return choose42(a)[0]||{text:'',confidence:0,votes:0,sources:[],score:0};
+}
+async function analyzeImage44(file,index,total){
+ const img=await new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error(`الصورة ${index+1}: تعذر فتح الصورة`))};im.src=u});
+ const cards=grid42(img);if(!cards.length)throw Error(`الصورة ${index+1}: لم يتم اكتشاف كروت PUBG`);
+ status42(`تحليل الصورة ${index+1}/${total} — اكتشاف ${cards.length} كروت…`,8+index*42);
+ const scale=2,full=crop42(img,0,0,img.naturalWidth||img.width,img.naturalHeight||img.height,scale),w=await worker42();
+ await w.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});
+ const d1=(await w.recognize(full,{}, {tsv:true,text:true}))?.data||{};let lines=parseTSV42(d1,scale);
+ let bases=cards.map(c=>cardLines44(c,lines));
+ const weak=bases.reduce((n,a)=>n+a.filter(p=>!p.text||p.confidence<52).length,0);
+ if(weak>=Math.ceil(cards.length*1.5)){
+   status42(`分析 ${index+1}/${total} — تحسين القراءة الأساسية…`,24+index*42);
+   const d2=(await w.recognize(contrast42(full),{}, {tsv:true,text:true}))?.data||{};lines=lines.concat(parseTSV42(d2,scale));bases=cards.map(c=>cardLines44(c,lines));
+ }
+ const out=[];
+ for(let ci=0;ci<cards.length;ci++){
+   const card=cards[ci],base=bases[ci],players=[];
+   for(let j=0;j<4;j++){
+     let p=base[j];
+     /* Missing/weak rows only: targeted read uses the calibrated PUBG row geometry. */
+     if(!p.text||p.confidence<52){try{const q=await readBand44(img,playerBand44(card,j));if(q.text&&(q.confidence>=p.confidence||!p.text))p=q;}catch(e){console.warn('V44 targeted',e)}}
+     players.push({name:txt(p.text),raw:txt(p.text),confidence:Number(p.confidence)||0,quality:p.text?Math.min(1,(Number(p.confidence)||0)/100):0,consensus:p.votes||0,score:p.score||0,votes:p.votes||0,sources:p.sources||[],verified:!!p.text,candidates:p.text?[p]:[]});
+   }
+   out.push({slot:slotFromLines42(card,lines),players,sourceImage:index,card:ci+1,row:card.row+1,column:card.col+1,file:file.name,evidence:crop42(img,card.x,card.y,card.w,card.h,2.2).toDataURL('image/jpeg',.88),conflict:false,verified:players.every(p=>!!p.name),needsReview:players.some(p=>!p.name)});
+ }
+ return out;
+}
+function cardLines44(card,lines){
+ const rx=card.x+card.w*.135,rw=card.w*.73,centers=[.085,.315,.545,.775],out=[[],[],[],[]];
+ for(const ln of lines){if(ln.cx<rx||ln.cx>rx+rw)continue;let bi=0,best=1e9;for(let i=0;i<4;i++){const d=Math.abs(ln.cy-(card.y+card.h*centers[i]));if(d<best){best=d;bi=i}}if(best<=card.h*.085){let t=txt(ln.text);t=t.replace(/^\s*(?:0?[3-9]|1[0-8])(?:\s*[,.:;|/\-]\s*|\s+)/,'');candidate42(out[bi],t,ln.confidence,'full-v44')}}
+ return out.map(a=>choose42(a)[0]||{text:'',confidence:0,votes:0,sources:[],score:0});
+}
+function sequential44(rows){
+ const sorted=rows.slice().sort((a,b)=>a.sourceImage-b.sourceImage||a.row-b.row||a.column-b.column),used=new Set(),out=[];let next=3;
+ for(const r of sorted){while(used.has(next)&&next<=18)next++;if(next>18)break;const nr={...r,slot:next};used.add(next);next++;nr.team=(typeof teamForSlot==='function'?teamForSlot(nr.slot)?.name:'')||'';out.push(nr)}return out;
+}
+function mergeDuplicatePlayers44(rows){
+ /* Cross-image evidence fusion: same sequential slot gets the strongest candidate per row. */
+ const map=new Map();for(const r of rows){const k=Number(r.slot);if(!k)continue;const old=map.get(k);if(!old){map.set(k,r);continue}for(let j=0;j<4;j++){const a=old.players[j]||{},b=r.players[j]||{};if(!a.name&&b.name)old.players[j]=b;else if(b.name&&Number(b.confidence)>Number(a.confidence)+8)old.players[j]=b;}old.verified=old.players.every(p=>!!p.name);old.saveable=old.verified;}return [...map.values()].sort((a,b)=>a.slot-b.slot);
+}
+async function runV44(){
+ const x=X();if(!x||x.scanning)return;if(!x.files?.length)return safeToast44('أضف صور الـLobby أولًا.');
+ x.scanning=true;x.results=[];const start=performance.now();try{
+   status42(`بدء التحليل الذكي — ${x.files.length} صور…`,2);await worker42();let rows=[];
+   for(let i=0;i<x.files.length;i++)rows.push(...await analyzeImage44(x.files[i],i,x.files.length));
+   if(rows.length===16)rows=sequential44(rows);else if(rows.length>0){rows=rows.map(normalizeRow44);if(rows.length===16)rows=sequential44(rows);}
+   rows=rows.map((r,i)=>{const n=normalizeRow44(r,i);n.team=(typeof teamForSlot==='function'?teamForSlot(n.slot)?.name:'')||n.team||'';return n;});
+   if(rows.length!==16)throw Error(`تم اكتشاف ${rows.length} كارت فقط من أصل 16. أعد رفع الصورتين كاملتين.`);
+   const missing=rows.reduce((n,r)=>n+r.players.filter(p=>!p.name).length,0);
+   if(missing) status42(`اكتمل الاكتشاف — ${missing} أسماء تحتاج قراءة إضافية…`,88); else status42('اكتمل التحليل والتحقق الأولي.',96);
+   x.results=rows;x.results.forEach(r=>{r.verified=r.players.every(p=>!!p.name);r.saveable=r.verified;r.needsReview=!r.verified});window.renderSlotReview?.();status42(`تم تحليل 16/16 Slot في ${Math.round((performance.now()-start)/1000)} ثانية.`,100);safeToast44(`✓ تم تحليل 16 Slot — ${missing?missing+' أسماء تحتاج مراجعة':'64 لاعبًا مكتملون'}`);
+ }catch(e){console.error('V44 OCR',e);x.results=[];window.renderSlotReview?.();status42('تعذر إكمال التحليل.',0);safeToast44('فشل التحليل: '+(e?.message||'تعذر قراءة الصور'));}finally{x.scanning=false;}
+}
+function safeToast44(m){try{if(typeof toast==='function')toast(m);else console.warn(m)}catch(e){console.warn(m)}}
+window.runTeamSlotImportV2=runV44;
+/* Professional labels and status header, without changing the existing layout. */
+function improveHeader44(){const root=document.getElementById('slotImportReviewV2')?.parentElement; if(!root||root.querySelector('.ocrProHeaderV44'))return;const h=document.createElement('div');h.className='ocrProHeaderV44';h.innerHTML='<div><h3>Lobby Roster Intelligence</h3><p>تحليل صور الـLobby واستخراج اللاعبين تلقائيًا وربط كل Slot بالفريق المحفوظ في Team List.</p></div><div class="ocrHealthV44"><span>⚡ Adaptive OCR</span><span>✓ Auto Mapping</span><span>🔒 Verified Save</span></div>';root.insertBefore(h,root.firstChild);}
+setTimeout(improveHeader44,50);setTimeout(improveHeader44,500);
+window.__V44_WORLD_CLASS__=true;
+})();
+</script>
+
 </body></html>
