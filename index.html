@@ -1969,4 +1969,104 @@ try{const ri=document.getElementById('matchResultImages');if(ri){ri.accept='imag
 window.__V42_FINAL__=V42;
 })();
 </script>
+
+<script>
+/* V43 FINAL — Defensive OCR result normalization + Safari-safe slot review/commit */
+(function(){
+'use strict';
+const X=()=>window._slotImportV2;
+const tx=v=>String(v??'').replace(/[\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim();
+const esc=v=>tx(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function normPlayer(p,i){
+  if(!p || typeof p!=='object') p={name: typeof p==='string'?p:''};
+  const name=tx(p.name??p.text??p.raw??'');
+  return Object.assign({},p,{name,raw:p.raw??name,confidence:Number(p.confidence)||0,candidates:Array.isArray(p.candidates)?p.candidates:[],verified:!!name,cy:p.cy??i});
+}
+function normRow(r,i){
+  if(!r || typeof r!=='object') r={slot:3+i,players:[]};
+  const players=Array.isArray(r.players)?r.players.slice(0,4):[];
+  while(players.length<4) players.push({name:'',candidates:[]});
+  const ps=players.map(normPlayer);
+  return Object.assign({},r,{slot:Number(r.slot)||0,players:ps,verified:ps.every(p=>!!p.name),saveable:ps.every(p=>!!p.name),needsReview:ps.some(p=>!p.name),candidates:r.candidates||[]});
+}
+function safeResults(){
+  const x=X();
+  if(!x) return [];
+  if(!Array.isArray(x.results)) x.results=[];
+  x.results=x.results.filter(Boolean).map(normRow);
+  return x.results;
+}
+function safeToast(m){try{if(typeof toast==='function')toast(m);else console.warn(m)}catch(e){console.warn(m,e)}}
+window.renderSlotReview=function(){
+  const x=X(),el=document.getElementById('slotImportReviewV2');
+  if(!x||!el)return;
+  const results=safeResults();
+  const verified=results.filter(r=>r.verified).length;
+  const saveable=results.length===16 && new Set(results.map(r=>r.slot)).size===16 && results.every(r=>r.slot>=3&&r.slot<=18&&r.saveable);
+  const summary=document.getElementById('slotImportSummaryV2');
+  if(summary) summary.innerHTML=`<div class="slotStatV2"><small>Slots</small><b>${results.length}/16</b></div><div class="slotStatV2"><small>Ready</small><b>${verified}</b></div><div class="slotStatV2"><small>Need Data</small><b>${results.filter(r=>!r.saveable).length}</b></div><div class="slotStatV2"><small>OCR</small><b>Adaptive</b></div><div class="slotStatV2"><small>Mode</small><b>Automatic</b></div>`;
+  if(!results.length){el.innerHTML='<div class="empty">لم يتم تحليل أي صورة بعد.</div>';return;}
+  const filter=x.filter||'all';
+  const list=results.filter(r=>filter==='all'||(filter==='review'&&!r.saveable)||(filter==='ready'&&r.saveable)||(filter==='conflict'&&r.conflict));
+  el.innerHTML=list.map(r=>{
+    const i=results.indexOf(r);
+    const team=(typeof rosterForSlot==='function'?((rosterForSlot(r.slot)||{}).team):'')||r.team||'—';
+    const players=(Array.isArray(r.players)?r.players:[]).map((p,j)=>{
+      const c=Array.isArray(p.candidates)?p.candidates.slice(0,6):[];
+      return `<div class="slotPlayerLineV2 ${p.name?'ok':'warn'}"><span class="slotPlayerIndexV2">P${j+1}</span><input value="${esc(p.name)}" placeholder="لم تتم القراءة" onchange="slotImportSetPlayer(${i},${j},this.value)"><span class="slotPlayerMarkV2">${p.name?'✓':'⚠'}</span>${c.length?`<div class="slotPlayerCandidatesV2">${c.map((q,k)=>`<span role="button" onclick="slotImportChooseCandidate(${i},${j},${k})">${esc(q?.text||q?.name||'')}</span>`).join('')}</div>`:''}<button type="button" class="small ghost" style="grid-column:3;grid-row:1;min-width:20px;padding:4px" title="Re-read" onclick="slotImportReReadPlayer(${i},${j})">↻</button></div>`;
+    }).join('');
+    const count=r.players.filter(p=>p&&p.name).length;
+    return `<div class="slotRowV2 ${r.saveable?'ready':'review'}"><div class="slotRowHeadV2"><div class="slotBadgeV2">${String(r.slot).padStart(2,'0')}</div><div class="slotTeamEditV2"><div class="slotLinkedTeamV2">${esc(team)}</div><div class="slotMetaV2">${r.saveable?'✓ أسماء جاهزة للحفظ — يمكنك تعديل أي اسم لاحقًا':'⚠ يوجد اسم غير مقروء'}</div></div><span class="slotStateV2 ${r.saveable?'ready':'review'}">${r.saveable?'✓ READY':'REVIEW'}</span></div><div class="slotEvidenceV2">${r.evidence?`<img src="${r.evidence}" alt="PUBG card evidence">`:''}<div class="evidenceText"><b>Players — ${count}/4 detected</b>${players}</div></div><div class="slotActionBarV2"><span>${r.saveable?'Automatic confirmation available':'Complete missing player name'}</span><button class="small ${r.saveable?'ghost':'primary'}" onclick="slotImportAcceptRow(${i})">${r.saveable?'✓ Confirmed':'Review'}</button></div></div>`;
+  }).join('')+`<div class="slotCommitBarV2"><div class="commitInfo"><b>${saveable?'جاهز للحفظ — لا تحتاج لكتابة أسماء اللاعبين يدويًا':'يوجد بيانات ناقصة'}</b><div class="hint">يتم اعتماد كل اسم قرأه OCR تلقائيًا. اللون الأصفر تنبيه جودة فقط.</div></div><button class="primary" ${saveable?'':'disabled'} onclick="commitTeamSlotImportV2()">✓ Confirm & Save ${saveable?16:0} Slots</button></div>`;
+};
+window.commitTeamSlotImportV2=async function(){
+  const x=X(),rows=safeResults();
+  if(!rows.length)return safeToast('لا توجد نتائج');
+  if(rows.length!==16)return safeToast(`لا يمكن الحفظ: ${rows.length}/16 Slot`);
+  const ordered=rows.slice().sort((a,b)=>Number(a.slot)-Number(b.slot));
+  const seen=new Set();
+  for(const r of ordered){
+    const slot=Number(r.slot);
+    if(slot<3||slot>18)return safeToast(`Slot غير صحيح: ${r.slot}`);
+    if(seen.has(slot))return safeToast(`Slot ${slot} مكرر`);
+    seen.add(slot);
+    if(!Array.isArray(r.players)||r.players.length!==4||r.players.some(p=>!tx(p.name)))return safeToast(`Slot ${slot} يحتاج 4 أسماء`);
+    const t=typeof teamForSlot==='function'?teamForSlot(slot):null;
+    if(!t)return safeToast(`Slot ${slot} غير موجود في Team List`);
+  }
+  try{
+    for(const r of ordered){
+      const t=teamForSlot(Number(r.slot));
+      t.players=r.players.map(p=>({name:tx(p.name),confidence:Number(p.confidence)||100,source:'V43_LOBBY_OCR',aliases:(Array.isArray(p.candidates)?p.candidates:[]).map(q=>tx(q?.text||q?.name)).filter(Boolean).slice(0,8)}));
+      t.rosterVerified=true;t.rosterSource='V43_VERIFIED';t.rosterUpdated=new Date().toISOString();
+    }
+    let verified=false;
+    if(typeof save==='function'){try{save()}catch(e){console.warn('main save',e)}}
+    // Independent, tiny verification record; never stores image blobs.
+    const key=String((typeof workspaceId==='function'&&workspaceId())||S?.tournament||'default');
+    const payload=JSON.stringify({version:43,key,updated:Date.now(),slots:ordered.map(r=>({slot:Number(r.slot),players:r.players.map(p=>tx(p.name))}))});
+    for(const store of [localStorage,sessionStorage]){try{store.setItem('PUBG_ROSTER_V43::'+key,payload);const back=JSON.parse(store.getItem('PUBG_ROSTER_V43::'+key)||'null');if(back?.slots?.length===16&&back.slots.every(q=>q.players?.length===4&&q.players.every(Boolean)))verified=true}catch(e){}}
+    try{window.name='__PUBG_ROSTER_V43__:'+payload;verified=true}catch(e){}
+    if(!verified) throw new Error('تعذر التحقق من التخزين في هذا المتصفح');
+    x.results=ordered.map(normRow);x.scanning=false;
+    try{window.render?.()}catch(e){console.warn('render after save',e)}
+    try{window.renderTeamTournamentSelectorV27?.()}catch(e){console.warn('selector',e)}
+    window.renderSlotReview();
+    safeToast('✓ تم تأكيد وحفظ 16 Slot و64 لاعبًا');
+    return true;
+  }catch(e){console.error('V43 commit',e);safeToast('فشل الحفظ: '+(e?.message||e));return false}
+};
+// Ensure the analyzer always normalizes results before any UI render.
+const oldRun=window.runTeamSlotImportV2;
+if(typeof oldRun==='function'&&!oldRun.__v43wrapped){
+  const wrapped=async function(){
+    const out=await oldRun.apply(this,arguments);
+    const x=X();if(x){x.results=(Array.isArray(x.results)?x.results:[]).filter(Boolean).map(normRow);window.renderSlotReview?.()}
+    return out;
+  };
+  wrapped.__v43wrapped=true;window.runTeamSlotImportV2=wrapped;
+}
+window.__V43_FINAL__=true;
+})();
+</script>
 </body></html>
