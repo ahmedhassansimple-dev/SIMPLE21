@@ -1866,579 +1866,107 @@ setTimeout(()=>{try{window.runSystemDiagnosticsV35()}catch(e){}},350);
 
 
 <!-- V37 FINAL ROSTER PERSISTENCE: independent roster journal + workspace reconciliation -->
+
 <script>
-(function(){
-  'use strict';
-  const ROSTER_JOURNAL_KEY='pubg_tm_v21_roster_journal_v37';
-  const now=()=>new Date().toISOString();
-  const clean=x=>String(x??'').trim();
-  const safeClone=x=>{try{return JSON.parse(JSON.stringify(x))}catch{return x}};
-  function readJournal(){try{const x=JSON.parse(localStorage.getItem(ROSTER_JOURNAL_KEY)||'null');return x&&typeof x==='object'?x:null}catch{return null}}
-  function writeJournal(payload){
-    const slim={version:37,tournament:String(S?.tournament||''),workspaceId:String(typeof workspaceId==='function'?workspaceId():''),updated:now(),slots:{}};
-    for(const r of (payload||[])){
-      const slot=Number(r.slot), t=(typeof teamForSlot==='function'?teamForSlot(slot):S.teams.find(x=>Number(x.slot)===slot));
-      if(!t)continue;
-      slim.slots[String(slot)]={
-        team:String(t.name||''),
-        players:(t.players||[]).slice(0,4).map(p=>({name:clean(p?.name||p),confidence:Number(p?.confidence)||100,source:String(p?.source||'lobby_ocr'),aliases:Array.isArray(p?.aliases)?p.aliases.slice(0,8).map(clean).filter(Boolean):[]})),
-        verified:true,
-        updated:now()
-      };
-    }
-    const raw=JSON.stringify(slim);
-    localStorage.setItem(ROSTER_JOURNAL_KEY,raw);
-    const check=readJournal();
-    if(!check||Object.keys(check.slots||{}).length!==Object.keys(slim.slots).length)throw new Error('Roster journal verification failed');
-    return true;
-  }
-  function applyJournal(){
-    const j=readJournal(); if(!j||!j.slots)return false;
-    let applied=0;
-    for(const [k,v] of Object.entries(j.slots)){
-      const slot=Number(k), t=S.teams.find(x=>Number(x.slot)===slot); if(!t)continue;
-      if(v.team && !t.name)t.name=v.team;
-      if(Array.isArray(v.players)&&v.players.length===4){
-        t.players=v.players.map(p=>({name:clean(p.name),confidence:Number(p.confidence)||100,source:p.source||'lobby_ocr',aliases:Array.isArray(p.aliases)?p.aliases.slice(0,8):[]}));
-        t.rosterVerified=true;t.rosterSource='V37_PERSISTENT_ROSTER_JOURNAL';t.rosterUpdated=v.updated||j.updated;
-        applied++;
-      }
-    }
-    if(applied){
-      try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){/* journal remains authoritative */}
-      return true;
-    }
-    return false;
-  }
-  function persistWorkspaceLight(){
-    try{
-      const id=typeof workspaceId==='function'?workspaceId():''; if(!id)return false;
-      const map=typeof workspaceMap==='function'?workspaceMap():{};
-      const current=map[id]||{};
-      const st=safeClone(S);
-      if(Array.isArray(st.ocrEvidence))st.ocrEvidence=st.ocrEvidence.map(e=>{const y={...e};delete y.crop;delete y.raw;return y}).slice(0,40);
-      if(Array.isArray(st.snapshots))st.snapshots=[];
-      st.matches=(st.matches||[]).map(m=>{const y={...m}; if(y.resultOCR){y.resultOCR={...y.resultOCR}; delete y.resultOCR.evidence; delete y.resultOCR.raw; delete y.resultOCR.crops;} return y});
-      const next={...map,[id]:{...current,id,name:S.tournament||current.name||'Tournament',state:st,created:current.created||Date.now(),updated:Date.now(),archived:false}};
-      localStorage.setItem(WORKSPACE_KEY,JSON.stringify(next));
-      const verify=safeJSON(WORKSPACE_KEY,{})?.[id];
-      return !!(verify&&Array.isArray(verify.state?.teams));
-    }catch(e){console.warn('V37 workspace light save failed',e);return false}
-  }
-  window.v37RestoreRosterJournal=applyJournal;
-  window.v37PersistRoster=function(rows){
-    try{
-      writeJournal(rows);
-      persistWorkspaceLight();
-      try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){/* journal is the fallback */}
-      const journal=readJournal();
-      const count=Object.keys(journal?.slots||{}).length;
-      if(count!==16)throw new Error('Only '+count+'/16 roster slots were persisted');
-      return true;
-    }catch(e){console.error('V37 persist failed',e);return false}
-  };
-  window.commitTeamSlotImportV2=function(){
-    const X=window._slotImportV2, rows=(X?.results||[]).map(r=>{if(typeof autoVerifySlotRow==='function')autoVerifySlotRow(r);return r;});
-    if(rows.length!==16)return toast(`لا يمكن الحفظ: تم تحليل ${rows.length}/16 Slot`);
-    const seen=new Set();
-    for(const r of rows){
-      const slot=Number(r.slot); if(!Number.isInteger(slot)||slot<3||slot>18)return toast(`Slot ${r.slot||'?'} غير صحيح`);
-      if(seen.has(slot))return toast(`Slot ${slot} مكرر`); seen.add(slot);
-      const t=typeof teamForSlot==='function'?teamForSlot(slot):null; if(!t)return toast(`Slot ${slot} غير موجود في Team List`);
-      if(!Array.isArray(r.players)||r.players.length!==4||r.players.some(p=>!clean(p?.name)))return toast(`Slot ${slot} يحتاج 4 أسماء لاعبين`);
-    }
-    try{
-      for(const r of rows){
-        const t=teamForSlot(Number(r.slot));
-        t.players=r.players.slice(0,4).map(p=>({name:clean(p.name),confidence:Number(p.confidence)||100,source:p.manual?'manual_review':'lobby_ocr',ocrQuality:Number(p.quality)||0,consensus:Number(p.consensus)||0,evidenceCount:Number(p.votes)||0,aliases:(p.candidates||[]).map(c=>clean(c?.text||c?.name)).filter(Boolean).slice(0,8)}));
-        t.rosterVerified=true;t.rosterSource='V37_PERSISTENT_ROSTER_JOURNAL';t.rosterUpdated=now();
-      }
-      S.proMeta=S.proMeta||{};S.proMeta.lastOCRCommit=now();S.proMeta.ocrCommitCount=(Number(S.proMeta.ocrCommitCount)||0)+1;
-      S.audit=Array.isArray(S.audit)?S.audit:[];S.audit.unshift({id:'audit_'+Date.now(),action:'Roster OCR confirmed',detail:'16 slots · 64 players',time:now()});S.audit=S.audit.slice(0,200);
-      if(!window.v37PersistRoster(rows))throw new Error('Roster persistence verification failed');
-      rows.forEach(r=>{r.verified=true;r.saveable=true;r.needsReview=false});
-      try{render()}catch(e){console.warn(e)}
-      try{renderTeamTournamentSelectorV27()}catch(e){console.warn(e)}
-      try{setTimeout(()=>renderSlotReview(),0)}catch(e){}
-      toast('✓ تم الحفظ بنجاح — تم تثبيت 16 Slot و64 لاعبًا داخل البطولة');
-      return true;
-    }catch(e){console.error('V37 commit failed',e);toast('فشل الحفظ — تم الاحتفاظ بالبيانات ويمكن إعادة المحاولة');return false}
-  };
-  // Reconcile the independent journal after the application finishes loading a workspace.
-  setTimeout(()=>{
-    try{
-      if(window.v37RestoreRosterJournal()){
-        try{render()}catch(e){}
-        try{renderTeamTournamentSelectorV27()}catch(e){}
-      }
-    }catch(e){console.warn('V37 startup reconcile',e)}
-  },1200);
-})();
-</script>
-
-<!-- V38 PRO FINAL — Unified IndexedDB persistence for roster + result media -->
-<script id="v38UnifiedPersistence">
-(function(){
-  'use strict';
-  const DB='PUBG_TOURNAMENT_MANAGER_V38';
-  const VERSION=1;
-  const ROSTER='rosters', MEDIA='resultMedia';
-  const $id=id=>document.getElementById(id);
-  const str=x=>String(x??'').trim();
-  const activeKey=()=>{try{return String((typeof workspaceId==='function'&&workspaceId())||S?.tournament||'default')}catch{return 'default'}};
-  function openDB(){return new Promise((resolve,reject)=>{
-    if(!window.indexedDB)return reject(new Error('IndexedDB unavailable'));
-    const req=indexedDB.open(DB,VERSION);
-    req.onupgradeneeded=()=>{const db=req.result;
-      if(!db.objectStoreNames.contains(ROSTER))db.createObjectStore(ROSTER,{keyPath:'id'});
-      if(!db.objectStoreNames.contains(MEDIA))db.createObjectStore(MEDIA,{keyPath:'id'});
-    };
-    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error||new Error('IndexedDB open failed'));
-  })}
-  async function txPut(store,value){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).put(value);tx.oncomplete=()=>{db.close();resolve(true)};tx.onerror=()=>{const e=tx.error;db.close();reject(e||new Error('IndexedDB write failed'))}})}
-  async function txGet(store,id){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readonly');const q=tx.objectStore(store).get(id);q.onsuccess=()=>{const v=q.result;db.close();resolve(v||null)};q.onerror=()=>{const e=q.error;db.close();reject(e)}})}
-  async function txGetAll(store){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readonly');const q=tx.objectStore(store).getAll();q.onsuccess=()=>{const v=q.result||[];db.close();resolve(v)};q.onerror=()=>{const e=q.error;db.close();reject(e)}})}
-  async function txDeleteWhere(store,pred){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readwrite'),st=tx.objectStore(store),q=st.openCursor();q.onsuccess=()=>{const c=q.result;if(!c)return;c.value&&pred(c.value)&&c.delete();c.continue()};q.onerror=()=>reject(q.error);tx.oncomplete=()=>{db.close();resolve(true)};tx.onerror=()=>{const e=tx.error;db.close();reject(e)}})}
-
-  function rosterPayload(rows){
-    const slots={};
-    for(const r of (rows||[])){
-      const slot=Number(r?.slot); const t=(typeof teamForSlot==='function'?teamForSlot(slot):S.teams.find(x=>Number(x.slot)===slot));
-      if(!t)continue;
-      slots[String(slot)]={slot,team:str(t.name),players:(t.players||[]).slice(0,4).map(p=>({name:str(p?.name||p),confidence:Number(p?.confidence)||100,source:str(p?.source||'lobby_ocr'),aliases:Array.isArray(p?.aliases)?p.aliases.slice(0,8).map(str).filter(Boolean):[]})),updated:Date.now()};
-    }
-    return {id:activeKey(),tournament:str(S.tournament),updated:Date.now(),slots};
-  }
-  async function saveRoster(rows){
-    const payload=rosterPayload(rows);
-    if(Object.keys(payload.slots).length!==16)throw new Error('Roster requires 16 slots');
-    await txPut(ROSTER,payload);
-    const check=await txGet(ROSTER,payload.id);
-    if(!check||Object.keys(check.slots||{}).length!==16)throw new Error('Roster verification failed');
-    return true;
-  }
-  async function restoreRoster(){
-    let rec=null; try{rec=await txGet(ROSTER,activeKey())}catch(e){console.warn('V38 roster DB read',e)}
-    if(!rec){
-      try{const all=await txGetAll(ROSTER);rec=all.sort((a,b)=>(b.updated||0)-(a.updated||0))[0]||null}catch(e){}
-    }
-    if(!rec?.slots)return false;
-    let applied=0;
-    for(const [k,v] of Object.entries(rec.slots)){
-      const t=S.teams.find(x=>Number(x.slot)===Number(k)); if(!t||!Array.isArray(v.players)||v.players.length!==4)continue;
-      if(v.team)t.name=v.team;
-      t.players=v.players.map(p=>({name:str(p.name),confidence:Number(p.confidence)||100,source:p.source||'lobby_ocr',aliases:Array.isArray(p.aliases)?p.aliases.slice(0,8):[]}));
-      t.rosterVerified=true;t.rosterSource='V38_INDEXEDDB_ROSTER';t.rosterUpdated=v.updated||rec.updated;applied++;
-    }
-    if(applied===16){try{localStorage.setItem(typeof KEY!=='undefined'?KEY:'pubg_tm_v21_pro',JSON.stringify(S))}catch(e){};try{if(typeof syncCurrentWorkspace==='function')syncCurrentWorkspace()}catch(e){};return true}
-    return false;
-  }
-  window.v38SaveRoster=saveRoster;
-  window.v38RestoreRoster=restoreRoster;
-
-  function isImageFile(f){const type=str(f?.type).toLowerCase(),name=str(f?.name).toLowerCase();return type.startsWith('image/')||/\.(png|jpe?g|webp|heic|heif|avif)$/i.test(name)}
-  function mediaId(matchId,f){return `${activeKey()}|${String(matchId)}|${str(f.name)}|${Number(f.size)||0}|${Number(f.lastModified)||0}`}
-  async function saveMedia(matchId,files){
-    const db=await openDB();
-    await new Promise((resolve,reject)=>{const tx=db.transaction(MEDIA,'readwrite'),st=tx.objectStore(MEDIA);for(const f of files)st.put({id:mediaId(matchId,f),workspace:activeKey(),matchId:String(matchId),name:str(f.name)||'result-image',type:str(f.type)||'image/jpeg',size:Number(f.size)||0,lastModified:Number(f.lastModified)||0,blob:f.slice(0,f.size||f.size,'application/octet-stream'),savedAt:Date.now()});tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{const e=tx.error;db.close();reject(e||new Error('Media write failed'))}});
-    const got=await loadMedia(matchId); if(got.length<files.length)throw new Error('Media verification failed');
-    return got;
-  }
-  async function loadMedia(matchId){
-    let arr=[]; try{arr=await txGetAll(MEDIA)}catch(e){return []}
-    return arr.filter(v=>v.workspace===activeKey()&&String(v.matchId)===String(matchId)).sort((a,b)=>(a.savedAt||0)-(b.savedAt||0)).map(v=>new File([v.blob],v.name,{type:v.type||'image/jpeg',lastModified:v.lastModified||Date.now()}));
-  }
-  async function clearMedia(matchId){try{await txDeleteWhere(MEDIA,v=>v.workspace===activeKey()&&String(v.matchId)===String(matchId))}catch(e){}}
-  window.v38SaveResultMedia=saveMedia; window.v38LoadResultMedia=loadMedia; window.v38ClearResultMedia=clearMedia;
-
-  // Final, single roster commit handler. It is deliberately independent from UI rendering.
-  window.commitTeamSlotImportV2=async function(){
-    const X=window._slotImportV2,rows=(X?.results||[]).map(r=>{try{if(typeof autoVerifySlotRow==='function')autoVerifySlotRow(r)}catch(e){};return r});
-    if(rows.length!==16)return toast(`لا يمكن الحفظ: تم تحليل ${rows.length}/16 Slot`);
-    const seen=new Set();
-    for(const r of rows){const slot=Number(r?.slot);if(!Number.isInteger(slot)||slot<3||slot>18)return toast(`Slot ${r?.slot||'?'} غير صحيح`);if(seen.has(slot))return toast(`Slot ${slot} مكرر`);seen.add(slot);const t=teamForSlot(slot);if(!t)return toast(`Slot ${slot} غير موجود في Team List`);if(!Array.isArray(r.players)||r.players.length!==4||r.players.some(p=>!str(p?.name)))return toast(`Slot ${slot} يحتاج 4 أسماء لاعبين`)}
-    try{
-      for(const r of rows){const t=teamForSlot(Number(r.slot));t.players=r.players.slice(0,4).map(p=>({name:str(p.name),confidence:Number(p.confidence)||100,source:p.manual?'manual_review':'lobby_ocr',ocrQuality:Number(p.quality)||0,consensus:Number(p.consensus)||0,evidenceCount:Number(p.votes)||0,aliases:(p.candidates||[]).map(c=>str(c?.text||c?.name)).filter(Boolean).slice(0,8)}));t.rosterVerified=true;t.rosterSource='V38_INDEXEDDB_ROSTER';t.rosterUpdated=new Date().toISOString()}
-      S.proMeta=S.proMeta||{};S.proMeta.lastOCRCommit=Date.now();S.proMeta.ocrCommitCount=(Number(S.proMeta.ocrCommitCount)||0)+1;
-      await saveRoster(rows);
-      try{localStorage.setItem(typeof KEY!=='undefined'?KEY:'pubg_tm_v21_pro',JSON.stringify(S))}catch(e){}
-      try{if(typeof syncCurrentWorkspace==='function')syncCurrentWorkspace()}catch(e){}
-      rows.forEach(r=>{r.verified=true;r.saveable=true;r.needsReview=false});
-      try{render()}catch(e){} try{renderTeamTournamentSelectorV27()}catch(e){} try{setTimeout(()=>window.renderSlotReview?.(),0)}catch(e){}
-      toast('✓ تم الحفظ بنجاح — تم تثبيت 16 Slot و64 لاعبًا');return true;
-    }catch(e){console.error('V38 roster commit',e);toast('تعذر الحفظ الدائم — البيانات لم تُحذف، حاول مرة أخرى');return false}
-  };
-
-  // Final result-image handler: supports iOS image types/extensions and verifies persistence before UI success.
-  window.addResultFiles=async function(list){
-    const m=S.matches.find(x=>x.id===S.activeMatchId); if(!m)return toast('اختر المباراة أولًا قبل رفع الصور');
-    const incoming=Array.from(list||[]).filter(isImageFile); if(!incoming.length)return toast('لم يتم العثور على ملفات صور صالحة');
-    const R=window._resultOCRPro||{}; R.files=Array.isArray(R.files)?R.files:[]; R.activeMatch=m.id;
-    const key=f=>`${str(f.name)}|${Number(f.size)||0}|${Number(f.lastModified)||0}`;
-    const fresh=incoming.filter(f=>!R.files.some(x=>key(x)===key(f))); if(!fresh.length)return toast('هذه الصور مضافة بالفعل');
-    try{
-      R.files.push(...fresh);R.matchFiles=R.matchFiles||{};R.matchFiles[m.id]=R.files.slice();
-      const stored=await saveMedia(m.id,fresh);R.files=stored;R.matchFiles[m.id]=stored.slice();
-      m.resultOCR=m.resultOCR||{};m.resultOCR.sessionFiles=stored.map(f=>f.name);m.resultOCR.sourceMode='screenshots';m.resultOCR.imageCount=stored.length;m.resultOCR.matchId=m.id;m.resultOCR.workspaceId=activeKey();m.resultOCR.storage='V38_INDEXEDDB';m.resultOCR.updated=Date.now();
-      try{save()}catch(e){} try{syncCurrentWorkspace()}catch(e){}
-      try{renderResultFiles()}catch(e){}
-      try{statusR(`${stored.length} صورة محفوظة ومتحقق منها — جاهزة للتحليل.`,0)}catch(e){}
-      toast(`✓ تم حفظ ${stored.length} صورة للـMatch`);return true;
-    }catch(e){console.error('V38 media upload',e);R.files=await loadMedia(m.id);try{renderResultFiles()}catch(x){};toast('فشل حفظ صور النتائج — لم يتم اعتبارها محفوظة');return false}
-  };
-  window.resultOCRLoadMatch=async function(id){
-    const R=window._resultOCRPro; if(!R)return;
-    R.activeMatch=id; let files=[]; try{files=await loadMedia(id)}catch(e){}
-    if(!files.length){try{files=await mediaGet(id)}catch(e){files=[]}}
-    R.files=files;R.matchFiles=R.matchFiles||{};R.matchFiles[id]=files.slice();
-    try{renderResultFiles()}catch(e){}
-    const m=S.matches.find(x=>x.id===id); if(m?.resultOCR?.imageCount)try{statusR(`${files.length||m.resultOCR.imageCount} صورة محفوظة لهذه المباراة.`,0)}catch(e){}
-    return files;
-  };
-
-  window.resultOCRClear=async function(){const id=S.activeMatchId;if(!id)return;try{await clearMedia(id)}catch(e){};const R=window._resultOCRPro;if(R){R.files=[];R.rows=[];R.matchFiles=R.matchFiles||{};R.matchFiles[id]=[]}const m=S.matches.find(x=>x.id===id);if(m?.resultOCR){m.resultOCR.imageCount=0;m.resultOCR.sessionFiles=[];m.resultOCR.updated=Date.now()}try{save()}catch(e){}try{renderResultFiles()}catch(e){}try{statusR('تم حذف صور هذه المباراة.',0)}catch(e){}};
-
-  // Restore roster and result media after the whole document is parsed.
-  const boot=async()=>{try{await restoreRoster();try{render()}catch(e){}try{renderTeamTournamentSelectorV27()}catch(e){}}catch(e){console.warn('V38 roster restore',e)};try{const id=S.activeMatchId;if(id)await window.resultOCRLoadMatch(id)}catch(e){}};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,250));else setTimeout(boot,250);
-})();
-</script>
-<script id="v39ProFinal">
+/* V42 — Root-cause fix: OCR runtime + persistence + faster adaptive pipeline. */
 (function(){
 'use strict';
-/* V39 — unified interaction, direct roster commit, adaptive OCR cascade, result upload hardening */
-const V39={version:'V39_PRO_FINAL',busy:false};
-const clean=x=>String(x??'').trim();
-const esc=x=>clean(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-function directKey(){try{return 'pubg_tm_v21_roster_direct_v39__'+String((typeof workspaceId==='function'&&workspaceId())||S?.tournament||'default')}catch{return 'pubg_tm_v21_roster_direct_v39__default'}}
-function directPayload(rows){const slots={};for(const r of rows||[]){const slot=Number(r.slot),t=typeof teamForSlot==='function'?teamForSlot(slot):S.teams.find(x=>Number(x.slot)===slot);if(!t)continue;slots[slot]={slot,team:clean(t.name),players:(t.players||[]).slice(0,4).map(p=>({name:clean(p.name),confidence:Number(p.confidence)||100,aliases:Array.isArray(p.aliases)?p.aliases.slice(0,8):[]}))}}return {version:39,workspace:String((typeof workspaceId==='function'&&workspaceId())||''),tournament:clean(S.tournament),updated:Date.now(),slots}}
-function directWrite(payload){const raw=JSON.stringify(payload);localStorage.setItem(directKey(),raw);const back=JSON.parse(localStorage.getItem(directKey())||'null');if(!back||Object.keys(back.slots||{}).length!==16)throw Error('Direct roster verification failed');return true}
-async function robustCommit(){
- if(V39.busy)return false;V39.busy=true;
- const X=window._slotImportV2,rows=(X?.results||[]);
- try{
-  if(rows.length!==16)throw Error(`تم تحليل ${rows.length}/16 Slot فقط`);
-  const seen=new Set();
-  for(const r of rows){const slot=Number(r.slot);if(!Number.isInteger(slot)||slot<3||slot>18)throw Error(`Slot ${r.slot||'?'} غير صحيح`);if(seen.has(slot))throw Error(`Slot ${slot} مكرر`);seen.add(slot);const t=teamForSlot(slot);if(!t)throw Error(`Slot ${slot} غير موجود في Team List`);if(!Array.isArray(r.players)||r.players.length!==4||r.players.some(p=>!clean(p?.name)))throw Error(`Slot ${slot} يحتاج 4 أسماء لاعبين`)}
-  /* Mutate only canonical roster objects. */
-  for(const r of rows){const t=teamForSlot(Number(r.slot));t.players=r.players.slice(0,4).map(p=>({name:clean(p.name),confidence:Number(p.confidence)||100,source:p.manual?'manual_review':'lobby_ocr',ocrQuality:Number(p.quality)||0,consensus:Number(p.consensus)||0,evidenceCount:Number(p.votes)||0,aliases:(p.candidates||[]).map(c=>clean(c?.text||c?.name)).filter(Boolean).slice(0,8)}));t.rosterVerified=true;t.rosterSource='V39_DIRECT_ROSTER';t.rosterUpdated=new Date().toISOString()}
-  /* First guarantee a tiny synchronous save. UI/async DB cannot invalidate this. */
-  directWrite(directPayload(rows));
-  try{localStorage.setItem(typeof KEY!=='undefined'?KEY:'pubg_tm_v21_pro',JSON.stringify(S))}catch(e){console.warn('V39 primary state save',e)}
-  /* Then durable DB verification when available. */
-  if(typeof window.v38SaveRoster==='function'){try{await window.v38SaveRoster(rows)}catch(e){console.warn('V39 DB roster save fallback',e)}}
-  try{if(typeof syncCurrentWorkspace==='function')syncCurrentWorkspace()}catch(e){console.warn('V39 workspace sync',e)}
-  rows.forEach(r=>{r.verified=true;r.saveable=true;r.needsReview=false;r.conflict=false});
-  try{render()}catch(e){} try{renderTeamTournamentSelectorV27()}catch(e){} try{renderSlotReview()}catch(e){}
-  toast('✓ تم الحفظ نهائيًا — 16 Slot و64 لاعبًا');
-  return true;
- }catch(e){console.error('V39 roster commit',e);toast('تعذر التأكيد والحفظ: '+(e.message||'خطأ غير معروف'));return false}
- finally{V39.busy=false}
+const V42={worker:null,loading:null,busy:false};
+const X42=()=>window._slotImportV2;
+const text42=v=>String(v??'').replace(/[\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim();
+function cleanName42(v){
+  let s=text42(v).normalize('NFKC').replace(/[|¦]/g,'I');
+  s=s.replace(/^[\s\d.,:;_\-]+|[\s.,:;_\-]+$/g,'');
+  s=s.replace(/\s{2,}/g,' ');
+  return s;
 }
-window.commitTeamSlotImportV2=robustCommit;
-/* Dynamic buttons are delegated, so inline-handler/DOM rerender issues cannot block Confirm. */
-if(!window.__V39_CLICK_GUARD__){
- document.addEventListener('click',function(ev){
-  const b=ev.target?.closest?.('button');if(!b)return;
-  const txt=clean(b.textContent);
-  if(/Confirm\s*&\s*Save\s+\d+\s+Slots/i.test(txt)){
-   ev.preventDefault();ev.stopImmediatePropagation();robustCommit();
-  }
- },true);window.__V39_CLICK_GUARD__=true;
+function status42(t,p){
+ const el=document.getElementById('slotImportStatusV2'); if(el)el.textContent=t;
+ const bar=document.getElementById('slotImportProgressV2')?.firstElementChild; if(bar)bar.style.width=Math.max(0,Math.min(100,Number(p)||0))+'%';
 }
-/* Roster restore fallback before normal app boot. */
-window.v39RestoreDirectRoster=function(){try{const p=JSON.parse(localStorage.getItem(directKey())||'null');if(!p?.slots)return false;let n=0;for(const [k,v] of Object.entries(p.slots)){const t=S.teams.find(x=>Number(x.slot)===Number(k));if(!t||!Array.isArray(v.players)||v.players.length!==4)continue;if(v.team)t.name=v.team;t.players=v.players.map(q=>({name:clean(q.name),confidence:Number(q.confidence)||100,source:'v39_direct_restore',aliases:Array.isArray(q.aliases)?q.aliases.slice(0,8):[]}));t.rosterVerified=true;t.rosterSource='V39_DIRECT_RESTORE';n++}return n===16}catch(e){return false}};
-/* Result upload: broaden file acceptance and never silently swallow persistence errors. */
-const oldResultInput=document.getElementById('matchResultImages');if(oldResultInput){oldResultInput.setAttribute('accept','image/*,.heic,.heif,.avif,.webp,.png,.jpg,.jpeg');}
-function isImg39(f){return !!f&&((String(f.type||'').toLowerCase().startsWith('image/'))||/\.(png|jpe?g|webp|heic|heif|avif)$/i.test(String(f.name||'')))}
-const resultFileStore=window.v38SaveResultMedia;
-window.addResultFiles=async function(list){
- const m=S.matches.find(x=>x.id===S.activeMatchId);if(!m)return toast('اختر المباراة أولًا قبل رفع الصور');
- const incoming=Array.from(list||[]).filter(isImg39);if(!incoming.length)return toast('لم يتم العثور على صور صالحة');
- const R=window._resultOCRPro||(window._resultOCRPro={files:[],matchFiles:{},rows:[]});R.files=Array.isArray(R.files)?R.files:[];R.activeMatch=m.id;
- const sig=f=>`${f.name}|${f.size}|${f.lastModified}`;const fresh=incoming.filter(f=>!R.files.some(x=>sig(x)===sig(f)));if(!fresh.length)return toast('هذه الصور مضافة بالفعل');
- try{
-  let stored=fresh;
-  if(typeof resultFileStore==='function')stored=await resultFileStore(m.id,fresh);
-  R.files=[...R.files.filter(x=>x&&x.name),...stored];R.matchFiles=R.matchFiles||{};R.matchFiles[m.id]=R.files.slice();
-  m.resultOCR={...(m.resultOCR||{}),sessionFiles:R.files.map(f=>f.name),sourceMode:'screenshots',imageCount:R.files.length,matchId:m.id,workspaceId:typeof workspaceId==='function'?workspaceId():'local',storage:'V39_INDEXEDDB',updated:Date.now()};
-  try{save()}catch(e){} try{syncCurrentWorkspace()}catch(e){} try{renderResultFiles()}catch(e){} try{statusR(`${R.files.length} صورة جاهزة للتحليل.`,0)}catch(e){}
-  toast(`✓ تم إضافة ${fresh.length} صورة — الإجمالي ${R.files.length}`);return true;
- }catch(e){console.error('V39 result upload',e);try{if(typeof window.v38LoadResultMedia==='function')R.files=await window.v38LoadResultMedia(m.id)}catch(_){}try{renderResultFiles()}catch(_){}toast('فشل حفظ صور النتائج: '+(e.message||'خطأ غير معروف'));return false}
-};
-/* Adaptive OCR: 3 strong passes first, full 24-pass reread only for uncertain rows. */
-const originalReadName=window.readNameRowR;
-function candidateVote39(cands){const groups=[];for(const c of cands||[]){let g=groups.find(x=>typeof simR==='function'&&simR(x.name,c.name)>=.84);if(!g){g={name:c.name,items:[]};groups.push(g)}g.items.push(c)}for(const g of groups)g.best=Math.max(...g.items.map(x=>Number(x.confidence)||0),0);groups.sort((a,b)=>(b.items.length*100+b.best)-(a.items.length*100+a.best));const g=groups[0];return g?{name:g.name,confidence:g.best,candidates:g.items.slice(0,12),consensus:g.items.length}:null}
-async function fastName39(img,L,j){
- const W=L.x[1]-L.x[0],H=L.y[1]-L.y[0],cy=(window.rowCenters||{left:[.19,.39,.59,.78],right:[.12,.31,.50,.69]})[L.side][j],hh=L.side==='left'?.075:.09,row=cropR(img,L.x[0]+W*.18,L.y[0]+H*(cy-hh),L.x[0]+W*.73,L.y[0]+H*(cy+hh),10),c=[];
- for(const mode of ['min','blue','contrast'])for(const psm of [7,13]){try{const d=await ocrR(row,psm,mode);for(const t of linesR(d.text)){let n=cleanR(t).replace(/\b(?:\d{1,2})\s*(?:eliminations?|kills?|elims?)\b/ig,'').replace(/^[|\\/:;]+/,'').trim();if(n.length>=2&&n.length<=28)c.push({name:n,confidence:Number(d.confidence)||0,source:'fast-'+mode+'-'+psm})}}catch(e){}}
- const v=candidateVote39(c);return v?{...v,raw:v.name,crop:row.toDataURL('image/jpeg',.68),fast:true}: {name:'',confidence:0,candidates:[],crop:row.toDataURL('image/jpeg',.68),fast:true};
-}
-async function readCardFast39(img,L,file,fi,ci){const p=await readPlacementR(img,L);if(!p.value)return null;const players=[];for(let j=0;j<4;j++){statusR(`Fast read ${file.name} · ${p.value} · ${j+1}/4`,15);const n=await fastName39(img,L,j);let final=n;/* Only hard rows pay for the full deep reread. */if(!n.name||n.confidence<58||n.consensus<2){try{if(typeof originalReadName==='function'){const d=await originalReadName(img,L,j);if(d&&d.name&&(!n.name||d.confidence>=n.confidence)){final={...d,fast:false}}else if(d?.candidates?.length){final={...n,candidates:[...(n.candidates||[]),...(d.candidates||[])].slice(0,24)}}}}catch(e){}}
- let k=0;try{k=await readKillRowR(img,L,j)}catch(e){}players.push({name:final.name||'',raw:final.raw||final.name||'',kills:k,confidence:Number(final.confidence)||0,candidates:final.candidates||[],crop:final.crop,needsReview:!final.name})}
- return{placement:p.value,placementConfidence:p.confidence,players,imageFile:file,source:file.name,imageIndex:fi,cardIndex:ci,layout:L,evidence:cropR(img,L.x[0],L.y[0],L.x[1],L.y[1],3).toDataURL('image/jpeg',.82)};
-}
-window.runResultOCRPro=async function(){
- const R=window._resultOCRPro;if(!R||R.scanning)return;const m=S.matches.find(x=>x.id===S.activeMatchId);if(!m)return toast('اختر المباراة أولًا');if(!R.files?.length){try{R.files=await window.v38LoadResultMedia(m.id)}catch(e){R.files=[]}if(!R.files.length)return toast('ارفع صور نتائج هذه المباراة أولًا')}
- const teams=S.teams.filter(t=>t.name&&Array.isArray(t.players)&&t.players.length===4);if(teams.length!==16)return toast('أكمل الـ16 فريقًا والـ4 لاعبين لكل فريق أولًا');R.scanning=true;R.activeMatch=m.id;R.rows=[];const t0=performance.now();
- try{const cards=[];for(let fi=0;fi<R.files.length;fi++){const f=R.files[fi],img=await loadImageR(f),Ls=resultLayouts();for(let ci=0;ci<Ls.length;ci++){const c=await readCardFast39(img,Ls[ci],f,fi,ci);if(c)cards.push(c)}}statusR('دمج الأدلة ومطابقة الـRoster…',86);const rows=mergeSamePlacementR(cards).filter(r=>r.placement>=1&&r.placement<=16);const assigned=globalAssignR(rows,teams);for(const r of assigned){r.kills=(r.players||[]).reduce((s,p)=>s+Number(p.kills||0),0);r.reviewReason=[];if(!r.slot)r.reviewReason.push('Slot unresolved');if(r.players?.length!==4||r.players.some(p=>!p.name))r.reviewReason.push('Missing player identity')}R.rows=assigned;const ready=renderResultSummary(assigned);renderResultReview(assigned);statusR(`${ready?'جاهز للتأكيد':'يحتاج مراجعة'} — ${((performance.now()-t0)/1000).toFixed(1)}s`,100);toast(ready?'✓ التحليل اكتمل — جاهز للتأكيد والحفظ':'اكتمل التحليل — راجع الحالات غير المحلولة')}
- catch(e){console.error('V39 result OCR',e);statusR('فشل تحليل النتائج.',0);toast('فشل تحليل النتائج — لم يتم تغيير النتائج المحفوظة')}
- finally{R.scanning=false}
-};
-/* Restore direct roster as soon as DOM/app state is ready. */
-const boot39=()=>{try{if(window.v39RestoreDirectRoster()){try{render()}catch(e){}try{renderTeamTournamentSelectorV27()}catch(e){}}}catch(e){console.warn('V39 restore',e)}};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot39,500));else setTimeout(boot39,500);
-window.__V39_FINAL__=V39;
-})();
-
-</script>
-
-<script id="v39AdaptiveSpeed">
-(function(){'use strict';
-const clean39=x=>String(x??'').trim();
-function rosterHint39(name){let best=0;try{for(const t of S.teams||[]){for(const p of t.players||[])best=Math.max(best,typeof simR==='function'?simR(name,p.name):0)}}catch(e){}return best}
-async function fastPlacement39(img,L){if(L.fixed)return{value:L.fixed,confidence:100};const c=cropR(img,L.x[0]+.035,L.y[0]+.08,L.x[0]+.22,L.y[1]-.07,9),vals=[];for(const mode of ['min','blue','contrast'])for(const psm of [7,13]){try{const d=await ocrR(c,psm,mode),n=numericCandidates(d.text||'');if(n!==null&&n>=1&&n<=16)vals.push({n,confidence:Number(d.confidence)||0})}catch(e){}}const m=new Map();for(const v of vals){const a=m.get(v.n)||{n:v.n,votes:0,conf:0};a.votes++;a.conf=Math.max(a.conf,v.confidence);m.set(v.n,a)}const a=[...m.values()].sort((x,y)=>(y.votes*100+y.conf)-(x.votes*100+x.conf))[0];if(a)return{value:a.n,confidence:a.conf+Math.min(40,a.votes*10)};return typeof readPlacementR==='function'?readPlacementR(img,L):{value:0,confidence:0}}
-async function fastKill39(img,L,j){const W=L.x[1]-L.x[0],H=L.y[1]-L.y[0],cy=({left:[.19,.39,.59,.78],right:[.12,.31,.50,.69]})[L.side][j],hh=L.side==='left'?.075:.09,row=cropR(img,L.x[0]+W*.73,L.y[0]+H*(cy-hh),L.x[1]-.01,L.y[0]+H*(cy+hh),7),vals=[];for(const mode of ['min','contrast'])for(const psm of [7,13]){try{const d=await ocrR(row,psm,mode),n=numericCandidates(d.text||'');if(n!==null&&n<=99)vals.push({n,confidence:Number(d.confidence)||0})}catch(e){}}if(!vals.length)return typeof readKillRowR==='function'?readKillRowR(img,L,j):0;const m=new Map();for(const x of vals){const a=m.get(x.n)||{n:x.n,votes:0,conf:0};a.votes++;a.conf=Math.max(a.conf,x.confidence);m.set(x.n,a)}return[...m.values()].sort((a,b)=>(b.votes*100+b.conf)-(a.votes*100+a.conf))[0].n}
-const deepName39=window.readNameRowR;
-async function name39(img,L,j){const n=await fastName39(img,L,j);const hint=rosterHint39(n.name);if(n.name&&n.confidence>=55&&(n.consensus>=2||hint>=.72))return n;if(typeof deepName39==='function'){try{const d=await deepName39(img,L,j);if(d?.name){if(!n.name||d.confidence>=n.confidence||hint<.72)return {...d,fast:false}}}catch(e){}}return n}
-async function card39(img,L,file,fi,ci){const p=await fastPlacement39(img,L);if(!p.value)return null;const jobs=[0,1,2,3].map(async j=>{statusR(`Reading ${file.name} · placement ${p.value} · player ${j+1}/4`,15);const n=await name39(img,L,j);const k=await fastKill39(img,L,j);return{name:n.name||'',raw:n.raw||n.name||'',kills:k,confidence:Number(n.confidence)||0,candidates:n.candidates||[],crop:n.crop,needsReview:!n.name}});const players=await Promise.all(jobs);return{placement:p.value,placementConfidence:p.confidence,players,imageFile:file,source:file.name,imageIndex:fi,cardIndex:ci,layout:L,evidence:cropR(img,L.x[0],L.y[0],L.x[1],L.y[1],3).toDataURL('image/jpeg',.82)}}
-window.runResultOCRPro=async function(){const R=window._resultOCRPro;if(!R||R.scanning)return;const m=S.matches.find(x=>x.id===S.activeMatchId);if(!m)return toast('اختر المباراة أولًا');if(!R.files?.length){try{R.files=await window.v38LoadResultMedia(m.id)}catch(e){R.files=[]}if(!R.files.length)return toast('ارفع صور نتائج هذه المباراة أولًا')}const teams=S.teams.filter(t=>t.name&&Array.isArray(t.players)&&t.players.length===4);if(teams.length!==16)return toast('أكمل الـ16 فريقًا والـ4 لاعبين لكل فريق أولًا');R.scanning=true;R.activeMatch=m.id;R.rows=[];const t0=performance.now();try{const cards=[];for(let fi=0;fi<R.files.length;fi++){const f=R.files[fi],img=await loadImageR(f),Ls=resultLayouts();for(let ci=0;ci<Ls.length;ci++){const c=await card39(img,Ls[ci],f,fi,ci);if(c)cards.push(c)}}statusR('دمج الأدلة ومطابقة الـRoster…',86);const rows=mergeSamePlacementR(cards).filter(r=>r.placement>=1&&r.placement<=16),assigned=globalAssignR(rows,teams);for(const r of assigned){r.kills=(r.players||[]).reduce((s,p)=>s+Number(p.kills||0),0);r.reviewReason=[];if(!r.slot)r.reviewReason.push('Slot unresolved');if(r.players?.length!==4||r.players.some(p=>!p.name))r.reviewReason.push('Missing player identity')}R.rows=assigned;const ready=renderResultSummary(assigned);renderResultReview(assigned);statusR(`${ready?'جاهز للتأكيد':'يحتاج مراجعة'} — ${((performance.now()-t0)/1000).toFixed(1)}s`,100);toast(ready?'✓ التحليل اكتمل — جاهز للتأكيد والحفظ':'اكتمل التحليل — راجع الحالات غير المحلولة')}catch(e){console.error('V39 adaptive result OCR',e);statusR('فشل تحليل النتائج.',0);toast('فشل تحليل النتائج — لم يتم تغيير النتائج المحفوظة')}finally{R.scanning=false}};
-window.__V39_ADAPTIVE__=true;
-})();
-</script>
-<script id="v40WorldClassCore">
-(function(){
-'use strict';
-/* V40 — persistence that survives local-file restrictions + fast/high-fidelity lobby OCR + reliable result upload */
-const V40={version:'V40_WORLD_CLASS',busy:false,ocrBusy:false};
-const c40=x=>String(x??'').trim();
-function storageAvailable40(){try{const k='__v40_test__';localStorage.setItem(k,'1');localStorage.removeItem(k);return true}catch(e){return false}}
-function compactState40(){
-  try{
-    const x=JSON.parse(JSON.stringify(S));
-    if(Array.isArray(x.ocrEvidence))x.ocrEvidence=x.ocrEvidence.map(e=>{const q={...e};delete q.crop;delete q.raw;return q}).slice(-120);
-    if(Array.isArray(x.snapshots))x.snapshots=x.snapshots.slice(-5).map(v=>{const q={...v};delete q.state?.ocrEvidence;return q});
-    return x;
-  }catch(e){return null}
-}
-function historyState40(){try{return history.state&&history.state.__V40_APP||null}catch(e){return null}}
-function writeHistory40(state){try{const payload={version:40,updated:Date.now(),state};history.replaceState({...(history.state||{}),__V40_APP:payload},document.title,location.href);return true}catch(e){return false}}
-function readHistory40(){try{const p=historyState40();return p?.state||null}catch(e){return null}}
-function nameRead40(){try{const raw=String(window.name||'');if(!raw.startsWith('__PUBGTM_V40__:'))return null;return JSON.parse(raw.slice(15))}catch(e){return null}}
-function nameWrite40(payload){try{const raw='__PUBGTM_V40__:'+JSON.stringify(payload);if(raw.length>1800000)return false;window.name=raw;return true}catch(e){return false}}
-function nameMedia40(){const x=nameRead40();return x?.media&&typeof x.media==='object'?x.media:{}}
-function nameMediaWrite40(media){const x=nameRead40()||{};x.media=media;return nameWrite40(x)}
-function directRoster40(){
- const slots={};for(const t of (S.teams||[])){if(Number(t.slot)>=3&&Number(t.slot)<=18&&Array.isArray(t.players)&&t.players.length===4)slots[String(t.slot)]={slot:Number(t.slot),team:c40(t.name),players:t.players.slice(0,4).map(p=>({name:c40(p?.name||p),confidence:Number(p?.confidence)||100,aliases:Array.isArray(p?.aliases)?p.aliases.slice(0,8):[]}))};}
- return {version:40,updated:Date.now(),tournament:c40(S.tournament),slots};
-}
-function restoreHistory40(){
- const saved=readHistory40()||nameRead40()?.state;if(!saved)return false;
- try{
-   const currentTeams=Array.isArray(S.teams)?S.teams:[];
-   if(saved.tournament)S.tournament=saved.tournament;
-   if(Array.isArray(saved.teams)&&saved.teams.length===16){
-     S.teams=saved.teams.map((t,i)=>{const old=currentTeams.find(x=>Number(x.slot)===Number(t.slot))||{slot:i+3};return {...old,...t,players:Array.isArray(t.players)?t.players:[]}});
-   }
-   if(Array.isArray(saved.matches))S.matches=saved.matches;
-   if(saved.rules)S.rules={...S.rules,...saved.rules};
-   if(saved.activeMatchId!==undefined)S.activeMatchId=saved.activeMatchId;
-   return true;
- }catch(e){return false}
-}
-async function idbState40(){
- try{
-   if(!window.indexedDB)return false;
-   const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('PUBG_TOURNAMENT_MANAGER_V40',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('app'))r.result.createObjectStore('app',{keyPath:'id'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||Error('IDB'))});
-   const state=compactState40();if(!state){db.close();return false}
-   await new Promise((resolve,reject)=>{const tx=db.transaction('app','readwrite');tx.objectStore('app').put({id:'state',updated:Date.now(),state});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('IDB write'))});
-   const check=await new Promise((resolve,reject)=>{const tx=db.transaction('app','readonly');const q=tx.objectStore('app').get('state');q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)});db.close();return !!check?.state;
- }catch(e){return false}
-}
-async function restoreIDB40(){
- try{if(!window.indexedDB)return false;const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('PUBG_TOURNAMENT_MANAGER_V40',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('app'))r.result.createObjectStore('app',{keyPath:'id'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});const rec=await new Promise((resolve,reject)=>{const tx=db.transaction('app','readonly');const q=tx.objectStore('app').get('state');q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)});db.close();if(!rec?.state)return false;Object.assign(S,rec.state);return true}catch(e){return false}
-}
-function persist40(){
- const state=compactState40();if(!state)return false;
- let ok=false;
- try{if(storageAvailable40()){localStorage.setItem(typeof KEY!=='undefined'?KEY:'pubg_tm_v21_pro',JSON.stringify(state));ok=true}}catch(e){}
- if(writeHistory40(state))ok=true;
- if(nameWrite40({...(nameRead40()||{}),version:40,updated:Date.now(),state}))ok=true;
- window.__V40_MEMORY_STATE__=state;
- idbState40().catch(()=>{});
- return ok;
-}
-/* Replace the global save function. Existing buttons/functions resolve the global binding dynamically. */
-window.save=function(){const ok=persist40();if(!ok)toast('تم الحفظ داخل الجلسة — التخزين الدائم غير متاح في وضع الملف المحلي');return ok};
-window.__V40_PERSIST__=persist40;
-/* Restore before the user starts working. Prefer durable storage, then history state. */
-(async function bootPersistence40(){
- let restored=false;
- try{restored=await restoreIDB40()}catch(e){}
- if(!restored)restored=restoreHistory40();
- if(!restored&&window.__V40_MEMORY_STATE__)try{Object.assign(S,window.__V40_MEMORY_STATE__);restored=true}catch(e){}
- if(restored){try{render()}catch(e){}try{renderTeamTournamentSelectorV27?.()}catch(e){}}
-})();
-/* Reliable roster commit: no localStorage/IDB requirement for the button to succeed. History state is the guaranteed fallback. */
-window.commitTeamSlotImportV2=async function(){
- if(V40.busy)return false;V40.busy=true;
- try{
-  const X=window._slotImportV2,rows=(X?.results||[]);
-  if(rows.length!==16)throw Error(`تم تحليل ${rows.length}/16 Slot فقط`);
-  const seen=new Set();
-  for(const r of rows){const slot=Number(r?.slot);if(!Number.isInteger(slot)||slot<3||slot>18)throw Error(`Slot ${r?.slot||'?'} غير صحيح`);if(seen.has(slot))throw Error(`Slot ${slot} مكرر`);seen.add(slot);const t=teamForSlot(slot);if(!t)throw Error(`Slot ${slot} غير موجود في Team List`);if(!Array.isArray(r.players)||r.players.length!==4||r.players.some(p=>!c40(p?.name)))throw Error(`Slot ${slot} يحتاج 4 أسماء لاعبين`)}
-  for(const r of rows){const t=teamForSlot(Number(r.slot));t.players=r.players.slice(0,4).map(p=>({name:c40(p.name),confidence:Number(p.confidence)||100,source:p.manual?'manual_review':'lobby_ocr',ocrQuality:Number(p.quality)||0,consensus:Number(p.consensus)||0,evidenceCount:Number(p.votes)||0,aliases:(p.candidates||[]).map(q=>c40(q?.text||q?.name)).filter(Boolean).slice(0,8)}));t.rosterVerified=true;t.rosterSource='V40_WORLD_CLASS';t.rosterUpdated=new Date().toISOString()}
-  S.proMeta=S.proMeta||{};S.proMeta.lastOCRCommit=Date.now();S.proMeta.ocrCommitCount=(Number(S.proMeta.ocrCommitCount)||0)+1;
-  const saved=persist40();
-  rows.forEach(r=>{r.verified=true;r.saveable=true;r.needsReview=false;r.conflict=false});
-  try{render()}catch(e){}try{renderTeamTournamentSelectorV27?.()}catch(e){}try{renderSlotReview?.()}catch(e){}
-  toast(saved?'✓ تم حفظ 16 Slot و64 لاعبًا بنجاح':'✓ تم تثبيت 16 Slot و64 لاعبًا داخل الجلسة');
-  return true;
- }catch(e){console.error('V40 roster commit',e);toast('تعذر التأكيد: '+(e.message||'خطأ غير معروف'));return false}finally{V40.busy=false}
-};
-/* Make the Confirm button work even if an old inline handler/override remains. */
-if(!window.__V40_CONFIRM_GUARD__){document.addEventListener('click',ev=>{const b=ev.target?.closest?.('button');if(!b)return;const txt=c40(b.textContent);if(/Confirm\s*&\s*Save\s+\d+\s+Slots/i.test(txt)){ev.preventDefault();ev.stopImmediatePropagation();window.commitTeamSlotImportV2()}},true);window.__V40_CONFIRM_GUARD__=true}
-/* Standalone-file media fallback: IndexedDB when available, window.name when storage is blocked. */
-async function saveMedia40(matchId,files){
- const key=String(matchId), wk=(()=>{try{return String((typeof workspaceId==='function'&&workspaceId())||S?.tournament||'default')}catch(e){return String(S?.tournament||'default')}})();
- const bucket=`${wk}::${key}`;const media=nameMedia40();const existing=Array.isArray(media[bucket])?media[bucket]:[];
- const incoming=[];
- for(const f of Array.from(files||[])){
-  try{const data=await new Promise((res,rej)=>{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{try{URL.revokeObjectURL(u);const maxW=1600,scale=Math.min(1,maxW/im.naturalWidth);const w=Math.max(1,Math.round(im.naturalWidth*scale)),h=Math.max(1,Math.round(im.naturalHeight*scale));const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);res(c.toDataURL('image/jpeg',.72))}catch(e){URL.revokeObjectURL(u);rej(e)}};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error('Image decode failed'))};im.src=u});incoming.push({name:f.name||`result-${Date.now()}.jpg`,type:'image/jpeg',lastModified:Number(f.lastModified)||Date.now(),data});}catch(e){console.warn('V40 media encode',e)}}
- const merged=[...existing];for(const x of incoming){const i=merged.findIndex(y=>y.name===x.name&&Number(y.lastModified)===Number(x.lastModified));if(i>=0)merged[i]=x;else merged.push(x)}
- media[bucket]=merged.slice(-10);if(!nameMediaWrite40(media))throw Error('Browser session storage is full');
- return merged.slice(-10).map(x=>{const bin=atob(x.data.split(',')[1]||''),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new File([u],x.name,{type:x.type,lastModified:x.lastModified})});
-}
-async function loadMedia40(matchId){
- const wk=(()=>{try{return String((typeof workspaceId==='function'&&workspaceId())||S?.tournament||'default')}catch(e){return String(S?.tournament||'default')}})();const bucket=`${wk}::${String(matchId)}`;const media=nameMedia40();const arr=Array.isArray(media[bucket])?media[bucket]:[];return arr.map(x=>{try{const bin=atob(x.data.split(',')[1]||''),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new File([u],x.name,{type:x.type||'image/jpeg',lastModified:x.lastModified||Date.now()})}catch(e){return null}}).filter(Boolean)}
-async function clearMedia40(matchId){const wk=(()=>{try{return String((typeof workspaceId==='function'&&workspaceId())||S?.tournament||'default')}catch(e){return String(S?.tournament||'default')}})();const media=nameMedia40();delete media[`${wk}::${String(matchId)}`];nameMediaWrite40(media)}
-window.v40LoadResultMedia=loadMedia40;window.v40SaveResultMedia=saveMedia40;window.v40ClearResultMedia=clearMedia40;
-window.addResultFiles=async function(list){
- const m=S.matches.find(x=>x.id===S.activeMatchId);if(!m)return toast('اختر المباراة أولًا قبل رفع الصور');
- const incoming=Array.from(list||[]).filter(f=>f&&((String(f.type||'').toLowerCase().startsWith('image/'))||/\.(png|jpe?g|webp|heic|heif|avif)$/i.test(String(f.name||''))));if(!incoming.length)return toast('لم يتم العثور على صور صالحة');
- const R=window._resultOCRPro||(window._resultOCRPro={files:[],matchFiles:{},rows:[]});R.files=Array.isArray(R.files)?R.files:[];R.activeMatch=m.id;const sig=f=>`${f.name}|${f.size}|${f.lastModified}`;const fresh=incoming.filter(f=>!R.files.some(x=>sig(x)===sig(f)));if(!fresh.length)return toast('هذه الصور مضافة بالفعل');
- try{const stored=await saveMedia40(m.id,[...fresh]);R.files=stored;R.matchFiles=R.matchFiles||{};R.matchFiles[m.id]=stored.slice();m.resultOCR={...(m.resultOCR||{}),sessionFiles:stored.map(f=>f.name),sourceMode:'screenshots',imageCount:stored.length,matchId:m.id,storage:'V40_SESSION_MEDIA',updated:Date.now()};persist40();try{renderResultFiles()}catch(e){}try{statusR(`${stored.length} صورة محفوظة وجاهزة للتحليل.`,0)}catch(e){}toast(`✓ تم رفع ${stored.length} صورة للنتائج`);return true}catch(e){console.error('V40 result upload',e);toast('تعذر حفظ الصور داخل جلسة المتصفح');return false}
-};
-window.resultOCRLoadMatch=async function(id){const R=window._resultOCRPro;if(!R)return[];R.activeMatch=id;let files=[];try{files=await loadMedia40(id)}catch(e){}if(!files.length)try{files=await window.v38LoadResultMedia?.(id)||[]}catch(e){}R.files=files;R.matchFiles=R.matchFiles||{};R.matchFiles[id]=files.slice();try{renderResultFiles()}catch(e){}return files};
-window.resultOCRClear=async function(){const id=S.activeMatchId;if(!id)return;await clearMedia40(id);const R=window._resultOCRPro;if(R){R.files=[];R.rows=[];R.matchFiles=R.matchFiles||{};R.matchFiles[id]=[]}const m=S.matches.find(x=>x.id===id);if(m?.resultOCR){m.resultOCR.imageCount=0;m.resultOCR.sessionFiles=[]}persist40();try{renderResultFiles()}catch(e){}try{statusR('تم حذف صور هذه المباراة.',0)}catch(e){}};
-/* Result upload: replace the old lexical onchange closure with the final global handler. */
-function bindResultInput40(){const input=document.getElementById('matchResultImages');if(!input)return false;input.accept='image/*,.heic,.heif,.avif,.webp,.png,.jpg,.jpeg';input.onchange=e=>{const files=e.target.files;Promise.resolve(window.addResultFiles(files)).finally(()=>{try{input.value=''}catch(_){}})};const drop=document.getElementById('matchResultDrop');if(drop&&!drop.__v40){['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>e.preventDefault()));drop.addEventListener('drop',e=>{e.preventDefault();window.addResultFiles(e.dataTransfer?.files||[])});drop.__v40=true}return true}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindResultInput40);else bindResultInput40();
-/* ---------------- Lobby OCR: fast-first, deep-only-when-needed ---------------- */
-async function lineCandidates40(img,card){
- const bands=effectiveRowBands(img,card),out=Array.from({length:4},()=>[]),r=nameRegion(card),c=cropCanvas(img,r.x,r.y,r.w,r.h,10);
- const modes=[['original','4','card-original'],['contrast','6','card-contrast'],['glyph','11','card-glyph']];
- for(const [mode,psm,tag] of modes){try{const d=await recognize(c,mode,psm),lines=ocrLines(d,10);for(const ln of lines){let best=0,dist=1e9;for(let i=0;i<4;i++){const b=bands[i]||rowBand(card,i),dc=Math.abs((r.y+ln.cy)-(b.y+b.h/2));if(dc<dist){dist=dc;best=i}}if(dist<card.h*.13){const txt=best===0?normalizeFirstPlayer(ln.text):normalizePlayer(ln.text);addUniqueCandidate(out[best],txt,ln.confidence,tag)}}}catch(e){}}
- return out;
-}
-async function readPlayers40(img,card){
- const candidates=await lineCandidates40(img,card),bands=effectiveRowBands(img,card),out=[];
- for(let i=0;i<4;i++){
-  let ranked=rankPlayerCandidates(candidates[i]||[]),top=ranked[0];
-  const need=!top||top.quality<.70||top.confidence<64;
-  if(need){for(const v of [['original','7','target-original',.018,.035,12],['contrast','7','target-contrast',.018,.035,12],['glyph','7','target-glyph',.010,.030,14],['blackhat','7','target-blackhat',.012,.030,12]]){try{const more=await playerPass(img,card,i,...v,bands[i]);candidates[i].push(...more)}catch(e){}}ranked=rankPlayerCandidates(candidates[i]);top=ranked[0]}
-  if(!top||top.quality<.58||top.confidence<52){for(const v of [['red','7','deep-red',.010,.030,14],['blue','7','deep-blue',.010,.030,14],['otsu','13','deep-otsu',.010,.025,14],['ink','7','deep-ink',.010,.030,16]]){try{const more=await playerPass(img,card,i,...v,bands[i]);candidates[i].push(...more)}catch(e){}}ranked=rankPlayerCandidates(candidates[i]);top=ranked[0]}
-  top=top||{text:'',confidence:0,quality:0,consensus:0,score:0,votes:0,sources:[]};
-  out.push({text:top.text||'',confidence:Number(top.confidence)||0,quality:Number(top.quality)||0,consensus:Number(top.consensus)||0,score:Number(top.score)||0,votes:Number(top.votes)||0,sources:top.sources||[],cy:(bands[i]?.y||rowBand(card,i).y)+((bands[i]?.h||rowBand(card,i).h)/2),candidates:ranked.slice(0,14)});
- }
- return out;
-}
-async function slotFast40(img,card){
- const q={x:card.x+.005*card.w,y:card.y+.005*card.h,w:card.w*.23,h:card.h*.34,s:10};
- const vals=[];
- for(const [mode,psm] of [['original','8'],['contrast','8'],['threshold','13']]){
-  try{
-   const d=await recognize(cropCanvas(img,q.x,q.y,q.w,q.h,q.s),mode,psm);
-   const raw=c40(d?.text||'').replace(/[^0-9]/g,'');
-   if(raw){const n=Number(raw);if(n>=1&&n<=99)vals.push({n,confidence:Number(d.confidence)||0});}
-   for(const w of ocrWords(d,q.s)){
-    const n=Number(c40(w.t).replace(/[^0-9]/g,''));
-    if(n>=1&&n<=99)vals.push({n,confidence:w.confidence||0});
-   }
-  }catch(e){}
- }
- const map=new Map();
- for(const v of vals){const a=map.get(v.n)||{n:v.n,votes:0,conf:0};a.votes++;a.conf=Math.max(a.conf,v.confidence);map.set(v.n,a)}
- const best=[...map.values()].sort((a,b)=>(b.votes*100+b.conf)-(a.votes*100+a.conf))[0];
- return{slot:best?.n||0,confidence:best?.conf||0,slotCandidates:[...map.values()]};
-}
-async function analyzeImage40(file,index){const img=await loadImg(file),cards=inferGrid(img);if(!cards.length)throw Error(`الصورة ${index+1}: لم يتم اكتشاف كروت PUBG`);const out=[];for(let ci=0;ci<cards.length;ci++){const card=cards[ci];setStatus(`الصورة ${index+1}/${X.files.length} — الكارت ${ci+1}/${cards.length}`,10+index*40+ci*(30/Math.max(cards.length,1)));const a=await slotFast40(img,card);const players=await readPlayers40(img,card);out.push({slot:a.slot,slotCandidates:a.slotCandidates,team:rosterForSlot(a.slot).team||'',players:players.map(p=>({name:p.text,raw:p.text,confidence:p.confidence,quality:p.quality,consensus:p.consensus,score:p.score,votes:p.votes,sources:p.sources,verified:!!p.name,matched:false,cy:p.cy,candidates:p.candidates})),verified:players.every(p=>!!p.text),needsReview:players.some(p=>!p.text),conflict:false,sourceImage:index,card:ci+1,row:card.row+1,column:card.col+1,file:file.name,evidence:cropCanvas(img,card.x,card.y,card.w,card.h,3).toDataURL('image/jpeg',.88)});}return out;}
-window.runTeamSlotImportV2=async function(){if(X.scanning)return;if(!X.files.length)return toast('ارفع صور الـLobby أولاً');X.scanning=true;X.results=[];renderSlotReview?.();const t0=performance.now();try{setStatus('بدء التحليل السريع عالي الدقة…',1);await ensureOCR();const all=[];for(let i=0;i<X.files.length;i++)all.push(...await analyzeImage40(X.files[i],i));X.results=mergeResults(all);X.results.forEach(r=>{r.verified=Array.isArray(r.players)&&r.players.length===4&&r.players.every(p=>c40(p.name));r.needsReview=!r.verified});renderSlotReview?.();setStatus(`اكتمل التحليل — ${X.results.length} Slot — ${((performance.now()-t0)/1000).toFixed(1)}s`,100);toast(`✓ تم تحليل ${X.results.length} Slot بسرعة محسّنة`)}catch(e){console.error('V40 lobby OCR',e);X.results=[];renderSlotReview?.();setStatus(`فشل التحليل: ${e.message||e}`,0);toast('فشل التحليل — لم يتم تعديل البطولة')}finally{X.scanning=false}};
-/* Ensure result images are analyzed from the files currently in the final handler. */
-window.__V40_FINAL__=V40;
-})();
-</script>
-
-<script id="v41UnifiedFinal">
-(function(){
-'use strict';
-/* V41 — Unified OCR pipeline + verified roster persistence. */
-const V41={worker:null,loading:null,busy:false};
-const S41=()=>window._slotImportV2;
-const txt41=v=>String(v??'').replace(/[\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim();
-const cleanName41=v=>txt41(v).replace(/[“”‘’]/g,'').replace(/\s*\/\s*[0-9]+\s*Eliminations.*$/i,'').replace(/\s*Eliminations.*$/i,'').trim();
-const key41=()=>{try{return String((typeof workspaceId==='function'&&workspaceId())||S?.tournament||'default')}catch(e){return String(window.__V41_TOURNAMENT__||'default')}};
-function status41(t,p){const el=document.getElementById('slotImportStatusV2');if(el)el.textContent=t;const bar=document.getElementById('slotImportProgressV2')?.firstElementChild;if(bar)bar.style.width=Math.max(0,Math.min(100,Number(p)||0))+'%';}
-function crop41(img,x,y,w,h,scale=2.5){const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;const xx=Math.max(0,Math.min(iw-1,x)),yy=Math.max(0,Math.min(ih-1,y)),ww=Math.max(2,Math.min(w,iw-xx)),hh=Math.max(2,Math.min(h,ih-yy));const c=document.createElement('canvas');c.width=Math.max(2,Math.round(ww*scale));c.height=Math.max(2,Math.round(hh*scale));const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,xx,yy,ww,hh,0,0,c.width,c.height);return c;}
-function contrast41(src){const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(src,0,0);const d=g.getImageData(0,0,c.width,c.height),p=d.data;for(let i=0;i<p.length;i+=4){const y=.299*p[i]+.587*p[i+1]+.114*p[i+2];const q=Math.max(0,Math.min(255,(y-92)*2.35+92));p[i]=p[i+1]=p[i+2]=q;}g.putImageData(d,0,0);return c;}
-function parseTSV41(data,scale){const tsv=String(data?.tsv||'');const out=[];for(const line of tsv.split(/\r?\n/).slice(1)){const p=line.split('\t');if(p.length<12)continue;const text=txt41(p.slice(11).join('\t')),conf=Number(p[10]),x=Number(p[6]),y=Number(p[7]),w=Number(p[8]),h=Number(p[9]);if(!text||![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)continue;out.push({text,confidence:Number.isFinite(conf)?conf:0,x:x/scale,y:y/scale,w:w/scale,h:h/scale,cx:(x+w/2)/scale,cy:(y+h/2)/scale});}return out;}
-async function loadTesseract41(){
+function toast42(msg){try{if(typeof toast==='function')toast(msg);else alert(msg)}catch(e){console.warn(msg)}}
+async function loadTesseract42(){
  if(window.Tesseract)return window.Tesseract;
- if(V41.loading)return V41.loading;
- V41.loading=(async()=>{
-   status41('تحميل محرك OCR لأول مرة…',2);
-   const urls=[
-     'https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.min.js',
-     'https://unpkg.com/tesseract.js@6/dist/tesseract.min.js'
-   ];
-   for(const src of urls){
-     try{await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.async=true;s.onload=()=>resolve();s.onerror=()=>reject(Error('OCR CDN failed'));document.head.appendChild(s)});if(window.Tesseract)return window.Tesseract}catch(e){}
-   }
-   throw Error('محرك OCR غير متاح. تأكد من اتصال الإنترنت ثم أعد المحاولة.');
+ if(V42.loading)return V42.loading;
+ V42.loading=(async()=>{
+  status42('تحميل محرك OCR…',2);
+  const urls=['https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.min.js','https://unpkg.com/tesseract.js@6/dist/tesseract.min.js'];
+  for(const src of urls){
+   try{
+    await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src=src;sc.async=true;sc.onload=resolve;sc.onerror=()=>reject(new Error('CDN load failed'));document.head.appendChild(sc)});
+    if(window.Tesseract)return window.Tesseract;
+   }catch(e){console.warn('Tesseract load failed',src,e)}
+  }
+  throw new Error('محرك OCR غير متاح. افتح الملف مع اتصال بالإنترنت ثم أعد المحاولة.');
  })();
- try{return await V41.loading}finally{V41.loading=null}
+ try{return await V42.loading}finally{V42.loading=null}
 }
-async function worker41(){if(V41.worker)return V41.worker;const T=await loadTesseract41();status41('تهيئة محرك OCR…',5);V41.worker=await T.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text')status41(`OCR… ${Math.round((Number(m.progress)||0)*100)}%`,8)}},{load_system_dawg:'0',load_freq_dawg:'0',load_unambig_dawg:'0',load_punc_dawg:'0',load_number_dawg:'0'});await V41.worker.setParameters({preserve_interword_spaces:'1',user_defined_dpi:'300',tessedit_pageseg_mode:'11'});return V41.worker}
-async function ocr41(canvas,psm=11){const w=await worker41();await w.setParameters({tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1',user_defined_dpi:'300'});const r=await w.recognize(canvas,{}, {tsv:true,text:true});return r?.data||{tsv:'',text:''};}
-function grid41(img){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,cols=[.006,.328,.650],rows=[.115,.405,.695],cells=[];function ratio(x,y,w,h,mode){const c=document.createElement('canvas');c.width=Math.max(4,Math.round(w));c.height=Math.max(4,Math.round(h));const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,x,y,w,h,0,0,c.width,c.height);const d=g.getImageData(0,0,c.width,c.height).data;let n=0,total=0;for(let i=0;i<d.length;i+=4){const v=.299*d[i]+.587*d[i+1]+.114*d[i+2];if(mode==='dark'?v<65:v>120)n++;total++;}return total?n/total:0}
- for(let r=0;r<3;r++)for(let c=0;c<3;c++){const x=Math.round(W*cols[c]),y=Math.round(H*rows[r]),w=Math.round(W*.300),h=Math.round(H*.285);if(x+w>W||y+h>H)continue;const dark=ratio(x+2,y+2,w-4,h-4,'dark'),light=ratio(x+10,y+10,w-20,h-20,'light');if(dark>.80&&light>.025)cells.push({x,y,w,h,row:r,col:c});}
- return cells.sort((a,b)=>a.row-b.row||a.col-b.col);
+async function worker42(){
+ if(V42.worker)return V42.worker;
+ const T=await loadTesseract42();
+ status42('تهيئة محرك OCR…',5);
+ V42.worker=await T.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text')status42('OCR… '+Math.round((Number(m.progress)||0)*100)+'%',8)}},{load_system_dawg:'0',load_freq_dawg:'0',load_unambig_dawg:'0',load_punc_dawg:'0',load_number_dawg:'0'});
+ await V42.worker.setParameters({preserve_interword_spaces:'1',user_defined_dpi:'300',tessedit_pageseg_mode:'11'});
+ return V42.worker;
 }
-function candidate41(arr,text,conf,source){const n=cleanName41(text);if(!n||n.length<2||n.length>28)return;arr.push({text:n,confidence:Number(conf)||0,source});}
-function choose41(cands){const groups=[];for(const c of cands){let g=groups.find(x=>sim41(x.text,c.text)>=.88);if(!g){g={text:c.text,confidence:Number(c.confidence)||0,votes:0,sources:new Set()};groups.push(g)}g.votes++;g.sources.add(c.source);if(Number(c.confidence)>g.confidence){g.confidence=Number(c.confidence);g.text=c.text}}
- return groups.map(g=>({...g,sources:[...g.sources],score:g.votes*2.2+g.confidence/100+Math.min(1,g.sources.length/3)})).sort((a,b)=>b.score-a.score);
+function crop42(img,x,y,w,h,scale=2){
+ const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;
+ const xx=Math.max(0,Math.min(iw-1,x)),yy=Math.max(0,Math.min(ih-1,y)),ww=Math.max(2,Math.min(w,iw-xx)),hh=Math.max(2,Math.min(h,ih-yy));
+ const c=document.createElement('canvas');c.width=Math.max(2,Math.round(ww*scale));c.height=Math.max(2,Math.round(hh*scale));
+ const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,xx,yy,ww,hh,0,0,c.width,c.height);return c;
 }
-function norm41(s){return cleanName41(s).toLowerCase().normalize('NFKC').replace(/[\u200b-\u200f\ufeff]/g,'').replace(/[^\p{L}\p{N}]+/gu,'')}
-function sim41(a,b){const x=norm41(a),y=norm41(b);if(!x||!y)return 0;if(x===y)return 1;const d=Array(y.length+1);for(let j=0;j<=y.length;j++)d[j]=j;for(let i=1;i<=x.length;i++){let prev=d[0];d[0]=i;for(let j=1;j<=y.length;j++){const cur=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,prev+(x[i-1]===y[j-1]?0:1));prev=cur}}return Math.max(0,1-d[y.length]/Math.max(x.length,y.length));}
-function cardLines41(card,lines){const rx=card.x+card.w*.135, rw=card.w*.70, ry=card.y+card.h*.06, rh=card.h*.87;const bands=[.12,.34,.56,.78].map(v=>ry+rh*v);const out=[[],[],[],[]];for(const ln of lines){if(ln.cx<rx||ln.cx>rx+rw||ln.cy<ry||ln.cy>ry+rh)continue;let bi=0,dist=1e9;for(let i=0;i<4;i++){const d=Math.abs(ln.cy-bands[i]);if(d<dist){dist=d;bi=i}}if(dist<card.h*.105)candidate41(out[bi],bi===0?cleanName41(ln.text).replace(/^\s*(?:0?[3-9]|1[0-8])(?:\s*[,.:;|/\-]\s*|\s+)/,''):ln.text,ln.confidence,'full-screen')}
- return out.map((a,i)=>choose41(a)[0]||{text:'',confidence:0,votes:0,sources:[],score:0});}
-function slotFromLines41(card,lines){for(const ln of lines){if(ln.cx<card.x+card.w*.32&&ln.cy<card.y+card.h*.32){const m=ln.text.match(/\b(0?[3-9]|1[0-8])\b/);if(m)return Number(m[1])}}return 0}
-async function targeted41(img,card,i){const b={x:card.x+card.w*.145,y:card.y+card.h*(.065+[.12,.34,.56,.78][i]-.10),w:card.w*.66,h:card.h*.16};const c=crop41(img,b.x,b.y,b.w,b.h,8);const d=await ocr41(c,7);const ts=parseTSV41(d,8),a=[];candidate41(a,d.text,d.confidence,'target');for(const w of ts)candidate41(a,w.text,w.confidence,'target-word');return choose41(a)[0]||{text:'',confidence:0,votes:0,sources:[],score:0};}
-async function analyzeImage41(file,index,total){const img=await new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error(`الصورة ${index+1}: تعذر فتح الصورة`))};im.src=u});const cards=grid41(img);if(!cards.length)throw Error(`الصورة ${index+1}: لم يتم اكتشاف كروت PUBG`);status41(`الصورة ${index+1}/${total} — قراءة الشاشة بالكامل…`,10+index*35);const scale=2.5,full=crop41(img,0,0,img.naturalWidth||img.width,img.naturalHeight||img.height,scale);const d1=await ocr41(full,11),lines1=parseTSV41(d1,scale);let lines=lines1;if(cards.some(c=>cardLines41(c,lines).filter(x=>x.text).length<4)){status41(`الصورة ${index+1}/${total} — تعزيز القراءة…`,25+index*35);const d2=await ocr41(contrast41(full),11),lines2=parseTSV41(d2,scale);lines=[...lines1,...lines2]}
- const out=[];for(let ci=0;ci<cards.length;ci++){const card=cards[ci],base=cardLines41(card,lines),players=[];for(let j=0;j<4;j++){let p=base[j];if(!p.text||p.confidence<48){try{p=await targeted41(img,card,j)}catch(e){}}players.push({name:p.text||'',raw:p.text||'',confidence:p.confidence||0,quality:p.text?.length>=3?.75:.25,consensus:p.votes||0,score:p.score||0,votes:p.votes||0,sources:p.sources||[],verified:!!p.text,candidates:p.text?[p]:[]})}out.push({slot:slotFromLines41(card,lines),players,sourceImage:index,card:ci+1,row:card.row+1,column:card.col+1,file:file.name,evidence:crop41(img,card.x,card.y,card.w,card.h,3).toDataURL('image/jpeg',.88),conflict:false,verified:players.every(p=>!!p.name),needsReview:players.some(p=>!p.name)})}
- return out;}
-function assignSequential41(rows){if(rows.length!==16)return rows;let i=0;return rows.slice().sort((a,b)=>a.sourceImage-b.sourceImage||a.row-b.row||a.column-b.column).map(r=>({...r,slot:3+i++,team:(typeof teamForSlot==='function'?teamForSlot(2+i)?.name:'')||r.team||''}));}
-function saveRoster41(rows){const roster={version:41,key:key41(),tournament:txt41(S.tournament),updated:Date.now(),slots:{}};for(const r of rows){const t=typeof teamForSlot==='function'?teamForSlot(r.slot):null;if(!t)continue;roster.slots[String(r.slot)]={slot:Number(r.slot),team:txt41(t.name),players:r.players.slice(0,4).map(p=>({name:txt41(p.name),confidence:Number(p.confidence)||100,aliases:(p.candidates||[]).map(c=>txt41(c.text||c.name)).filter(Boolean).slice(0,6)}))}}if(Object.keys(roster.slots).length!==16)throw Error('Roster save requires all 16 slots');const raw=JSON.stringify(roster);let saved=false;try{localStorage.setItem(`PUBG_ROSTER_V41::${roster.key}`,raw);saved=JSON.parse(localStorage.getItem(`PUBG_ROSTER_V41::${roster.key}`)||'null')?.slots&&Object.keys(JSON.parse(localStorage.getItem(`PUBG_ROSTER_V41::${roster.key}`)).slots).length===16}catch(e){}try{sessionStorage.setItem(`PUBG_ROSTER_V41::${roster.key}`,raw);saved=true}catch(e){}try{window.name='__PUBG_ROSTER_V41__:'+raw;saved=true}catch(e){}if(!saved)throw Error('Browser storage unavailable');return true;}
-function restoreRoster41(){let rec=null;const k=key41();try{rec=JSON.parse(localStorage.getItem(`PUBG_ROSTER_V41::${k}`)||'null')}catch(e){}if(!rec)try{rec=JSON.parse(sessionStorage.getItem(`PUBG_ROSTER_V41::${k}`)||'null')}catch(e){}if(!rec)try{const raw=String(window.name||'');if(raw.startsWith('__PUBG_ROSTER_V41__:'))rec=JSON.parse(raw.slice(21))}catch(e){}if(!rec?.slots)return false;let n=0;for(const v of Object.values(rec.slots)){const t=(S.teams||[]).find(x=>Number(x.slot)===Number(v.slot));if(!t||!Array.isArray(v.players)||v.players.length!==4)continue;t.name=v.team||t.name;t.players=v.players.map(p=>({name:txt41(p.name),confidence:Number(p.confidence)||100,aliases:Array.isArray(p.aliases)?p.aliases:[],source:'V41_ROSTER'}));t.rosterVerified=true;t.rosterSource='V41_VERIFIED';n++}return n===16;}
-window.runTeamSlotImportV2=async function(){const X=S41();if(!X||X.scanning)return;if(!X.files?.length)return toast('ارفع صور الـLobby أولاً');if(V41.busy)return;V41.busy=true;X.scanning=true;X.results=[];try{status41('بدء التحليل الذكي السريع…',1);await worker41();const all=[];for(let i=0;i<X.files.length;i++)all.push(...await analyzeImage41(X.files[i],i,X.files.length));let rows=all.flat();if(rows.length===16)rows=assignSequential41(rows);else rows.sort((a,b)=>(a.slot||99)-(b.slot||99));for(const r of rows){const t=typeof teamForSlot==='function'?teamForSlot(r.slot):null;r.team=t?.name||'';r.verified=r.players.length===4&&r.players.every(p=>txt41(p.name));r.saveable=r.verified;r.needsReview=!r.verified}X.results=rows;window.renderSlotReview?.();status41(`اكتمل التحليل — ${rows.length}/16 Slot — تم استخدام القراءة الذكية السريعة`,100);toast(`✓ تم تحليل ${rows.length} Slot`)}catch(e){console.error('V41 OCR',e);X.results=[];window.renderSlotReview?.();status41(`فشل التحليل: ${e.message||e}`,0);toast(`فشل التحليل: ${e.message||'تحقق من اتصال الإنترنت'}`)}finally{X.scanning=false;V41.busy=false}};
-window.commitTeamSlotImportV2=async function(){const X=S41(),rows=(X?.results||[]);if(rows.length!==16)return toast(`لا يمكن الحفظ: ${rows.length}/16 Slot`);rows.forEach((r,i)=>{if(!(Number(r.slot)>=3&&Number(r.slot)<=18))r.slot=3+i});const used=new Set();for(const r of rows){if(used.has(Number(r.slot)))return toast(`Slot ${r.slot} مكرر — أعد التحليل أو عدل Slot`);used.add(Number(r.slot));if(!r.players||r.players.length!==4||r.players.some(p=>!txt41(p.name)))return toast(`Slot ${r.slot} يحتاج 4 أسماء`);if(!teamForSlot(r.slot))return toast(`Slot ${r.slot} غير موجود في Team List`)}try{for(const r of rows){const t=teamForSlot(r.slot);t.players=r.players.slice(0,4).map(p=>({name:txt41(p.name),confidence:Number(p.confidence)||100,source:'V41_LOBBY_OCR',aliases:(p.candidates||[]).map(c=>txt41(c.text||c.name)).filter(Boolean).slice(0,6)}));t.rosterVerified=true;t.rosterSource='V41_VERIFIED';t.rosterUpdated=new Date().toISOString()}saveRoster41(rows);try{window.save?.()}catch(e){};rows.forEach(r=>{r.verified=true;r.saveable=true;r.needsReview=false;r.conflict=false});window.render?.();window.renderTeamTournamentSelectorV27?.();window.renderSlotReview?.();toast('✓ تم تأكيد وحفظ 16 Slot و64 لاعبًا');return true}catch(e){console.error('V41 commit',e);toast('فشل الحفظ: '+(e.message||'Storage غير متاح'));return false}};
-/* Result media: IndexedDB first, compact session fallback second. */
-function openMediaDB41(){return new Promise((res,rej)=>{if(!indexedDB)return rej(Error('IndexedDB unavailable'));const r=indexedDB.open('PUBG_TOURNAMENT_MEDIA_V41',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('images'))r.result.createObjectStore('images',{keyPath:'id'})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error||Error('IndexedDB open failed'))})}
-async function saveMedia41(matchId,files){const db=await openMediaDB41();await new Promise((res,rej)=>{const tx=db.transaction('images','readwrite'),st=tx.objectStore('images');for(const f of files)st.put({id:`${key41()}|${matchId}|${f.name}|${f.size}|${f.lastModified}`,workspace:key41(),matchId:String(matchId),name:f.name,type:f.type||'image/jpeg',lastModified:f.lastModified||Date.now(),blob:f});tx.oncomplete=res;tx.onerror=()=>rej(tx.error||Error('Media write failed'))});const out=await new Promise((res,rej)=>{const tx=db.transaction('images','readonly'),q=tx.objectStore('images').getAll();q.onsuccess=()=>res(q.result.filter(x=>x.workspace===key41()&&String(x.matchId)===String(matchId)));q.onerror=()=>rej(q.error)});db.close();if(out.length<files.length)throw Error('Media verification failed');return out.sort((a,b)=>a.id.localeCompare(b.id)).map(x=>new File([x.blob],x.name,{type:x.type,lastModified:x.lastModified}))}
-window.addResultFiles=async function(list){const m=S.matches.find(x=>x.id===S.activeMatchId);if(!m)return toast('اختر المباراة أولًا');const incoming=Array.from(list||[]).filter(f=>f&&((f.type||'').startsWith('image/')||/\.(png|jpe?g|webp|heic|heif|avif)$/i.test(f.name||'')));if(!incoming.length)return toast('لم يتم العثور على صور صالحة');const R=window._resultOCRPro||(window._resultOCRPro={files:[],matchFiles:{},rows:[]});try{const old=R.files||[],sig=f=>`${f.name}|${f.size}|${f.lastModified}`,fresh=incoming.filter(f=>!old.some(x=>sig(x)===sig(f)));if(!fresh.length)return toast('هذه الصور مضافة بالفعل');const stored=await saveMedia41(m.id,fresh);R.activeMatch=m.id;R.files=[...old.filter(x=>!fresh.some(f=>sig(f)===sig(x))),...stored];R.matchFiles[m.id]=R.files.slice();m.resultOCR={...(m.resultOCR||{}),imageCount:R.files.length,sessionFiles:R.files.map(f=>f.name),storage:'V41_INDEXEDDB',updated:Date.now()};try{window.save?.()}catch(e){}window.renderResultFiles?.();window.statusR?.(`${R.files.length} صورة محفوظة ومتحقق منها — جاهزة للتحليل.`,0);toast(`✓ تم حفظ ${R.files.length} صورة للنتائج`);return true}catch(e){console.error('V41 result media',e);toast('فشل رفع/حفظ صور النتائج: '+(e.message||''));return false}};
-window.resultOCRLoadMatch=async function(id){const R=window._resultOCRPro;if(!R)return[];R.activeMatch=id;let out=[];try{const db=await openMediaDB41();const all=await new Promise((res,rej)=>{const tx=db.transaction('images','readonly'),q=tx.objectStore('images').getAll();q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});db.close();out=all.filter(x=>x.workspace===key41()&&String(x.matchId)===String(id)).sort((a,b)=>a.id.localeCompare(b.id)).map(x=>new File([x.blob],x.name,{type:x.type,lastModified:x.lastModified}))}catch(e){}R.files=out;R.matchFiles=R.matchFiles||{};R.matchFiles[id]=out.slice();window.renderResultFiles?.();return out};
-/* Save OCR session before confirm, so a refresh does not destroy work. */
-setInterval(()=>{try{const X=S41();if(X?.results?.length)sessionStorage.setItem(`PUBG_OCR_SESSION_V41::${key41()}`,JSON.stringify(X.results.map(r=>({slot:r.slot,team:r.team,players:r.players.map(p=>({name:p.name,confidence:p.confidence,aliases:p.candidates||[]})),sourceImage:r.sourceImage,card:r.card,row:r.row,column:r.column}))))}catch(e){}},1500);
-try{restoreRoster41();window.render?.();window.renderTeamTournamentSelectorV27?.()}catch(e){}
-/* Final result input binding — guarantees the visible file picker reaches the V41 media handler. */
-try{
- const ri=document.getElementById('matchResultImages');
- if(ri){ri.accept='image/*,.jpg,.jpeg,.png,.webp,.heic,.heif,.avif';ri.onchange=e=>{const fs=e.target.files;Promise.resolve(window.addResultFiles(fs)).finally(()=>{try{ri.value=''}catch(_){} });};}
- const rd=document.getElementById('matchResultDrop');
- if(rd&&!rd.__v41Bound){rd.addEventListener('dragover',e=>e.preventDefault());rd.addEventListener('drop',e=>{e.preventDefault();window.addResultFiles(e.dataTransfer?.files||[])});rd.__v41Bound=true;}
-}catch(e){console.warn('V41 result input bind',e)}
-window.__V41_FINAL__=V41;
+function contrast42(src){
+ const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(src,0,0);
+ const d=g.getImageData(0,0,c.width,c.height),p=d.data;for(let i=0;i<p.length;i+=4){const y=.299*p[i]+.587*p[i+1]+.114*p[i+2];const q=Math.max(0,Math.min(255,(y-92)*2.35+92));p[i]=p[i+1]=p[i+2]=q}g.putImageData(d,0,0);return c;
+}
+function parseTSV42(data,scale){
+ const out=[],tsv=String(data?.tsv||'');
+ for(const line of tsv.split(/\r?\n/).slice(1)){const p=line.split('\t');if(p.length<12)continue;const text=cleanName42(p.slice(11).join('\t')),conf=Number(p[10]),x=Number(p[6]),y=Number(p[7]),w=Number(p[8]),h=Number(p[9]);if(!text||![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)continue;out.push({text,confidence:Number.isFinite(conf)?conf:0,x:x/scale,y:y/scale,w:w/scale,h:h/scale,cx:(x+w/2)/scale,cy:(y+h/2)/scale})}
+ return out;
+}
+function norm42(s){return cleanName42(s).toLowerCase().normalize('NFKC').replace(/[\u200b-\u200f\ufeff]/g,'').replace(/[^\p{L}\p{N}]+/gu,'')}
+function sim42(a,b){const x=norm42(a),y=norm42(b);if(!x||!y)return 0;if(x===y)return 1;const d=Array(y.length+1);for(let j=0;j<=y.length;j++)d[j]=j;for(let i=1;i<=x.length;i++){let prev=d[0];d[0]=i;for(let j=1;j<=y.length;j++){const cur=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,prev+(x[i-1]===y[j-1]?0:1));prev=cur}}return Math.max(0,1-d[y.length]/Math.max(x.length,y.length))}
+function candidate42(a,text,conf,source){const n=cleanName42(text);if(!n||n.length<2||n.length>32)return;a.push({text:n,confidence:Number(conf)||0,source})}
+function choose42(a){const groups=[];for(const c of a){let g=groups.find(x=>sim42(x.text,c.text)>=.88);if(!g){g={text:c.text,confidence:Number(c.confidence)||0,votes:0,sources:new Set()};groups.push(g)}g.votes++;g.sources.add(c.source);if(Number(c.confidence)>g.confidence){g.confidence=Number(c.confidence);g.text=c.text}}return groups.map(g=>({...g,sources:[...g.sources],score:g.votes*2.2+g.confidence/100+Math.min(1,g.sources.size/3)})).sort((a,b)=>b.score-a.score)}
+function grid42(img){
+ const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,cols=[.006,.328,.650],rows=[.115,.405,.695],cells=[];
+ function ratio(x,y,w,h,light){const c=document.createElement('canvas');c.width=Math.max(4,Math.round(w));c.height=Math.max(4,Math.round(h));const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,x,y,w,h,0,0,c.width,c.height);const d=g.getImageData(0,0,c.width,c.height).data;let n=0;for(let i=0;i<d.length;i+=4){const v=.299*d[i]+.587*d[i+1]+.114*d[i+2];if(light?v>120:v<65)n++}return n/(d.length/4)}
+ for(let r=0;r<3;r++)for(let c=0;c<3;c++){const x=Math.round(W*cols[c]),y=Math.round(H*rows[r]),w=Math.round(W*.300),h=Math.round(H*.285);if(x+w>W||y+h>H)continue;const dark=ratio(x+2,y+2,w-4,h-4,false),light=ratio(x+10,y+10,w-20,h-20,true);if(dark>.80&&light>.025)cells.push({x,y,w,h,row:r,col:c})}
+ return cells.sort((a,b)=>a.row-b.row||a.col-b.col)
+}
+function cardLines42(card,lines){
+ const rx=card.x+card.w*.135,rw=card.w*.70,ry=card.y+card.h*.06,rh=card.h*.87,bands=[.12,.34,.56,.78].map(v=>ry+rh*v),out=[[],[],[],[]];
+ for(const ln of lines){if(ln.cx<rx||ln.cx>rx+rw||ln.cy<ry||ln.cy>ry+rh)continue;let bi=0,dist=1e9;for(let i=0;i<4;i++){const d=Math.abs(ln.cy-bands[i]);if(d<dist){dist=d;bi=i}}if(dist<card.h*.105)candidate42(out[bi],bi===0?cleanName42(ln.text).replace(/^\s*(?:0?[3-9]|1[0-8])(?:\s*[,.:;|/\-]\s*|\s+)/,''):ln.text,ln.confidence,'full-screen')}
+ return out.map(a=>choose42(a)[0]||{text:'',confidence:0,votes:0,sources:[],score:0})
+}
+function slotFromLines42(card,lines){for(const ln of lines){if(ln.cx<card.x+card.w*.32&&ln.cy<card.y+card.h*.32){const m=ln.text.match(/\b(0?[3-9]|1[0-8])\b/);if(m)return Number(m[1])}}return 0}
+async function targeted42(img,card,i){const b={x:card.x+card.w*.145,y:card.y+card.h*(.065+[.12,.34,.56,.78][i]-.10),w:card.w*.66,h:card.h*.16},c=crop42(img,b.x,b.y,b.w,b.h,7),d=await (async()=>{const w=await worker42();await w.setParameters({tessedit_pageseg_mode:'7',preserve_interword_spaces:'1',user_defined_dpi:'300'});return (await w.recognize(c,{}, {tsv:true,text:true}))?.data||{}})(),ts=parseTSV42(d,7),a=[];candidate42(a,d.text,d.confidence,'target');for(const w of ts)candidate42(a,w.text,w.confidence,'target-word');return choose42(a)[0]||{text:'',confidence:0,votes:0,sources:[],score:0}}
+async function analyzeImage42(file,index,total){
+ const img=await new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error(`الصورة ${index+1}: تعذر فتح الصورة`))};im.src=u});
+ const cards=grid42(img);if(!cards.length)throw Error(`الصورة ${index+1}: لم يتم اكتشاف كروت PUBG`);
+ status42(`الصورة ${index+1}/${total} — قراءة الشاشة…`,10+index*40);
+ const scale=2.0,full=crop42(img,0,0,img.naturalWidth||img.width,img.naturalHeight||img.height,scale);
+ const d1=await (async()=>{const w=await worker42();await w.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});return (await w.recognize(full,{}, {tsv:true,text:true}))?.data||{}})();
+ let lines=parseTSV42(d1,scale);
+ const preliminary=cards.map(c=>cardLines42(c,lines));
+ const hard=preliminary.filter(a=>a.filter(x=>x.text).length<4).length;
+ if(hard>0){status42(`الصورة ${index+1}/${total} — تحسين ${hard} كروت فقط…`,25+index*40);const d2=await (async()=>{const w=await worker42();await w.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});return (await w.recognize(contrast42(full),{}, {tsv:true,text:true}))?.data||{}})();lines=[...lines,...parseTSV42(d2,scale)]}
+ const out=[];
+ for(let ci=0;ci<cards.length;ci++){
+  const card=cards[ci],base=cardLines42(card,lines),players=[];
+  for(let j=0;j<4;j++){let p=base[j];if(!p.text||p.confidence<42){try{p=await targeted42(img,card,j)}catch(e){console.warn('targeted OCR',e)}}players.push({name:p.text||'',raw:p.text||'',confidence:p.confidence||0,quality:p.text?.length>=3?.75:.25,consensus:p.votes||0,score:p.score||0,votes:p.votes||0,sources:p.sources||[],verified:!!p.text,candidates:p.text?[p]:[]})}
+  out.push({slot:slotFromLines42(card,lines),players,sourceImage:index,card:ci+1,row:card.row+1,column:card.col+1,file:file.name,evidence:crop42(img,card.x,card.y,card.w,card.h,2.2).toDataURL('image/jpeg',.88),conflict:false,verified:players.every(p=>!!p.name),needsReview:players.some(p=>!p.name)})
+ }
+ return out;
+}
+function assignSequential42(rows){if(rows.length!==16)return rows;let n=0;return rows.slice().sort((a,b)=>a.sourceImage-b.sourceImage||a.row-b.row||a.column-b.column).map(r=>{const slot=3+n++;return {...r,slot,team:(typeof teamForSlot==='function'?teamForSlot(slot)?.name:'')||r.team||''}})}
+async function rosterDB42Put(roster){if(!window.indexedDB)throw Error('IndexedDB unavailable');const db=await new Promise((res,rej)=>{const q=indexedDB.open('PUBG_TOURNAMENT_CORE_V42',1);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains('rosters'))q.result.createObjectStore('rosters',{keyPath:'key'});};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error||Error('Roster DB open failed'))});await new Promise((res,rej)=>{const tx=db.transaction('rosters','readwrite');tx.objectStore('rosters').put(roster);tx.oncomplete=res;tx.onerror=()=>rej(tx.error||Error('Roster DB write failed'))});const check=await new Promise((res,rej)=>{const tx=db.transaction('rosters','readonly'),q=tx.objectStore('rosters').get(roster.key);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});db.close();if(!check||Object.keys(check.slots||{}).length!==16)throw Error('Roster verification failed');return true}
+async function saveRoster42(rows){const key=String((typeof workspaceId==='function'&&workspaceId())||S?.tournament||'default');const roster={version:42,key,tournament:text42(S.tournament),updated:Date.now(),slots:{}};for(const r of rows){const t=teamForSlot(r.slot);if(!t)continue;roster.slots[String(r.slot)]={slot:Number(r.slot),team:text42(t.name),players:r.players.slice(0,4).map(p=>({name:text42(p.name),confidence:Number(p.confidence)||100,aliases:(p.candidates||[]).map(c=>text42(c.text||c.name)).filter(Boolean).slice(0,8)}))}}if(Object.keys(roster.slots).length!==16)throw Error('يجب حفظ جميع الـ16 Slot');const raw=JSON.stringify(roster);let ok=false;try{await rosterDB42Put(roster);ok=true}catch(e){console.warn('Roster IDB fallback',e)}try{localStorage.setItem(`PUBG_ROSTER_V42::${key}`,raw);const x=JSON.parse(localStorage.getItem(`PUBG_ROSTER_V42::${key}`)||'null');if(x&&Object.keys(x.slots||{}).length===16)ok=true}catch(e){}try{sessionStorage.setItem(`PUBG_ROSTER_V42::${key}`,raw);ok=true}catch(e){}try{window.name='__PUBG_ROSTER_V42__:'+raw;ok=true}catch(e){}if(!ok)throw Error('لا توجد وسيلة تخزين متاحة في هذا المتصفح');return true}
+window.runTeamSlotImportV2=async function(){const X=X42();if(!X||X.scanning)return;if(!X.files?.length)return toast42('ارفع صور الـLobby أولاً');if(V42.busy)return;V42.busy=true;X.scanning=true;X.results=[];try{status42('بدء التحليل…',1);await worker42();const all=[];for(let i=0;i<X.files.length;i++)all.push(...await analyzeImage42(X.files[i],i,X.files.length));let rows=all.flat();if(rows.length===16)rows=assignSequential42(rows);else rows.sort((a,b)=>(a.slot||99)-(b.slot||99));for(const r of rows){const t=teamForSlot(r.slot);r.team=t?.name||'';r.verified=r.players.length===4&&r.players.every(p=>text42(p.name));r.saveable=r.verified;r.needsReview=!r.verified}X.results=rows;window.renderSlotReview?.();status42(`اكتمل التحليل — ${rows.length}/16 Slot`,100);toast42(`✓ تم تحليل ${rows.length} Slot`)}catch(e){console.error('V42 OCR failure',e);X.results=[];window.renderSlotReview?.();status42(`فشل التحليل: ${e.message||e}`,0);toast42(`فشل التحليل: ${e.message||'تحقق من اتصال الإنترنت ومحرك OCR'}`)}finally{X.scanning=false;V42.busy=false}};
+window.commitTeamSlotImportV2=async function(){const X=X42(),rows=(X?.results||[]);if(rows.length!==16)return toast42(`لا يمكن الحفظ: ${rows.length}/16 Slot`);const ordered=rows.slice().sort((a,b)=>Number(a.slot)-Number(b.slot));const used=new Set();for(const r of ordered){if(!(Number(r.slot)>=3&&Number(r.slot)<=18))return toast42(`Slot غير صحيح: ${r.slot}`);if(used.has(Number(r.slot)))return toast42(`Slot ${r.slot} مكرر`);used.add(Number(r.slot));if(!r.players||r.players.length!==4||r.players.some(p=>!text42(p.name)))return toast42(`Slot ${r.slot} يحتاج 4 أسماء`);if(!teamForSlot(r.slot))return toast42(`Slot ${r.slot} غير موجود في Team List`)}try{for(const r of ordered){const t=teamForSlot(r.slot);t.players=r.players.slice(0,4).map(p=>({name:text42(p.name),confidence:Number(p.confidence)||100,source:'V42_LOBBY_OCR',aliases:(p.candidates||[]).map(c=>text42(c.text||c.name)).filter(Boolean).slice(0,8)}));t.rosterVerified=true;t.rosterSource='V42_VERIFIED';t.rosterUpdated=new Date().toISOString()}await saveRoster42(ordered);try{if(typeof save==='function')save()}catch(e){console.warn('main save warning',e)}ordered.forEach(r=>{r.verified=true;r.saveable=true;r.needsReview=false;r.conflict=false});X.results=ordered;window.render?.();window.renderTeamTournamentSelectorV27?.();window.renderSlotReview?.();toast42('✓ تم تأكيد وحفظ 16 Slot و64 لاعبًا');return true}catch(e){console.error('V42 commit failure',e);toast42('فشل الحفظ: '+(e.message||'خطأ غير معروف'));return false}};
+/* Fix the result file picker too: accept all browser-supported image types and never depend on the old inline handler. */
+try{const ri=document.getElementById('matchResultImages');if(ri){ri.accept='image/*,.jpg,.jpeg,.png,.webp,.heic,.heif,.avif';ri.onchange=ev=>{const fs=Array.from(ev.target.files||[]);Promise.resolve(window.addResultFiles?.(fs)).finally(()=>{try{ev.target.value=''}catch(e){}})}}}catch(e){console.warn('V42 result input',e)}
+window.__V42_FINAL__=V42;
 })();
-
 </script>
 </body></html>
