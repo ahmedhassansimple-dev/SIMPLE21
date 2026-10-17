@@ -2206,4 +2206,166 @@ window.runResultOCRPro=async function(){const R=window._resultOCRPro;if(!R||R.sc
 window.__V39_ADAPTIVE__=true;
 })();
 </script>
+<script id="v40WorldClassCore">
+(function(){
+'use strict';
+/* V40 — persistence that survives local-file restrictions + fast/high-fidelity lobby OCR + reliable result upload */
+const V40={version:'V40_WORLD_CLASS',busy:false,ocrBusy:false};
+const c40=x=>String(x??'').trim();
+function storageAvailable40(){try{const k='__v40_test__';localStorage.setItem(k,'1');localStorage.removeItem(k);return true}catch(e){return false}}
+function compactState40(){
+  try{
+    const x=JSON.parse(JSON.stringify(S));
+    if(Array.isArray(x.ocrEvidence))x.ocrEvidence=x.ocrEvidence.map(e=>{const q={...e};delete q.crop;delete q.raw;return q}).slice(-120);
+    if(Array.isArray(x.snapshots))x.snapshots=x.snapshots.slice(-5).map(v=>{const q={...v};delete q.state?.ocrEvidence;return q});
+    return x;
+  }catch(e){return null}
+}
+function historyState40(){try{return history.state&&history.state.__V40_APP||null}catch(e){return null}}
+function writeHistory40(state){try{const payload={version:40,updated:Date.now(),state};history.replaceState({...(history.state||{}),__V40_APP:payload},document.title,location.href);return true}catch(e){return false}}
+function readHistory40(){try{const p=historyState40();return p?.state||null}catch(e){return null}}
+function nameRead40(){try{const raw=String(window.name||'');if(!raw.startsWith('__PUBGTM_V40__:'))return null;return JSON.parse(raw.slice(15))}catch(e){return null}}
+function nameWrite40(payload){try{const raw='__PUBGTM_V40__:'+JSON.stringify(payload);if(raw.length>1800000)return false;window.name=raw;return true}catch(e){return false}}
+function nameMedia40(){const x=nameRead40();return x?.media&&typeof x.media==='object'?x.media:{}}
+function nameMediaWrite40(media){const x=nameRead40()||{};x.media=media;return nameWrite40(x)}
+function directRoster40(){
+ const slots={};for(const t of (S.teams||[])){if(Number(t.slot)>=3&&Number(t.slot)<=18&&Array.isArray(t.players)&&t.players.length===4)slots[String(t.slot)]={slot:Number(t.slot),team:c40(t.name),players:t.players.slice(0,4).map(p=>({name:c40(p?.name||p),confidence:Number(p?.confidence)||100,aliases:Array.isArray(p?.aliases)?p.aliases.slice(0,8):[]}))};}
+ return {version:40,updated:Date.now(),tournament:c40(S.tournament),slots};
+}
+function restoreHistory40(){
+ const saved=readHistory40()||nameRead40()?.state;if(!saved)return false;
+ try{
+   const currentTeams=Array.isArray(S.teams)?S.teams:[];
+   if(saved.tournament)S.tournament=saved.tournament;
+   if(Array.isArray(saved.teams)&&saved.teams.length===16){
+     S.teams=saved.teams.map((t,i)=>{const old=currentTeams.find(x=>Number(x.slot)===Number(t.slot))||{slot:i+3};return {...old,...t,players:Array.isArray(t.players)?t.players:[]}});
+   }
+   if(Array.isArray(saved.matches))S.matches=saved.matches;
+   if(saved.rules)S.rules={...S.rules,...saved.rules};
+   if(saved.activeMatchId!==undefined)S.activeMatchId=saved.activeMatchId;
+   return true;
+ }catch(e){return false}
+}
+async function idbState40(){
+ try{
+   if(!window.indexedDB)return false;
+   const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('PUBG_TOURNAMENT_MANAGER_V40',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('app'))r.result.createObjectStore('app',{keyPath:'id'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||Error('IDB'))});
+   const state=compactState40();if(!state){db.close();return false}
+   await new Promise((resolve,reject)=>{const tx=db.transaction('app','readwrite');tx.objectStore('app').put({id:'state',updated:Date.now(),state});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('IDB write'))});
+   const check=await new Promise((resolve,reject)=>{const tx=db.transaction('app','readonly');const q=tx.objectStore('app').get('state');q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)});db.close();return !!check?.state;
+ }catch(e){return false}
+}
+async function restoreIDB40(){
+ try{if(!window.indexedDB)return false;const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('PUBG_TOURNAMENT_MANAGER_V40',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('app'))r.result.createObjectStore('app',{keyPath:'id'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});const rec=await new Promise((resolve,reject)=>{const tx=db.transaction('app','readonly');const q=tx.objectStore('app').get('state');q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)});db.close();if(!rec?.state)return false;Object.assign(S,rec.state);return true}catch(e){return false}
+}
+function persist40(){
+ const state=compactState40();if(!state)return false;
+ let ok=false;
+ try{if(storageAvailable40()){localStorage.setItem(typeof KEY!=='undefined'?KEY:'pubg_tm_v21_pro',JSON.stringify(state));ok=true}}catch(e){}
+ if(writeHistory40(state))ok=true;
+ if(nameWrite40({...(nameRead40()||{}),version:40,updated:Date.now(),state}))ok=true;
+ window.__V40_MEMORY_STATE__=state;
+ idbState40().catch(()=>{});
+ return ok;
+}
+/* Replace the global save function. Existing buttons/functions resolve the global binding dynamically. */
+window.save=function(){const ok=persist40();if(!ok)toast('تم الحفظ داخل الجلسة — التخزين الدائم غير متاح في وضع الملف المحلي');return ok};
+window.__V40_PERSIST__=persist40;
+/* Restore before the user starts working. Prefer durable storage, then history state. */
+(async function bootPersistence40(){
+ let restored=false;
+ try{restored=await restoreIDB40()}catch(e){}
+ if(!restored)restored=restoreHistory40();
+ if(!restored&&window.__V40_MEMORY_STATE__)try{Object.assign(S,window.__V40_MEMORY_STATE__);restored=true}catch(e){}
+ if(restored){try{render()}catch(e){}try{renderTeamTournamentSelectorV27?.()}catch(e){}}
+})();
+/* Reliable roster commit: no localStorage/IDB requirement for the button to succeed. History state is the guaranteed fallback. */
+window.commitTeamSlotImportV2=async function(){
+ if(V40.busy)return false;V40.busy=true;
+ try{
+  const X=window._slotImportV2,rows=(X?.results||[]);
+  if(rows.length!==16)throw Error(`تم تحليل ${rows.length}/16 Slot فقط`);
+  const seen=new Set();
+  for(const r of rows){const slot=Number(r?.slot);if(!Number.isInteger(slot)||slot<3||slot>18)throw Error(`Slot ${r?.slot||'?'} غير صحيح`);if(seen.has(slot))throw Error(`Slot ${slot} مكرر`);seen.add(slot);const t=teamForSlot(slot);if(!t)throw Error(`Slot ${slot} غير موجود في Team List`);if(!Array.isArray(r.players)||r.players.length!==4||r.players.some(p=>!c40(p?.name)))throw Error(`Slot ${slot} يحتاج 4 أسماء لاعبين`)}
+  for(const r of rows){const t=teamForSlot(Number(r.slot));t.players=r.players.slice(0,4).map(p=>({name:c40(p.name),confidence:Number(p.confidence)||100,source:p.manual?'manual_review':'lobby_ocr',ocrQuality:Number(p.quality)||0,consensus:Number(p.consensus)||0,evidenceCount:Number(p.votes)||0,aliases:(p.candidates||[]).map(q=>c40(q?.text||q?.name)).filter(Boolean).slice(0,8)}));t.rosterVerified=true;t.rosterSource='V40_WORLD_CLASS';t.rosterUpdated=new Date().toISOString()}
+  S.proMeta=S.proMeta||{};S.proMeta.lastOCRCommit=Date.now();S.proMeta.ocrCommitCount=(Number(S.proMeta.ocrCommitCount)||0)+1;
+  const saved=persist40();
+  rows.forEach(r=>{r.verified=true;r.saveable=true;r.needsReview=false;r.conflict=false});
+  try{render()}catch(e){}try{renderTeamTournamentSelectorV27?.()}catch(e){}try{renderSlotReview?.()}catch(e){}
+  toast(saved?'✓ تم حفظ 16 Slot و64 لاعبًا بنجاح':'✓ تم تثبيت 16 Slot و64 لاعبًا داخل الجلسة');
+  return true;
+ }catch(e){console.error('V40 roster commit',e);toast('تعذر التأكيد: '+(e.message||'خطأ غير معروف'));return false}finally{V40.busy=false}
+};
+/* Make the Confirm button work even if an old inline handler/override remains. */
+if(!window.__V40_CONFIRM_GUARD__){document.addEventListener('click',ev=>{const b=ev.target?.closest?.('button');if(!b)return;const txt=c40(b.textContent);if(/Confirm\s*&\s*Save\s+\d+\s+Slots/i.test(txt)){ev.preventDefault();ev.stopImmediatePropagation();window.commitTeamSlotImportV2()}},true);window.__V40_CONFIRM_GUARD__=true}
+/* Standalone-file media fallback: IndexedDB when available, window.name when storage is blocked. */
+async function saveMedia40(matchId,files){
+ const key=String(matchId), wk=(()=>{try{return String((typeof workspaceId==='function'&&workspaceId())||S?.tournament||'default')}catch(e){return String(S?.tournament||'default')}})();
+ const bucket=`${wk}::${key}`;const media=nameMedia40();const existing=Array.isArray(media[bucket])?media[bucket]:[];
+ const incoming=[];
+ for(const f of Array.from(files||[])){
+  try{const data=await new Promise((res,rej)=>{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{try{URL.revokeObjectURL(u);const maxW=1600,scale=Math.min(1,maxW/im.naturalWidth);const w=Math.max(1,Math.round(im.naturalWidth*scale)),h=Math.max(1,Math.round(im.naturalHeight*scale));const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);res(c.toDataURL('image/jpeg',.72))}catch(e){URL.revokeObjectURL(u);rej(e)}};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error('Image decode failed'))};im.src=u});incoming.push({name:f.name||`result-${Date.now()}.jpg`,type:'image/jpeg',lastModified:Number(f.lastModified)||Date.now(),data});}catch(e){console.warn('V40 media encode',e)}}
+ const merged=[...existing];for(const x of incoming){const i=merged.findIndex(y=>y.name===x.name&&Number(y.lastModified)===Number(x.lastModified));if(i>=0)merged[i]=x;else merged.push(x)}
+ media[bucket]=merged.slice(-10);if(!nameMediaWrite40(media))throw Error('Browser session storage is full');
+ return merged.slice(-10).map(x=>{const bin=atob(x.data.split(',')[1]||''),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new File([u],x.name,{type:x.type,lastModified:x.lastModified})});
+}
+async function loadMedia40(matchId){
+ const wk=(()=>{try{return String((typeof workspaceId==='function'&&workspaceId())||S?.tournament||'default')}catch(e){return String(S?.tournament||'default')}})();const bucket=`${wk}::${String(matchId)}`;const media=nameMedia40();const arr=Array.isArray(media[bucket])?media[bucket]:[];return arr.map(x=>{try{const bin=atob(x.data.split(',')[1]||''),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new File([u],x.name,{type:x.type||'image/jpeg',lastModified:x.lastModified||Date.now()})}catch(e){return null}}).filter(Boolean)}
+async function clearMedia40(matchId){const wk=(()=>{try{return String((typeof workspaceId==='function'&&workspaceId())||S?.tournament||'default')}catch(e){return String(S?.tournament||'default')}})();const media=nameMedia40();delete media[`${wk}::${String(matchId)}`];nameMediaWrite40(media)}
+window.v40LoadResultMedia=loadMedia40;window.v40SaveResultMedia=saveMedia40;window.v40ClearResultMedia=clearMedia40;
+window.addResultFiles=async function(list){
+ const m=S.matches.find(x=>x.id===S.activeMatchId);if(!m)return toast('اختر المباراة أولًا قبل رفع الصور');
+ const incoming=Array.from(list||[]).filter(f=>f&&((String(f.type||'').toLowerCase().startsWith('image/'))||/\.(png|jpe?g|webp|heic|heif|avif)$/i.test(String(f.name||''))));if(!incoming.length)return toast('لم يتم العثور على صور صالحة');
+ const R=window._resultOCRPro||(window._resultOCRPro={files:[],matchFiles:{},rows:[]});R.files=Array.isArray(R.files)?R.files:[];R.activeMatch=m.id;const sig=f=>`${f.name}|${f.size}|${f.lastModified}`;const fresh=incoming.filter(f=>!R.files.some(x=>sig(x)===sig(f)));if(!fresh.length)return toast('هذه الصور مضافة بالفعل');
+ try{const stored=await saveMedia40(m.id,[...fresh]);R.files=stored;R.matchFiles=R.matchFiles||{};R.matchFiles[m.id]=stored.slice();m.resultOCR={...(m.resultOCR||{}),sessionFiles:stored.map(f=>f.name),sourceMode:'screenshots',imageCount:stored.length,matchId:m.id,storage:'V40_SESSION_MEDIA',updated:Date.now()};persist40();try{renderResultFiles()}catch(e){}try{statusR(`${stored.length} صورة محفوظة وجاهزة للتحليل.`,0)}catch(e){}toast(`✓ تم رفع ${stored.length} صورة للنتائج`);return true}catch(e){console.error('V40 result upload',e);toast('تعذر حفظ الصور داخل جلسة المتصفح');return false}
+};
+window.resultOCRLoadMatch=async function(id){const R=window._resultOCRPro;if(!R)return[];R.activeMatch=id;let files=[];try{files=await loadMedia40(id)}catch(e){}if(!files.length)try{files=await window.v38LoadResultMedia?.(id)||[]}catch(e){}R.files=files;R.matchFiles=R.matchFiles||{};R.matchFiles[id]=files.slice();try{renderResultFiles()}catch(e){}return files};
+window.resultOCRClear=async function(){const id=S.activeMatchId;if(!id)return;await clearMedia40(id);const R=window._resultOCRPro;if(R){R.files=[];R.rows=[];R.matchFiles=R.matchFiles||{};R.matchFiles[id]=[]}const m=S.matches.find(x=>x.id===id);if(m?.resultOCR){m.resultOCR.imageCount=0;m.resultOCR.sessionFiles=[]}persist40();try{renderResultFiles()}catch(e){}try{statusR('تم حذف صور هذه المباراة.',0)}catch(e){}};
+/* Result upload: replace the old lexical onchange closure with the final global handler. */
+function bindResultInput40(){const input=document.getElementById('matchResultImages');if(!input)return false;input.accept='image/*,.heic,.heif,.avif,.webp,.png,.jpg,.jpeg';input.onchange=e=>{const files=e.target.files;Promise.resolve(window.addResultFiles(files)).finally(()=>{try{input.value=''}catch(_){}})};const drop=document.getElementById('matchResultDrop');if(drop&&!drop.__v40){['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>e.preventDefault()));drop.addEventListener('drop',e=>{e.preventDefault();window.addResultFiles(e.dataTransfer?.files||[])});drop.__v40=true}return true}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindResultInput40);else bindResultInput40();
+/* ---------------- Lobby OCR: fast-first, deep-only-when-needed ---------------- */
+async function lineCandidates40(img,card){
+ const bands=effectiveRowBands(img,card),out=Array.from({length:4},()=>[]),r=nameRegion(card),c=cropCanvas(img,r.x,r.y,r.w,r.h,10);
+ const modes=[['original','4','card-original'],['contrast','6','card-contrast'],['glyph','11','card-glyph']];
+ for(const [mode,psm,tag] of modes){try{const d=await recognize(c,mode,psm),lines=ocrLines(d,10);for(const ln of lines){let best=0,dist=1e9;for(let i=0;i<4;i++){const b=bands[i]||rowBand(card,i),dc=Math.abs((r.y+ln.cy)-(b.y+b.h/2));if(dc<dist){dist=dc;best=i}}if(dist<card.h*.13){const txt=best===0?normalizeFirstPlayer(ln.text):normalizePlayer(ln.text);addUniqueCandidate(out[best],txt,ln.confidence,tag)}}}catch(e){}}
+ return out;
+}
+async function readPlayers40(img,card){
+ const candidates=await lineCandidates40(img,card),bands=effectiveRowBands(img,card),out=[];
+ for(let i=0;i<4;i++){
+  let ranked=rankPlayerCandidates(candidates[i]||[]),top=ranked[0];
+  const need=!top||top.quality<.70||top.confidence<64;
+  if(need){for(const v of [['original','7','target-original',.018,.035,12],['contrast','7','target-contrast',.018,.035,12],['glyph','7','target-glyph',.010,.030,14],['blackhat','7','target-blackhat',.012,.030,12]]){try{const more=await playerPass(img,card,i,...v,bands[i]);candidates[i].push(...more)}catch(e){}}ranked=rankPlayerCandidates(candidates[i]);top=ranked[0]}
+  if(!top||top.quality<.58||top.confidence<52){for(const v of [['red','7','deep-red',.010,.030,14],['blue','7','deep-blue',.010,.030,14],['otsu','13','deep-otsu',.010,.025,14],['ink','7','deep-ink',.010,.030,16]]){try{const more=await playerPass(img,card,i,...v,bands[i]);candidates[i].push(...more)}catch(e){}}ranked=rankPlayerCandidates(candidates[i]);top=ranked[0]}
+  top=top||{text:'',confidence:0,quality:0,consensus:0,score:0,votes:0,sources:[]};
+  out.push({text:top.text||'',confidence:Number(top.confidence)||0,quality:Number(top.quality)||0,consensus:Number(top.consensus)||0,score:Number(top.score)||0,votes:Number(top.votes)||0,sources:top.sources||[],cy:(bands[i]?.y||rowBand(card,i).y)+((bands[i]?.h||rowBand(card,i).h)/2),candidates:ranked.slice(0,14)});
+ }
+ return out;
+}
+async function slotFast40(img,card){
+ const q={x:card.x+.005*card.w,y:card.y+.005*card.h,w:card.w*.23,h:card.h*.34,s:10};
+ const vals=[];
+ for(const [mode,psm] of [['original','8'],['contrast','8'],['threshold','13']]){
+  try{
+   const d=await recognize(cropCanvas(img,q.x,q.y,q.w,q.h,q.s),mode,psm);
+   const raw=c40(d?.text||'').replace(/[^0-9]/g,'');
+   if(raw){const n=Number(raw);if(n>=1&&n<=99)vals.push({n,confidence:Number(d.confidence)||0});}
+   for(const w of ocrWords(d,q.s)){
+    const n=Number(c40(w.t).replace(/[^0-9]/g,''));
+    if(n>=1&&n<=99)vals.push({n,confidence:w.confidence||0});
+   }
+  }catch(e){}
+ }
+ const map=new Map();
+ for(const v of vals){const a=map.get(v.n)||{n:v.n,votes:0,conf:0};a.votes++;a.conf=Math.max(a.conf,v.confidence);map.set(v.n,a)}
+ const best=[...map.values()].sort((a,b)=>(b.votes*100+b.conf)-(a.votes*100+a.conf))[0];
+ return{slot:best?.n||0,confidence:best?.conf||0,slotCandidates:[...map.values()]};
+}
+async function analyzeImage40(file,index){const img=await loadImg(file),cards=inferGrid(img);if(!cards.length)throw Error(`الصورة ${index+1}: لم يتم اكتشاف كروت PUBG`);const out=[];for(let ci=0;ci<cards.length;ci++){const card=cards[ci];setStatus(`الصورة ${index+1}/${X.files.length} — الكارت ${ci+1}/${cards.length}`,10+index*40+ci*(30/Math.max(cards.length,1)));const a=await slotFast40(img,card);const players=await readPlayers40(img,card);out.push({slot:a.slot,slotCandidates:a.slotCandidates,team:rosterForSlot(a.slot).team||'',players:players.map(p=>({name:p.text,raw:p.text,confidence:p.confidence,quality:p.quality,consensus:p.consensus,score:p.score,votes:p.votes,sources:p.sources,verified:!!p.name,matched:false,cy:p.cy,candidates:p.candidates})),verified:players.every(p=>!!p.text),needsReview:players.some(p=>!p.text),conflict:false,sourceImage:index,card:ci+1,row:card.row+1,column:card.col+1,file:file.name,evidence:cropCanvas(img,card.x,card.y,card.w,card.h,3).toDataURL('image/jpeg',.88)});}return out;}
+window.runTeamSlotImportV2=async function(){if(X.scanning)return;if(!X.files.length)return toast('ارفع صور الـLobby أولاً');X.scanning=true;X.results=[];renderSlotReview?.();const t0=performance.now();try{setStatus('بدء التحليل السريع عالي الدقة…',1);await ensureOCR();const all=[];for(let i=0;i<X.files.length;i++)all.push(...await analyzeImage40(X.files[i],i));X.results=mergeResults(all);X.results.forEach(r=>{r.verified=Array.isArray(r.players)&&r.players.length===4&&r.players.every(p=>c40(p.name));r.needsReview=!r.verified});renderSlotReview?.();setStatus(`اكتمل التحليل — ${X.results.length} Slot — ${((performance.now()-t0)/1000).toFixed(1)}s`,100);toast(`✓ تم تحليل ${X.results.length} Slot بسرعة محسّنة`)}catch(e){console.error('V40 lobby OCR',e);X.results=[];renderSlotReview?.();setStatus(`فشل التحليل: ${e.message||e}`,0);toast('فشل التحليل — لم يتم تعديل البطولة')}finally{X.scanning=false}};
+/* Ensure result images are analyzed from the files currently in the final handler. */
+window.__V40_FINAL__=V40;
+})();
+</script>
 </body></html>
