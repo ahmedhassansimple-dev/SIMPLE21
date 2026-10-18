@@ -21,7 +21,7 @@
   <div class="topActions"><button class="blue" onclick="openWorkspace()">🏆 <span id="currentTournamentLabel">Tournament</span></button><button class="ghost" onclick="openWorkspace()">Switch</button><button class="ghost" onclick="backup()">Backup</button></div>
 </header>
 <nav class="nav" id="nav">
-<button data-page="home">⌂<br>Home</button><button data-page="teams">Teams</button><button data-page="matches">Matches</button><button data-page="roster">Slot OCR</button><button data-page="ocr">Result OCR</button><button data-page="overall">Leaderboard</button><button data-page="analytics">Analytics</button><button data-page="stats">Players</button><button data-page="assistant">AI</button><button data-page="settings">Settings</button>
+<button data-page="home">⌂<br>Home</button><button data-page="teams">01 · Teams</button><button data-page="roster">02 · Rosters</button><button data-page="matches">03 · Matches</button><button data-page="ocr">04 · Result OCR</button><button data-page="overall">Leaderboard</button><button data-page="analytics">Analytics</button><button data-page="stats">Players</button><button data-page="assistant">AI</button><button data-page="settings">Settings</button>
 </nav>
 
 <section id="home" class="section active">
@@ -37,9 +37,13 @@
 <section id="teams" class="section">
  <div class="card hero"><div class="titleline"><div><div class="title">Team List · Slots 03–18</div><div class="hint">Team identity is always bound to the fixed slot. OCR never replaces a saved team name with an OCR guess.</div></div><span id="teamHealth" class="pill">0/16 Teams</span></div></div>
  <div class="card"><div class="title">Tournament Team Setup</div><div class="row"><div><label>Paste Slot + Team list</label><textarea id="bulkTeams" placeholder="3 AlUla Club\n4 Xx Team\n5 BATTLE HERO X\n...\n18 CASTLE KEY"></textarea></div><div style="max-width:260px"><label>Smart import</label><button class="primary" onclick="importTeams()">Import into Slots</button><div class="hint" style="margin-top:8px">Accepted: <b>03 | Team</b>, <b>03 Team</b>, or tab-separated text.</div><button class="ghost" style="margin-top:8px" onclick="exportTeamsCSV()">Export Teams CSV</button></div></div></div>
- <div class="card"><div id="teamGrid" class="slotGrid"></div></div>
+ <div class="card"><div id="teamGrid" class="slotGrid"></div></div><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><b>Next step: Build the 16-player rosters</b><div class="hint">Once the team names are complete, move directly to the Lobby Reader.</div></div><button class="primary" onclick="go('roster')">Continue to Rosters →</button></div></div>
 </section>
-
+<section id="roster" class="section">
+ <div class="card hero"><div class="titleline"><div><div class="title">Roster Builder · Lobby OCR</div><div class="hint">Upload the two PUBG MOBILE lobby screenshots. The reader uses the known 3×3 / 3×3 / 3×3 and 3×3 / 3×3 / 1 layout, then binds players to Slots 03–18 automatically.</div><span id="rosterEngine" class="pill warn">Ready check</span></div></div><div class="card"><div class="grid3"><div><b>01 · Team binding</b><div class="hint">Slot determines the team. Team names are never OCR-guessed.</div></div><div><b>02 · Multi-pass reading</b><div class="hint">Card OCR + row OCR + contrast channels + consensus.</div></div><div><b>03 · Auto-save</b><div class="hint">Detected names are saved automatically and remain editable.</div></div></div></div>
+ <div class="card"><div class="title">Upload Lobby Screenshots</div><div class="drop"><b>Recommended: original iPhone / Android screenshots</b><div class="hint">Select the two original lobby screenshots: first = Slots 03–11, second = Slots 12–18. The reader uses multi-pass OCR and only spends extra time on difficult rows.</div><input id="lobbyFiles" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" multiple><div class="fileList" id="lobbyFileList"></div><div class="row" style="margin-top:10px"><button id="processLobbyBtn" class="primary" onclick="processLobby()" disabled>▶ Process Lobby</button><button class="ghost" onclick="clearLobbySelection()">Clear</button><button class="ghost" onclick="testOCREngine()">Test OCR Engine</button></div></div><div class="progress"><i id="rosterProgress"></i></div><div id="rosterStatus" class="hint" style="margin-top:8px">Waiting for lobby screenshots.</div></div>
+ <div class="card"><div class="titleline"><div><div class="title">Detected Roster</div><div class="hint">The reader keeps the strongest candidate per character and shows the evidence so you can correct only the rare difficult letters.</div></div><div class="row" style="max-width:340px"><button class="ghost small" onclick="fillMissingRoster()">Fill missing manually</button><button class="primary small" onclick="saveRosterReview()">✓ Save Roster</button></div></div><div id="rosterReview" class="empty">Upload a lobby screenshot to start.</div></div><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><b>Next step: Create your matches</b><div class="hint">Your roster is now the canonical player identity used by Result OCR.</div></div><button class="primary" onclick="go('matches')">Continue to Match Center →</button></div></div>
+</section>
 <section id="matches" class="section">
  <div class="card hero"><div class="title">Match Center</div><div class="hint">Create a match once. Its roster snapshot stays attached to the match so later team edits do not corrupt historical results.</div></div>
  <div class="twoCol">
@@ -47,12 +51,6 @@
   <div class="card"><div class="title">Match Archive</div><div id="matchList"></div></div>
  </div>
  <div class="card" id="matchEditor"></div>
-</section>
-
-<section id="roster" class="section">
- <div class="card hero"><div class="titleline"><div><div class="title">Lobby / Slot OCR</div><div class="hint">Upload the two PUBG MOBILE lobby screenshots. The reader uses the known 3×3 / 3×3 / 3×3 and 3×3 / 3×3 / 1 layout, then binds players to Slots 03–18 automatically.</div></div><span id="rosterEngine" class="pill warn">Ready check</span></div></div>
- <div class="card"><div class="title">Upload Lobby Screenshots</div><div class="drop"><b>Recommended: original iPhone / Android screenshots</b><div class="hint">Select the two original lobby screenshots: first = Slots 03–11, second = Slots 12–18. Nothing starts until you press Process Lobby.</div><input id="lobbyFiles" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" multiple><div class="fileList" id="lobbyFileList"></div><div class="row" style="margin-top:10px"><button id="processLobbyBtn" class="primary" onclick="processLobby()" disabled>▶ Process Lobby</button><button class="ghost" onclick="clearLobbySelection()">Clear</button><button class="ghost" onclick="testOCREngine()">Test OCR Engine</button></div></div><div class="progress"><i id="rosterProgress"></i></div><div id="rosterStatus" class="hint" style="margin-top:8px">Waiting for lobby screenshots.</div></div>
- <div class="card"><div class="titleline"><div class="title">Detected Roster</div><div class="row" style="max-width:340px"><button class="ghost small" onclick="fillMissingRoster()">Fill missing manually</button><button class="primary small" onclick="saveRosterReview()">Save Roster</button></div></div><div id="rosterReview" class="empty">Upload a lobby screenshot to start.</div></div>
 </section>
 
 <section id="ocr" class="section">
@@ -73,7 +71,7 @@
 </div>
 
 <script>
-const APP={version:'51.0-world-class',storage:'PUBG_TM_WORLD_CLASS_V51',mediaDB:'PUBG_TM_MEDIA_V50',mediaStore:'images',current:'PUBG_TM_CURRENT_V51',legacy:['PUBG_TM_CLEAN_PRO_V50','pubg_tm_v21_pro','PUBG_TM_V21_PRO']};
+const APP={version:'54.0-world-class-ocr',storage:'PUBG_TM_WORLD_CLASS_V54',mediaDB:'PUBG_TM_MEDIA_V50',mediaStore:'images',current:'PUBG_TM_CURRENT_V54',legacy:['PUBG_TM_WORLD_CLASS_V51','PUBG_TM_CLEAN_PRO_V50','pubg_tm_v21_pro','PUBG_TM_V21_PRO']};
 const DEFAULT_RULES={place:[0,10,6,5,4,3,2,1,1,0,0,0,0,0,0,0,0],kill:1};
 const SLOTS=Array.from({length:16},(_,i)=>i+3);
 let state=null,workspaceId=null,ocrReview=null,ocrBusy=false,enginePromise=null,ocrWorker=null,pendingLobbyFiles=[],pendingResultFiles=[];
@@ -124,87 +122,103 @@ function imageFromFile(file){return new Promise((res,rej)=>{const u=URL.createOb
 function crop(img,x,y,w,h,scale=4){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;const c=document.createElement('canvas');c.width=Math.max(2,Math.round(w*scale));c.height=Math.max(2,Math.round(h*scale));const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,x*W,y*H,w*W,h*H,0,0,c.width,c.height);return c}
 function cleanOCRText(t){return String(t||'').replace(/[|¦]/g,'I').replace(/[\u0000-\u001f]/g,' ').replace(/\s+/g,' ').trim()}
 function plausiblePlayer(t){t=cleanOCRText(t).replace(/^[-_:.,]+|[-_:.,]+$/g,'');return t.length>=2&&t.length<=28&&!/^(player|team|slot|ready|spectator|eliminations?|kills?)$/i.test(t)}
-async function loadOCR(){if(ocrWorker)return ocrWorker;if(enginePromise)return enginePromise;enginePromise=(async()=>{const urls=['https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js','https://unpkg.com/tesseract.js@7.0.0/dist/tesseract.min.js','https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js','https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js'];let last='';for(const src of urls){try{setEngine('loading',`Loading OCR engine…`);await injectScript(src);const T=window.Tesseract;if(!T?.createWorker)throw Error('Tesseract API missing');const w=await T.createWorker('eng',1,{logger:m=>{if(m?.status==='recognizing text'){const pct=Math.round((Number(m.progress)||0)*100);setEngine('ready',`OCR ${pct}%`)}}});const c=document.createElement('canvas');c.width=100;c.height=32;const g=c.getContext('2d');g.fillStyle='#000';g.fillRect(0,0,100,32);g.fillStyle='#fff';g.font='18px Arial';g.fillText('TEST',8,23);const p=await w.recognize(c);if(!p?.data)throw Error('OCR probe returned no data');ocrWorker=w;setEngine('ready','OCR Engine Ready');return w}catch(e){last=e?.message||String(e)}}throw Error('OCR engine could not start. '+last)})();try{return await enginePromise}finally{enginePromise=null}}
-function injectScript(src){return new Promise((res,rej)=>{if([...document.scripts].some(s=>s.src===src))return res();const s=document.createElement('script');s.src=src;s.async=true;s.crossOrigin='anonymous';s.onload=()=>res();s.onerror=()=>rej(Error('Network blocked: '+src));document.head.appendChild(s)})}
+async function loadOCR(){
+ if(ocrWorker)return ocrWorker;
+ if(enginePromise)return enginePromise;
+ enginePromise=(async()=>{
+  const urls=[
+   'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js',
+   'https://unpkg.com/tesseract.js@7.0.0/dist/tesseract.min.js',
+   'https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js',
+   'https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js'
+  ];
+  let last='';
+  for(const src of urls){
+   try{
+    setEngine('loading','Loading OCR engine…');
+    await injectScript(src);
+    const T=window.Tesseract;
+    if(!T?.createWorker)throw Error('Tesseract API missing');
+    const w=await T.createWorker('eng',1,{logger:m=>{
+      if(m?.status==='loading tesseract core')setEngine('loading','Loading OCR core…');
+      else if(m?.status==='loading language traineddata')setEngine('loading','Loading OCR language…');
+      else if(m?.status==='recognizing text')setEngine('loading',`OCR ${Math.round((Number(m.progress)||0)*100)}%`);
+    }});
+    try{await w.setParameters({preserve_interword_spaces:'1',user_defined_dpi:'320',load_system_dawg:'0',load_freq_dawg:'0',load_unambig_dawg:'0',load_punc_dawg:'0',load_number_dawg:'0'});}catch(e){}
+    ocrWorker=w;setEngine('ready','OCR Engine · Multi-Pass Ready');return w;
+   }catch(e){last=e?.message||String(e)}
+  }
+  throw Error('OCR engine could not start. '+last);
+ })();
+ try{return await enginePromise}finally{enginePromise=null}
+}
+function injectScript(src){return new Promise((res,rej)=>{if([...document.scripts].some(s=>s.src===src))return res();const x=document.createElement('script');x.src=src;x.async=true;x.crossOrigin='anonymous';x.onload=()=>res();x.onerror=()=>rej(Error('Network blocked: '+src));document.head.appendChild(x)})}
 function setEngine(type,text){const cls=type==='ready'?'ok':type==='loading'?'warn':'bad';for(const id of ['engineBadge','rosterEngine','resultEngine']){const e=$(id);if(e){e.className='pill '+cls;e.textContent=text}}}
-async function getWords(file,psm=6){const w=await loadOCR();const r=await w.recognize(file,{rotateAuto:true},{blocks:false,hocr:false,tsv:true});return r?.data||{text:'',words:[]}}
-function lobbyCellsFor(index){return index===0?{rows:[3,3,3],startSlot:3}:{rows:[3,3,1],startSlot:12}}
-function lobbyCardRects(index){const g=lobbyCellsFor(index),out=[];const cols=[.006,.328,.650],ys=[.115,.405,.695];for(let row=0;row<3;row++){for(let col=0;col<3;col++){if(col>=g.rows[row])continue;out.push({slot:g.startSlot+row*3+col,x:cols[col],y:ys[row],w:.300,h:.285})}}return out}
-function wordsInRect(words,rx,ry,rw,rh){return (words||[]).filter(w=>{const b=w.bbox||{};const cx=((b.x0||0)+(b.x1||0))/2,cy=((b.y0||0)+(b.y1||0))/2;return cx>=rx&&cx<=rx+rw&&cy>=ry&&cy<=ry+rh})}
-async function setLobbyOCRMode(){
-  if(!ocrWorker?.setParameters)return;
-  try{await ocrWorker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});}catch(e){console.warn('Lobby OCR mode:',e)}
+function ocrClean(s){return String(s??'').replace(/[“”‘’]/g,'').replace(/[|¦]/g,'I').replace(/[\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim()}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function normKey(s){return ocrClean(s).toLowerCase().replace(/[\s\-_.:/\\|]+/g,'').replace(/[“”‘’'`]/g,'')}
+function lev(a,b){a=String(a||'');b=String(b||'');const m=a.length,n=b.length;if(!m)return n;if(!n)return m;const prev=new Array(n+1);for(let j=0;j<=n;j++)prev[j]=j;for(let i=1;i<=m;i++){let cur=[i];for(let j=1;j<=n;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));for(let j=0;j<=n;j++)prev[j]=cur[j]}return prev[n]}
+function similarity(a,b){a=normKey(a);b=normKey(b);if(!a||!b)return 0;if(a===b)return 1;return 1-lev(a,b)/Math.max(a.length,b.length)}
+function plausibleName(s){s=ocrClean(s).replace(/^[-_:.,]+|[-_:.,]+$/g,'');return s.length>=2&&s.length<=28&&!/^(player|team|slot|ready|spectator|eliminations?|kills?)$/i.test(s)}
+function normalizePlayer(s,first=false){let t=ocrClean(s).replace(/\s*\/\s*[0-9]+\s*Eliminations?.*$/i,'').replace(/\s*Eliminations?.*$/i,'');if(first)t=t.replace(/^\s*(?:0?[3-9]|1[0-8])(?:\s*[,.:;|/\\-]\s*|\s+)/,'');t=t.replace(/^\s*[|/\\:;]+\s*/,'').replace(/^[-_:.,]+|[-_:.,]+$/g,'');return ocrClean(t)}
+function cropCanvas(img,x,y,w,h,scale=10){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;const xx=clamp(x,0,W-1),yy=clamp(y,0,H-1),ww=clamp(w,2,W-xx),hh=clamp(h,2,H-yy);const c=document.createElement('canvas');c.width=Math.max(2,Math.round(ww*scale));c.height=Math.max(2,Math.round(hh*scale));const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,xx,yy,ww,hh,0,0,c.width,c.height);return c}
+function addBorder(src,pad=12,bg=0){const c=document.createElement('canvas');c.width=src.width+pad*2;c.height=src.height+pad*2;const g=c.getContext('2d');g.fillStyle=`rgb(${bg},${bg},${bg})`;g.fillRect(0,0,c.width,c.height);g.drawImage(src,pad,pad);return c}
+function preprocessLobby(src,mode='original'){
+ if(mode==='original')return addBorder(src,12,0);
+ const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(src,0,0);const d=g.getImageData(0,0,c.width,c.height),p=d.data,N=c.width*c.height;
+ const gray=new Uint8ClampedArray(N),red=new Uint8ClampedArray(N),green=new Uint8ClampedArray(N),blue=new Uint8ClampedArray(N);
+ for(let i=0,j=0;i<p.length;i+=4,j++){red[j]=p[i];green[j]=p[i+1];blue[j]=p[i+2];gray[j]=Math.round(.299*p[i]+.587*p[i+1]+.114*p[i+2])}
+ const hist=new Uint32Array(256);for(const v of gray)hist[v]++;let thr=128,sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sb=0,wb=0,best=0;for(let i=0;i<256;i++){wb+=hist[i];if(!wb)continue;const wf=N-wb;if(!wf)break;sb+=i*hist[i];const mb=sb/wb,mf=(sum-sb)/wf,bt=wb*wf*(mb-mf)*(mb-mf);if(bt>best){best=bt;thr=i}}
+ const stride=c.width+1,ii=new Float64Array((c.width+1)*(c.height+1));if(['local','adaptive','blackhat','glyph'].includes(mode)){for(let y=1;y<=c.height;y++){let rs=0;for(let x=1;x<=c.width;x++){rs+=gray[(y-1)*c.width+x-1];ii[y*stride+x]=ii[(y-1)*stride+x]+rs}}}
+ const meanAt=(x,y,r=7)=>{if(!ii.length)return gray[y*c.width+x];const x0=Math.max(0,x-r),x1=Math.min(c.width-1,x+r),y0=Math.max(0,y-r),y1=Math.min(c.height-1,y+r),A=ii[y0*stride+x0],B=ii[y0*stride+x1+1],C=ii[(y1+1)*stride+x0],D=ii[(y1+1)*stride+x1+1];return(D-B-C+A)/((x1-x0+1)*(y1-y0+1))};
+ const set=(i,v)=>{v=clamp(v,0,255);p[i*4]=p[i*4+1]=p[i*4+2]=v};
+ for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const i=y*c.width+x,v=gray[i];let q=v;if(mode==='contrast')q=(v-84)*2.6+84;else if(mode==='soft')q=(v-96)*1.55+96;else if(mode==='gamma')q=255*Math.pow(v/255,.72);else if(mode==='otsu')q=v>thr?255:0;else if(mode==='adaptive')q=v>(meanAt(x,y,7)-10)?255:0;else if(mode==='local')q=128+(v-meanAt(x,y,9))*3.0;else if(mode==='blackhat')q=128+(meanAt(x,y,9)-v)*3.5;else if(mode==='red')q=red[i];else if(mode==='green')q=green[i];else if(mode==='blue')q=blue[i];else if(mode==='glyph')q=128+(v-meanAt(x,y,6))*4.0;else if(mode==='sharpen'){const l=gray[y*c.width+Math.max(0,x-1)],r=gray[y*c.width+Math.min(c.width-1,x+1)],u=gray[Math.max(0,y-1)*c.width+x],dn=gray[Math.min(c.height-1,y+1)*c.width+x];q=v*2.1-(l+r+u+dn)*.275}set(i,q)}
+ g.putImageData(d,0,0);return addBorder(c,['otsu','adaptive'].includes(mode)?14:12,['otsu','adaptive'].includes(mode)?255:0)
 }
-function extractLobbyLines(text){
-  return String(text||'').split(/\r?\n+/).map(cleanOCRText).map(x=>x.replace(/^[-_:.,]+|[-_:.,]+$/g,'')).filter(x=>plausiblePlayer(x)&&!/^(?:\d{1,2}|\/0|eliminations?)$/i.test(x));
+function parseTSV(data,scale=1){const tsv=String(data?.tsv||'');const out=[];if(!tsv)return out;for(const line of tsv.split(/\r?\n/).slice(1)){const p=line.split('\t');if(p.length<12)continue;const text=ocrClean(p.slice(11).join('\t')),conf=Number(p[10]),x=Number(p[6]),y=Number(p[7]),w=Number(p[8]),h=Number(p[9]);if(!text||![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)continue;out.push({text,confidence:Number.isFinite(conf)?conf:0,x0:x/scale,y0:y/scale,x1:(x+w)/scale,y1:(y+h)/scale,cx:(x+w/2)/scale,cy:(y+h/2)/scale})}return out}
+function tsvLines(data,scale=1){const map=new Map();for(const w of parseTSV(data,scale)){const key=[w.text,w.cy.toFixed(1)].join('|');let best=[...map.values()].find(g=>Math.abs(g.cy-w.cy)<Math.max(4,(w.y1-w.y0)*.75));if(!best){best={text:[],confidence:0,x0:w.x0,y0:w.y0,x1:w.x1,y1:w.y1,cy:w.cy};map.set(map.size,best)}best.text.push(w.text);best.confidence=Math.max(best.confidence,w.confidence);best.x0=Math.min(best.x0,w.x0);best.y0=Math.min(best.y0,w.y0);best.x1=Math.max(best.x1,w.x1);best.y1=Math.max(best.y1,w.y1)}return[...map.values()].map(g=>({...g,text:ocrClean(g.text.join(' '))})).sort((a,b)=>a.cy-b.cy)}
+async function recognizeLobby(canvas,mode='original',psm='6'){const w=await loadOCR();try{await w.setParameters({tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1',user_defined_dpi:'320',segment_penalty_garbage:0,segment_penalty_dict_nonword:0,language_model_penalty_non_dict_word:0,load_system_dawg:'0',load_freq_dawg:'0',load_unambig_dawg:'0',load_punc_dawg:'0',load_number_dawg:'0'})}catch(e){}return await w.recognize(preprocessLobby(canvas,mode),{}, {tsv:true,text:true})}
+function lobbyCardRects(index){const rows=index===0?[3,3,3]:[3,3,1],start=index===0?3:12,cols=[.006,.328,.650],ys=[.115,.405,.695],out=[];for(let r=0;r<3;r++)for(let c=0;c<rows[r];c++)out.push({slot:start+r*3+c,x:cols[c],y:ys[r],w:.300,h:.285,row:r,col:c});return out}
+function rowBand(card,i){const x=card.x+card.w*.145,y=card.y+card.h*.025,w=card.w*.64,h=card.h*.90,centers=[.12,.34,.56,.78];return{x,y:y+h*centers[i]-h*.075,w,h:h*.15}}
+function rowVariants(card,i){const b=rowBand(card,i),dy=card.h*.025;return[b,{...b,y:b.y-dy,h:b.h+dy*1.35},{...b,y:b.y+dy*.55,h:b.h+dy*1.35},{...b,y:b.y-dy*.65,h:b.h+dy*2.2}]}
+function playerShape(t){t=ocrClean(t);let q=0;if(t.length>=3&&t.length<=24)q+=.25;if(/[A-Za-z0-9]/.test(t))q+=.25;if(!/Eliminations?/i.test(t))q+=.25;if(!/^\d+$/.test(t))q+=.15;if(!/^[^A-Za-z0-9]+$/.test(t))q+=.10;return q}
+function addCandidate(arr,text,confidence,source,first=false){text=normalizePlayer(text,first);if(!plausibleName(text))return;arr.push({text,confidence:Number.isFinite(Number(confidence))?Number(confidence):0,source})}
+function rankCandidates(cands){const groups=[];for(const c of cands||[]){let text=ocrClean(c.text);if(!plausibleName(text))continue;let g=groups.find(x=>similarity(x.text,text)>=.92||(similarity(x.text,text)>=.84&&Math.abs(x.text.length-text.length)<=1));if(!g){g={text,confidence:Number(c.confidence)||0,votes:0,sources:[],score:0};groups.push(g)}g.votes++;const cf=Number(c.confidence)||0;if(cf>g.confidence){g.confidence=cf;g.text=text}g.sources.push(c.source||'ocr')}
+ for(const g of groups){const cons=groups.reduce((n,x)=>n+(x===g?0:similarity(g.text,x.text)>=.86?Math.min(1,x.votes/3):0),0);const diversity=new Set(g.sources).size;g.quality=Math.min(1,(g.confidence/100)*.46+Math.min(1,g.votes/7)*.28+playerShape(g.text)*.12+Math.min(1,cons/2)*.10+Math.min(1,diversity/6)*.04);g.score=g.votes*2.45+g.confidence/100+playerShape(g.text)+Math.min(1,cons/2)*1.8+Math.min(1,diversity/6)}
+ return groups.sort((a,b)=>b.score-a.score)}
+async function rowPass(img,card,i,mode,psm,tag,band,scale=12){const px=card.w*.012,py=card.h*.028,c=cropCanvas(img,band.x-px,band.y-py,band.w+px*2,band.h+py*2,scale),d=await recognizeLobby(c,mode,psm),out=[];addCandidate(out,d?.data?.text,d?.data?.confidence,tag,i===0);for(const w of parseTSV(d?.data,scale))addCandidate(out,i===0?normalizePlayer(w.text,true):w.text,w.confidence,tag+'-word',false);const ws=parseTSV(d?.data,scale).sort((a,b)=>a.x0-b.x0);if(ws.length>1)addCandidate(out,i===0?ws.map(w=>normalizePlayer(w.text,true)).join(' '):ws.map(w=>w.text).join(' '),Math.max(...ws.map(w=>w.confidence||0)),tag+'-joined',false);return out}
+async function cardPass(img,card,mode,psm,tag){const c=cropCanvas(img,card.x+card.w*.125,card.y+card.h*.035,card.w*.66,card.h*.87,10),d=await recognizeLobby(c,mode,psm),lines=tsvLines(d?.data,10),out=[[],[],[],[]],centers=[.12,.34,.56,.78];for(const ln of lines){const name=normalizePlayer(ln.text,false);if(!plausibleName(name))continue;let bi=0,bd=1e9;for(let i=0;i<4;i++){const target=centers[i]*card.h*.87;const dist=Math.abs((ln.cy)-target);if(dist<bd){bd=dist;bi=i}}if(bd<card.h*.11)addCandidate(out[bi],bi===0?normalizePlayer(name,true):name,ln.confidence,tag,false)}return out}
+async function readPlayers(img,card){
+ const all=[[],[],[],[]];
+ // Fast/high-value card passes. These are usually enough and preserve the older strong behaviour.
+ for(const [mode,psm,tag] of [['original','6','card-raw'],['contrast','6','card-contrast'],['sharpen','11','card-sharp'],['red','11','card-red'],['blue','11','card-blue']]){try{const q=await cardPass(img,card,mode,psm,tag);for(let i=0;i<4;i++)all[i].push(...q[i])}catch(e){console.warn('card pass',tag,e)}}
+ const rows=[];
+ for(let i=0;i<4;i++){
+  // Row passes reinforce difficult decorated letters. Only the first 3 passes are always used.
+  for(const [mode,psm,tag] of [['original','7','row-raw'],['contrast','7','row-contrast'],['local','7','row-local']]){try{all[i].push(...await rowPass(img,card,i,mode,psm,tag,rowBand(card,i),12))}catch(e){}}
+  let ranked=rankCandidates(all[i]);
+  // Adaptive rescue: expensive variants only run when the consensus is weak.
+  if(!ranked[0]||ranked[0].quality<.78){for(const [mode,psm,tag] of [['blackhat','7','row-blackhat'],['red','7','row-red'],['green','7','row-green'],['blue','7','row-blue'],['glyph','7','row-glyph']]){try{all[i].push(...await rowPass(img,card,i,mode,psm,tag,rowBand(card,i),14))}catch(e){}}ranked=rankCandidates(all[i])}
+  if(!ranked[0]||ranked[0].quality<.68){for(const b of rowVariants(card,i).slice(1)){for(const [mode,psm,tag] of [['original','7','shift-raw'],['contrast','7','shift-contrast'],['otsu','13','shift-otsu']]){try{all[i].push(...await rowPass(img,card,i,mode,psm,tag,b,16))}catch(e){}}}ranked=rankCandidates(all[i])}
+  const top=ranked[0]||{text:'',confidence:0,quality:0,score:0,votes:0,sources:[]};rows.push({name:top.text||'',raw:top.text||'',confidence:top.confidence||0,quality:top.quality||0,score:top.score||0,votes:top.votes||0,sources:top.sources||[],verified:false,matched:false,cy:rowBand(card,i).y+rowBand(card,i).h/2,candidates:ranked.slice(0,12)});
+ }
+ // If a saved 4-player roster already exists, use it as a correction dictionary without changing new names otherwise.
+ const t=team(card.slot),known=(t?.players||[]).map(p=>ocrClean(typeof p==='string'?p:p?.name)).filter(Boolean);
+ if(known.length===4){
+  for(let i=0;i<4;i++){const r=rows[i];let best=null;for(const k of known){const sim=similarity(r.name,k);if(!best||sim>best.sim)best={k,sim}}if(best&&best.sim>=.72){r.name=best.k;r.matched=true;r.matchScore=best.sim;r.verified=best.sim>=.86}}
+ }
+ return rows;
 }
-function prepLobbyCrop(src, mode='normal'){
-  const c=document.createElement('canvas'); c.width=src.width; c.height=src.height;
-  const g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(src,0,0);
-  const im=g.getImageData(0,0,c.width,c.height), d=im.data;
-  for(let i=0;i<d.length;i+=4){
-    const lum=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];
-    let v=lum;
-    if(mode==='contrast') v=Math.max(0,Math.min(255,(lum-80)*1.9));
-    if(mode==='binary') v=lum>145?255:0;
-    d[i]=d[i+1]=d[i+2]=v;
-  }
-  g.putImageData(im,0,0); return c;
+function commitRosterRows(rows,verified=false){for(const r of rows||[]){const t=team(r.slot);if(!t)continue;t.players=[0,1,2,3].map(j=>({name:ocrClean(r.players?.[j]?.name||r.players?.[j]||''),verified:!!verified,source:'lobby_multi_pass'}));t.rosterVerified=!!verified;t.rosterSource='lobby_multi_pass';t.rosterUpdated=new Date().toISOString()}persist()}
+async function runRosterOCR(files){
+ if(!files?.length||ocrBusy)return;if(files.length!==2)return toast('Please select the two lobby screenshots: Slots 03–11 and Slots 12–18');
+ ocrBusy=true;$('rosterReview').innerHTML='<div class="empty">Preparing multi-pass OCR…</div>';setProgress('rosterProgress',2);
+ try{await loadOCR();const results=[];let done=0;for(let fi=0;fi<files.length;fi++){const img=await imageFromFile(files[fi]);const rects=lobbyCardRects(fi);for(let j=0;j<rects.length;j++){const r=rects[j];setEngine('loading',`Reading Slot ${String(r.slot).padStart(2,'0')} · ${j+1}/${rects.length}`);const players=await readPlayers(img,r);results.push({slot:r.slot,players,file:files[fi].name,sourceImage:fi,card:j+1,row:r.row+1,column:r.col+1,evidence:cropCanvas(img,r.x,r.y,r.w,r.h,3).toDataURL('image/jpeg',.92)});done++;setProgress('rosterProgress',Math.round((done/16)*94)+4)}}
+  if(results.length!==16)throw Error(`Expected 16 lobby slots, detected ${results.length}`);ocrReview={type:'roster',rows:results};commitRosterRows(results,false);renderRosterReview();renderTeams();renderHome();setEngine('ready','OCR Engine · Multi-Pass Ready');setProgress('rosterProgress',100);$('rosterStatus').textContent='Multi-pass OCR complete. Strongest candidates were saved automatically; review only the rare difficult characters.';go('roster')
+ }catch(e){console.error('Lobby OCR V54',e);setProgress('rosterProgress',0);setEngine('bad','OCR Engine · Error');$('rosterStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span><br><span class="muted">The engine did not overwrite existing roster data.</span>`;$('rosterReview').innerHTML='<div class="notice">No roster data was changed. Try again with the original PUBG MOBILE screenshots.</div>'}finally{ocrBusy=false}
 }
-function lobbyCandidateFromTSV(data){
-  const ws=(data?.words||[]).map(w=>({text:cleanOCRText(w.text),conf:Number(w.confidence||0),x:Number(w.bbox?.x0||0),y0:Number(w.bbox?.y0||0),y1:Number(w.bbox?.y1||0)})).filter(w=>w.text&&plausiblePlayer(w.text));
-  if(!ws.length)return [];
-  ws.sort((a,b)=>a.y0-b.y0||a.x-b.x);
-  const lines=[];
-  for(const w of ws){
-    let line=lines[lines.length-1];
-    const cy=(w.y0+w.y1)/2;
-    if(!line || Math.abs(line.cy-cy)>Math.max(8,(w.y1-w.y0)*.9)) { line={cy,text:w.text,conf:w.conf}; lines.push(line); }
-    else { line.text+=' '+w.text; line.conf=Math.max(line.conf,w.conf); }
-  }
-  return lines.map(x=>cleanOCRText(x.text)).filter(plausiblePlayer).slice(0,4);
-}
-async function recognizeLobbyText(canvas, psm='6'){
-  const variants=[canvas,prepLobbyCrop(canvas,'contrast')];
-  for(let vi=0;vi<variants.length;vi++){
-    try{ await ocrWorker.setParameters({tessedit_pageseg_mode:psm,preserve_interword_spaces:'1',user_defined_dpi:'300'}); }catch(e){}
-    const r=await ocrWorker.recognize(variants[vi],{rotateAuto:false},{text:true,blocks:false,hocr:false,tsv:true});
-    const fromTSV=lobbyCandidateFromTSV(r?.data||{});
-    const fromText=extractLobbyLines(r?.data?.text||'');
-    const merged=[];
-    for(const x of [...fromTSV,...fromText]) if(x&&!merged.includes(x)) merged.push(x);
-    if(merged.length)return merged.slice(0,4);
-  }
-  return [];
-}
-async function readLobbyCard(img,rect){
-  // Read each known player row independently. PUBG's four rows are fixed;
-  // separating them prevents the elimination counter from contaminating the name.
-  const out=[];
-  for(let i=0;i<4;i++){
-    const ry=rect.y+rect.h*(0.205+i*0.235);
-    const rh=rect.h*.145;
-    const row=crop(img,rect.x+rect.w*.125,ry,rect.w*.60,rh,7);
-    let names=await recognizeLobbyText(row,'7');
-    let name=names[0]||'';
-    if(!name){
-      const wider=crop(img,rect.x+rect.w*.105,ry-rect.h*.025,rect.w*.64,rect.h*.19,7);
-      names=await recognizeLobbyText(wider,'7'); name=names[0]||'';
-    }
-    out.push(cleanOCRText(name));
-  }
-  return out;
-}
-function commitRosterRows(rows,verified=false){
-  for(const r of rows||[]){
-    const t=team(r.slot);if(!t)continue;
-    t.players=[0,1,2,3].map(j=>({name:cleanOCRText(r.players?.[j]||''),verified:!!verified}));
-  }
-  persist();
-}
-async function runRosterOCR(files){if(!files?.length||ocrBusy)return;if(files.length!==2)return toast('Please select the two lobby screenshots: Slots 03–11 and Slots 12–18');ocrBusy=true;$('rosterReview').innerHTML='<div class="empty">Preparing OCR…</div>';setProgress('rosterProgress',2);try{await loadOCR();const results=[];let done=0;for(let i=0;i<files.length;i++){const img=await imageFromFile(files[i]);const rects=lobbyCardRects(i);for(let j=0;j<rects.length;j++){const r=rects[j];const players=await readLobbyCard(img,r);results.push({slot:r.slot,players});done++;setProgress('rosterProgress',Math.round((done/16)*90)+5)}}if(results.length!==16)throw Error(`Expected 16 lobby slots, detected ${results.length}`);ocrReview={type:'roster',rows:results};commitRosterRows(results,false);renderRosterReview();renderTeams();renderHome();setProgress('rosterProgress',100);$('rosterStatus').textContent='OCR complete. Player names were saved automatically. You can edit any name and press Save Roster if needed.'}catch(e){console.error(e);setProgress('rosterProgress',0);$('rosterStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span><br><span class="muted">If this is the first run, keep the browser online. The engine is downloaded and cached by the browser.</span>`;$('rosterReview').innerHTML='<div class="notice">No roster data was changed. You can use the manual Team List below if OCR is unavailable.</div>'}finally{ocrBusy=false}}
 function renderRosterReview(){const rows=ocrReview?.rows||[];$('rosterReview').innerHTML=`<div class="notice">Detected 16 slots. Team names are not OCR-read; each slot is bound to its saved Team List entry. Player names remain editable before saving.</div><div class="scroll" style="margin-top:10px"><table class="table"><tr><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th></tr>${rows.map((r,i)=>`<tr><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(team(r.slot)?.name||'Team not set')}</td>${r.players.map((p,j)=>`<td><input id="rr-${i}-${j}" value="${esc(p)}" placeholder="Player ${j+1}"></td>`).join('')}</tr>`).join('')}</table></div>`}
-function saveRosterReview(){if(!ocrReview?.rows)return toast('Run Slot OCR first');for(let i=0;i<ocrReview.rows.length;i++){const r=ocrReview.rows[i];const t=team(r.slot);if(!t)continue;t.players=[0,1,2,3].map(j=>({name:$("rr-"+i+"-"+j)?.value.trim()||'',verified:true}));}persist();renderTeams();renderHome();toast('Roster saved automatically for all 16 slots');}
+function saveRosterReview(){if(!ocrReview?.rows)return toast('Run Slot OCR first');for(let i=0;i<ocrReview.rows.length;i++){const r=ocrReview.rows[i];const t=team(r.slot);if(!t)continue;t.players=[0,1,2,3].map(j=>({name:$("rr-"+i+"-"+j)?.value.trim()||'',verified:true,source:'manual_roster_review'}));}persist();renderTeams();renderHome();toast('Roster saved automatically for all 16 slots');}
 function fillMissingRoster(){if(!ocrReview?.rows)return;const map=new Map(state.teams.map(t=>[t.slot,t]));ocrReview.rows.forEach((r,i)=>{const t=map.get(r.slot);if(!t)return;for(let j=0;j<4;j++)if(!r.players[j])r.players[j]=t.players[j]?.name||''});renderRosterReview()}
 
 function renderOCRSelectors(){const sel=$('ocrMatch');if(!sel)return;sel.innerHTML=state.matches.length?state.matches.map(m=>`<option value="${m.id}" ${m.id===state.activeMatchId?'selected':''}>${esc(m.name)}${m.approved?' · Approved':''}</option>`).join(''):'<option value="">No matches</option>';const b=$('processResultBtn');if(b)b.disabled=!pendingResultFiles.length||!sel.value;}
