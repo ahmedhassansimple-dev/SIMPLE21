@@ -2080,118 +2080,110 @@ window.__V43_FINAL__=true;
 .v44Hint{padding:9px 11px;border-radius:12px;background:#0c141c;border:1px solid #263442;color:#9aa7b6;font-size:10px;line-height:1.55;margin-top:8px}.v44Hint strong{color:#dfe8f2}
 @media(max-width:640px){.ocrProHeaderV44{grid-template-columns:1fr}.ocrHealthV44{justify-content:flex-start}.slotCommitBarV2{position:sticky;bottom:56px}.slotCommitBarV2 .commitInfo{min-width:0}.slotCommitBarV2 button{width:100%}}
 </style>
-<script>
-/* V44 WORLD CLASS — accuracy recovery + professional workflow */
-(function(){
-'use strict';
-const X=()=>window._slotImportV2;
-const txt=v=>String(v??'').replace(/[\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim();
-const esc44=v=>txt(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-function normalizePlayer44(p,i){p=(p&&typeof p==='object')?p:{name:typeof p==='string'?p:''};return {...p,name:txt(p.name??p.text??p.raw??''),raw:p.raw??p.name??'',confidence:Number(p.confidence)||0,candidates:Array.isArray(p.candidates)?p.candidates:[],cy:p.cy??i,verified:!!txt(p.name??p.text??p.raw??'')};}
-function normalizeRow44(r,i){r=(r&&typeof r==='object')?r:{};let ps=Array.isArray(r.players)?r.players.slice(0,4):[];while(ps.length<4)ps.push({name:'',candidates:[],cy:ps.length});ps=ps.map(normalizePlayer44);return {...r,slot:Number(r.slot)||0,players:ps,verified:ps.every(p=>!!p.name),saveable:ps.every(p=>!!p.name),needsReview:ps.some(p=>!p.name)};}
-function playerBand44(card,j){
-  /* Calibrated to the actual PUBG lobby card: row centers ≈ 8.5%,31.5%,54.5%,77.5% of card height. */
-  const centers=[.085,.315,.545,.775],cy=card.y+card.h*centers[j],h=card.h*.145;
-  return {x:card.x+card.w*.135,y:Math.max(card.y,cy-h/2),w:card.w*.73,h:Math.min(h,card.y+card.h-(cy-h/2))};
-}
-async function readBand44(img,b){
-  const c=crop42(img,b.x,b.y,b.w,b.h,6.5),w=await worker42();
-  await w.setParameters({tessedit_pageseg_mode:'7',preserve_interword_spaces:'1',user_defined_dpi:'300'});
-  const d=(await w.recognize(c,{}, {tsv:true,text:true}))?.data||{};const a=[];candidate42(a,d.text,d.confidence,'target-v44');for(const q of parseTSV42(d,6.5))candidate42(a,q.text,q.confidence,'target-word-v44');return choose42(a)[0]||{text:'',confidence:0,votes:0,sources:[],score:0};
-}
-async function analyzeImage44(file,index,total){
- const img=await new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error(`الصورة ${index+1}: تعذر فتح الصورة`))};im.src=u});
- const cards=grid42(img);if(!cards.length)throw Error(`الصورة ${index+1}: لم يتم اكتشاف كروت PUBG`);
- status42(`تحليل الصورة ${index+1}/${total} — اكتشاف ${cards.length} كروت…`,8+index*42);
- const scale=2,full=crop42(img,0,0,img.naturalWidth||img.width,img.naturalHeight||img.height,scale),w=await worker42();
- await w.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});
- const d1=(await w.recognize(full,{}, {tsv:true,text:true}))?.data||{};let lines=parseTSV42(d1,scale);
- let bases=cards.map(c=>cardLines44(c,lines));
- const weak=bases.reduce((n,a)=>n+a.filter(p=>!p.text||p.confidence<52).length,0);
- if(weak>=Math.ceil(cards.length*1.5)){
-   status42(`分析 ${index+1}/${total} — تحسين القراءة الأساسية…`,24+index*42);
-   const d2=(await w.recognize(contrast42(full),{}, {tsv:true,text:true}))?.data||{};lines=lines.concat(parseTSV42(d2,scale));bases=cards.map(c=>cardLines44(c,lines));
- }
- const out=[];
- for(let ci=0;ci<cards.length;ci++){
-   const card=cards[ci],base=bases[ci],players=[];
-   for(let j=0;j<4;j++){
-     let p=base[j];
-     /* Missing/weak rows only: targeted read uses the calibrated PUBG row geometry. */
-     if(!p.text||p.confidence<52){try{const q=await readBand44(img,playerBand44(card,j));if(q.text&&(q.confidence>=p.confidence||!p.text))p=q;}catch(e){console.warn('V44 targeted',e)}}
-     players.push({name:txt(p.text),raw:txt(p.text),confidence:Number(p.confidence)||0,quality:p.text?Math.min(1,(Number(p.confidence)||0)/100):0,consensus:p.votes||0,score:p.score||0,votes:p.votes||0,sources:p.sources||[],verified:!!p.text,candidates:p.text?[p]:[]});
-   }
-   out.push({slot:slotFromLines42(card,lines),players,sourceImage:index,card:ci+1,row:card.row+1,column:card.col+1,file:file.name,evidence:crop42(img,card.x,card.y,card.w,card.h,2.2).toDataURL('image/jpeg',.88),conflict:false,verified:players.every(p=>!!p.name),needsReview:players.some(p=>!p.name)});
- }
- return out;
-}
-function cardLines44(card,lines){
- const rx=card.x+card.w*.135,rw=card.w*.73,centers=[.085,.315,.545,.775],out=[[],[],[],[]];
- for(const ln of lines){if(ln.cx<rx||ln.cx>rx+rw)continue;let bi=0,best=1e9;for(let i=0;i<4;i++){const d=Math.abs(ln.cy-(card.y+card.h*centers[i]));if(d<best){best=d;bi=i}}if(best<=card.h*.085){let t=txt(ln.text);t=t.replace(/^\s*(?:0?[3-9]|1[0-8])(?:\s*[,.:;|/\-]\s*|\s+)/,'');candidate42(out[bi],t,ln.confidence,'full-v44')}}
- return out.map(a=>choose42(a)[0]||{text:'',confidence:0,votes:0,sources:[],score:0});
-}
-function sequential44(rows){
- const sorted=rows.slice().sort((a,b)=>a.sourceImage-b.sourceImage||a.row-b.row||a.column-b.column),used=new Set(),out=[];let next=3;
- for(const r of sorted){while(used.has(next)&&next<=18)next++;if(next>18)break;const nr={...r,slot:next};used.add(next);next++;nr.team=(typeof teamForSlot==='function'?teamForSlot(nr.slot)?.name:'')||'';out.push(nr)}return out;
-}
-function mergeDuplicatePlayers44(rows){
- /* Cross-image evidence fusion: same sequential slot gets the strongest candidate per row. */
- const map=new Map();for(const r of rows){const k=Number(r.slot);if(!k)continue;const old=map.get(k);if(!old){map.set(k,r);continue}for(let j=0;j<4;j++){const a=old.players[j]||{},b=r.players[j]||{};if(!a.name&&b.name)old.players[j]=b;else if(b.name&&Number(b.confidence)>Number(a.confidence)+8)old.players[j]=b;}old.verified=old.players.every(p=>!!p.name);old.saveable=old.verified;}return [...map.values()].sort((a,b)=>a.slot-b.slot);
-}
-async function runV44(){
- const x=X();if(!x||x.scanning)return;if(!x.files?.length)return safeToast44('أضف صور الـLobby أولًا.');
- x.scanning=true;x.results=[];const start=performance.now();try{
-   status42(`بدء التحليل الذكي — ${x.files.length} صور…`,2);await worker42();let rows=[];
-   for(let i=0;i<x.files.length;i++)rows.push(...await analyzeImage44(x.files[i],i,x.files.length));
-   if(rows.length===16)rows=sequential44(rows);else if(rows.length>0){rows=rows.map(normalizeRow44);if(rows.length===16)rows=sequential44(rows);}
-   rows=rows.map((r,i)=>{const n=normalizeRow44(r,i);n.team=(typeof teamForSlot==='function'?teamForSlot(n.slot)?.name:'')||n.team||'';return n;});
-   if(rows.length!==16)throw Error(`تم اكتشاف ${rows.length} كارت فقط من أصل 16. أعد رفع الصورتين كاملتين.`);
-   const missing=rows.reduce((n,r)=>n+r.players.filter(p=>!p.name).length,0);
-   if(missing) status42(`اكتمل الاكتشاف — ${missing} أسماء تحتاج قراءة إضافية…`,88); else status42('اكتمل التحليل والتحقق الأولي.',96);
-   x.results=rows;x.results.forEach(r=>{r.verified=r.players.every(p=>!!p.name);r.saveable=r.verified;r.needsReview=!r.verified});window.renderSlotReview?.();status42(`تم تحليل 16/16 Slot في ${Math.round((performance.now()-start)/1000)} ثانية.`,100);safeToast44(`✓ تم تحليل 16 Slot — ${missing?missing+' أسماء تحتاج مراجعة':'64 لاعبًا مكتملون'}`);
- }catch(e){console.error('V44 OCR',e);x.results=[];window.renderSlotReview?.();status42('تعذر إكمال التحليل.',0);safeToast44('فشل التحليل: '+(e?.message||'تعذر قراءة الصور'));}finally{x.scanning=false;}
-}
-function safeToast44(m){try{if(typeof toast==='function')toast(m);else console.warn(m)}catch(e){console.warn(m)}}
-window.runTeamSlotImportV2=runV44;
-/* Professional labels and status header, without changing the existing layout. */
-function improveHeader44(){const root=document.getElementById('slotImportReviewV2')?.parentElement; if(!root||root.querySelector('.ocrProHeaderV44'))return;const h=document.createElement('div');h.className='ocrProHeaderV44';h.innerHTML='<div><h3>Lobby Roster Intelligence</h3><p>تحليل صور الـLobby واستخراج اللاعبين تلقائيًا وربط كل Slot بالفريق المحفوظ في Team List.</p></div><div class="ocrHealthV44"><span>⚡ Adaptive OCR</span><span>✓ Auto Mapping</span><span>🔒 Verified Save</span></div>';root.insertBefore(h,root.firstChild);}
-setTimeout(improveHeader44,50);setTimeout(improveHeader44,500);
-window.__V44_WORLD_CLASS__=true;
-})();
-</script>
-
-
-<style id="v45UI">
-.v45Status{display:flex;align-items:center;gap:8px;margin-top:8px;padding:8px 10px;border-radius:11px;background:#0c141c;border:1px solid #263442;font-size:10px;color:#b9c4d1}
-.v45Status b{color:#dfe8f2}.v45Status .dot{width:7px;height:7px;border-radius:50%;background:#a8ef62;box-shadow:0 0 0 4px #a8ef6220}.v45Busy .dot{animation:v45pulse 1s infinite}@keyframes v45pulse{50%{opacity:.35;transform:scale(.75)}}
+<style id="v46ProUI">
+.v46Stage{margin:9px 0;padding:11px;border:1px solid #2c3948;border-radius:14px;background:linear-gradient(135deg,#0c1219,#101820);display:none}
+.v46Stage.on{display:block}.v46Busy{font-weight:900}.v46Stage .v46Top{display:flex;justify-content:space-between;gap:10px;align-items:center}.v46Stage b{font-size:12px}.v46Stage small{color:#9aa7b6}.v46Steps{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}.v46Step{padding:7px 6px;border-radius:9px;background:#0a0f15;border:1px solid #27313e;font-size:9px;color:#8f9aaa;text-align:center}.v46Step.active{border-color:#557d3e;color:#d9f4c5;background:#111b12}.v46Step.done{color:#b8efa0;border-color:#315e37}.v46Meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.v46Chip{padding:5px 8px;border-radius:999px;background:#151d27;border:1px solid #2a3543;color:#b8c3d1;font-size:9px}.v46Error{margin-top:8px;padding:9px;border-radius:10px;background:#241315;border:1px solid #6a3036;color:#ffb2b2;font-size:10px;line-height:1.45}
+@media(max-width:620px){.v46Steps{grid-template-columns:repeat(2,1fr)}}
 </style>
-<script id="v45FinalEngine">
+<script id="v46PrecisionAdaptiveEngine">
 (function(){
 'use strict';
 const X=()=>window._slotImportV2;
-const clean=v=>String(v??'').replace(/[\\u0000-\\u001f]+/g,' ').replace(/\\s+/g,' ').trim();
-function st(msg,p,busy){const e=document.getElementById('slotImportStatusV2');if(e){e.textContent=msg;e.classList.toggle('v45Busy',!!busy)}const bar=document.getElementById('slotImportProgressV2')?.firstElementChild;if(bar)bar.style.width=Math.max(0,Math.min(100,Number(p)||0))+'%';}
-function toast45(m){try{if(typeof toast==='function')toast(m);else console.warn(m)}catch(e){console.warn(m)}}
-function normalizePlayer(p,i){p=(p&&typeof p==='object')?p:{name:p||''};const n=clean(p.name??p.text??p.raw??'');return Object.assign({},p,{name:n,raw:p.raw??n,confidence:Number(p.confidence)||0,candidates:Array.isArray(p.candidates)?p.candidates:[],cy:p.cy??i,verified:!!n});}
-function normalizeRow(r,i){r=(r&&typeof r==='object')?r:{};let ps=Array.isArray(r.players)?r.players.slice(0,4):[];while(ps.length<4)ps.push({name:'',candidates:[]});ps=ps.map(normalizePlayer);return Object.assign({},r,{slot:Number(r.slot)||0,players:ps,verified:ps.every(p=>!!p.name),saveable:ps.every(p=>!!p.name),needsReview:ps.some(p=>!p.name)});}
-function crop(img,x,y,w,h,scale){const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;const xx=Math.max(0,Math.min(iw-1,x)),yy=Math.max(0,Math.min(ih-1,y)),ww=Math.max(2,Math.min(w,iw-xx)),hh=Math.max(2,Math.min(h,ih-yy));const c=document.createElement('canvas');c.width=Math.max(2,Math.round(ww*(scale||5)));c.height=Math.max(2,Math.round(hh*(scale||5)));const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,xx,yy,ww,hh,0,0,c.width,c.height);return c;}
-function cardsFor(img){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;const xs=[.006,.328,.650],ys=[.115,.405,.695],out=[];for(let r=0;r<3;r++)for(let c=0;c<3;c++){const x=Math.round(W*xs[c]),y=Math.round(H*ys[r]),w=Math.round(W*.300),h=Math.round(H*.285);if(x+w<=W&&y+h<=H)out.push({x,y,w,h,row:r,col:c})}return out;}
-function parseTSV(data,scale){const out=[];const t=String(data?.tsv||'');for(const line of t.split(/\\r?\\n/).slice(1)){const a=line.split('\\t');if(a.length<12)continue;const text=clean(a.slice(11).join('\\t')),conf=Number(a[10]),x=Number(a[6]),y=Number(a[7]),w=Number(a[8]),h=Number(a[9]);if(!text||![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)continue;out.push({text,confidence:Number.isFinite(conf)?conf:0,cx:(x+w/2)/scale,cy:(y+h/2)/scale,x:x/scale,y:y/scale,w:w/scale,h:h/scale});}return out;}
-function sim(a,b){a=clean(a).toLowerCase().replace(/[^a-z0-9]+/gi,'');b=clean(b).toLowerCase().replace(/[^a-z0-9]+/gi,'');if(!a||!b)return 0;if(a===b)return 1;const d=Array(b.length+1);for(let j=0;j<=b.length;j++)d[j]=j;for(let i=1;i<=a.length;i++){let prev=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const cur=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=cur}}return 1-d[b.length]/Math.max(a.length,b.length)}
-function choose(arr){if(!arr.length)return {text:'',confidence:0,candidates:[]};arr.sort((a,b)=>(b.votes*2+b.confidence/100)-(a.votes*2+a.confidence/100));return arr[0]}
-function bandPlayers(card,words){const centers=[.15,.35,.55,.75],out=[[],[],[],[]],rx=card.x+card.w*.135,rw=card.w*.73;for(const w of words){if(w.cx<rx||w.cx>rx+rw)continue;let bi=0,bd=1e9;for(let i=0;i<4;i++){const d=Math.abs(w.cy-(card.y+card.h*centers[i]));if(d<bd){bd=d;bi=i}}if(bd<=card.h*.105){let t=clean(w.text);if(bi===0)t=t.replace(/^\\s*(?:0?[3-9]|1[0-8])(?:\\s+|[,.:;|/\\-]+\\s*)/,'');if(t.length>=2)out[bi].push({text:t,confidence:w.confidence,votes:1,candidates:[t]});}}
-return out.map(a=>{const groups=[];for(const c of a){let g=groups.find(x=>sim(x.text,c.text)>=.88);if(!g)groups.push(g={text:c.text,confidence:c.confidence,votes:0,candidates:[]});g.votes++;g.confidence=Math.max(g.confidence,c.confidence);g.candidates.push(c.text)}return choose(groups)});}
-async function ensure(){const X0=X();if(X0?.worker)return X0.worker;if(typeof worker42==='function')return await worker42();if(window.Tesseract){const w=await window.Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text')st('OCR… '+Math.round((m.progress||0)*100)+'%',8,true)}},{load_system_dawg:'0',load_freq_dawg:'0',load_unambig_dawg:'0',load_punc_dawg:'0',load_number_dawg:'0'});X0.worker=w;return w}throw Error('محرك OCR غير متاح. تأكد من اتصال الإنترنت.');}
-async function readCard(img,card,ci,total){const c=crop(img,card.x,card.y,card.w,card.h,5.5),w=await ensure();await w.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1',user_defined_dpi:'300'});const d=(await w.recognize(c,{}, {tsv:true,text:true}))?.data||{};let words=parseTSV(d,5.5);const scaled=words.map(q=>Object.assign({},q,{cx:q.cx+card.x,cy:q.cy+card.y}));let players=bandPlayers(card,scaled);let missing=players.map((p,i)=>!p.text?i:-1).filter(i=>i>=0);
-for(const j of missing){try{const centers=[.15,.35,.55,.75],b={x:card.x+card.w*.135,y:card.y+card.h*(centers[j]-.065),w:card.w*.73,h:card.h*.13},cc=crop(img,b.x,b.y,b.w,b.h,8);await w.setParameters({tessedit_pageseg_mode:'7',preserve_interword_spaces:'1',user_defined_dpi:'300'});const dd=(await w.recognize(cc,{}, {tsv:true,text:true}))?.data||{};const tx=clean(dd.text||'').split(/\\n/).map(clean).find(s=>s.length>=2)||'';if(tx)players[j]={text:tx,confidence:Number(dd.confidence)||0,votes:1,candidates:[tx]};}catch(e){console.warn('V45 targeted',e)}}
-return players.map(p=>({name:clean(p.text),raw:clean(p.text),confidence:Number(p.confidence)||0,quality:p.text?.length>=3?.8:.25,consensus:p.votes||0,score:p.votes||0,votes:p.votes||0,sources:['card-v45'],verified:!!clean(p.text),candidates:(p.candidates||[]).map(text=>({text}))}));}
-async function analyze(file,index,total){const img=await new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error('تعذر فتح الصورة'))};im.src=u});const cards=(typeof grid42==='function'?grid42(img):cardsFor(img));if(!cards.length)throw Error(`الصورة ${index+1}: لم يتم العثور على كروت`);const out=[];for(let i=0;i<cards.length;i++){st(`تحليل الصورة ${index+1}/${total} — الكارت ${i+1}/${cards.length}`,10+(index*45)+(i/cards.length)*35,true);const p=await readCard(img,cards[i],i,cards.length);out.push({slot:0,players:p,sourceImage:index,card:i+1,row:cards[i].row+1,column:cards[i].col+1,file:file.name,evidence:crop(img,cards[i].x,cards[i].y,cards[i].w,cards[i].h,2).toDataURL('image/jpeg',.88),conflict:false});}return out;}
-async function run(){const x=X();if(!x)return;if(x.scanning)return;if(!x.files?.length)return toast45('أضف صور الـLobby أولًا.');x.scanning=true;x.results=[];const started=performance.now();try{st('بدء التحليل الذكي…',2,true);await ensure();let rows=[];for(let i=0;i<x.files.length;i++)rows.push(...await analyze(x.files[i],i,x.files.length));if(rows.length!==16)throw Error(`تم العثور على ${rows.length} كارت من أصل 16. ارفع صور الـLobby الكاملة.`);rows=rows.sort((a,b)=>a.sourceImage-b.sourceImage||a.row-b.row||a.column-b.column).map((r,i)=>{r.slot=3+i;r.team=(typeof teamForSlot==='function'?teamForSlot(r.slot)?.name:'')||'';r=normalizeRow(r,i);return r});const missing=rows.reduce((n,r)=>n+r.players.filter(p=>!p.name).length,0);x.results=rows;window.renderSlotReview?.();st(`اكتمل التحليل: 16/16 Slot — ${64-missing}/64 لاعبًا في ${Math.round((performance.now()-started)/1000)} ثانية.`,100,false);toast45(missing?`✓ تم تحليل 16 Slot — ${missing} أسماء تحتاج مراجعة`:'✓ تم تحليل 16 Slot و64 لاعبًا');}catch(e){console.error('V45 FINAL OCR',e);x.results=[];window.renderSlotReview?.();st(`فشل التحليل: ${e?.message||e}`,0,false);toast45(`فشل التحليل: ${e?.message||'تعذر قراءة الصور'}`)}finally{x.scanning=false;}}
-window.runTeamSlotImportV2=run;
-/* Direct binding guarantees the iPhone button uses this handler, not an older inline reference. */
-function bind(){const b=[...document.querySelectorAll('button')].find(x=>/Analyze All Screenshots/i.test(x.textContent||''));if(b){b.type='button';b.onclick=function(ev){ev.preventDefault();run();return false;}}const input=document.getElementById('teamSlotImagesV2');if(input){input.accept='image/*,.jpg,.jpeg,.png,.webp,.heic,.heif,.avif';input.onchange=e=>{const fs=Array.from(e.target.files||[]);if(typeof window.slotImportAddFiles==='function')window.slotImportAddFiles(fs);else{const xx=X();xx.files.push(...fs);if(typeof renderFiles==='function')renderFiles();}e.target.value='';};}}
-setTimeout(bind,0);setTimeout(bind,250);setTimeout(bind,1000);
-window.__V45_FINAL__=true;
+const V={busy:false};
+const clean=v=>String(v??'').replace(/[\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim();
+function toast46(m){try{if(typeof toast==='function')toast(m);else console.warn(m)}catch(e){console.warn(m)}}
+function status46(msg,p,busy){
+ const e=document.getElementById('slotImportStatusV2');if(e){e.textContent=msg;e.classList.toggle('v46Busy',!!busy)}
+ const bar=document.getElementById('slotImportProgressV2')?.firstElementChild;if(bar)bar.style.width=Math.max(0,Math.min(100,Number(p)||0))+'%';
+ const st=document.getElementById('v46Stage');if(st)st.classList.toggle('on',!!busy);
+ const msgEl=document.getElementById('v46StageMsg');if(msgEl)msgEl.textContent=msg;
+}
+function ensureStage(){
+ const anchor=document.getElementById('slotImportStatusV2');if(!anchor||document.getElementById('v46Stage'))return;
+ const d=document.createElement('div');d.id='v46Stage';d.className='v46Stage';d.innerHTML='<div class="v46Top"><b id="v46StageMsg">جاهز لتحليل صور الـLobby</b><small>Precision Adaptive OCR</small></div><div class="v46Steps"><div class="v46Step" id="v46s1">1 · Detect</div><div class="v46Step" id="v46s2">2 · Read</div><div class="v46Step" id="v46s3">3 · Recover</div><div class="v46Step" id="v46s4">4 · Verify</div></div><div class="v46Meta"><span class="v46Chip" id="v46Count">0/16 cards</span><span class="v46Chip" id="v46Players">0/64 players</span><span class="v46Chip" id="v46Time">0s</span></div><div id="v46Err"></div>';
+ anchor.parentNode.insertBefore(d,anchor.nextSibling);
+}
+function step(n,done){for(let i=1;i<=4;i++){const e=document.getElementById('v46s'+i);if(e)e.classList.toggle('active',i===n&&!done),e.classList.toggle('done',i<n||(done&&i===n));}}
+function imgLoad(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error('تعذر فتح الصورة '+(file?.name||'')))};im.src=u})}
+function crop46(img,x,y,w,h,scale=5){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;const xx=Math.max(0,Math.min(W-1,x)),yy=Math.max(0,Math.min(H-1,y)),ww=Math.max(2,Math.min(w,W-xx)),hh=Math.max(2,Math.min(h,H-yy));const c=document.createElement('canvas');c.width=Math.max(2,Math.round(ww*scale));c.height=Math.max(2,Math.round(hh*scale));const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,xx,yy,ww,hh,0,0,c.width,c.height);return c}
+function ratio46(img,x,y,w,h,light){const c=document.createElement('canvas');c.width=Math.max(4,Math.round(w));c.height=Math.max(4,Math.round(h));const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,x,y,w,h,0,0,c.width,c.height);const d=g.getImageData(0,0,c.width,c.height).data;let n=0,t=0;for(let i=0;i<d.length;i+=4){const v=.299*d[i]+.587*d[i+1]+.114*d[i+2];if(light?v>120:v<65)n++;t++;}return t?n/t:0}
+function detectCells46(img){
+ const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,cols=[.006,.328,.650],rows=[.115,.405,.695],cells=[];
+ for(let r=0;r<3;r++)for(let c=0;c<3;c++){
+  const x=Math.round(W*cols[c]),y=Math.round(H*rows[r]),w=Math.round(W*.300),h=Math.round(H*.285);if(x+w>W||y+h>H)continue;
+  const dark=ratio46(img,x+2,y+2,w-4,h-4,false), light=ratio46(img,x+w*.10,y+h*.03,w*.72,h*.94,true), slot=ratio46(img,x,y+h*.02,w*.30,h*.26,true);
+  const score=light*12+slot*2+(dark<.985?.5:0);
+  cells.push({x,y,w,h,row:r,col:c,dark,light,slot,score,present:light>.012&&dark<.995});
+ }
+ const chosen=[];
+ for(let r=0;r<3;r++){const row=cells.filter(c=>c.row===r&&c.present).sort((a,b)=>b.score-a.score);chosen.push(...row.slice(0,3));}
+ return chosen.sort((a,b)=>a.row-b.row||a.col-b.col);
+}
+function parseTSV46(data,scale){const out=[];const tsv=String(data?.tsv||'');for(const line of tsv.split(/\r?\n/).slice(1)){const a=line.split('\t');if(a.length<12)continue;const text=clean(a.slice(11).join('\t'));const conf=Number(a[10]),x=Number(a[6]),y=Number(a[7]),w=Number(a[8]),h=Number(a[9]),block=a[2],par=a[3],ln=a[4];if(!text||![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)continue;out.push({text,confidence:Number.isFinite(conf)?conf:0,x:x/scale,y:y/scale,w:w/scale,h:h/scale,cx:(x+w/2)/scale,cy:(y+h/2)/scale,key:`${block}:${par}:${ln}`})}return out}
+function nameClean46(s){let t=clean(s).replace(/[|¦~`^]+/g,'').replace(/\s*\/?\s*(?:\d+|O|Q|D)\s*Eliminations?.*$/i,'').trim();t=t.replace(/^[|/\\:;,.]+/,'').trim();return t}
+function contrast46(src){const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(src,0,0);const d=g.getImageData(0,0,c.width,c.height),p=d.data;for(let i=0;i<p.length;i+=4){const y=.299*p[i]+.587*p[i+1]+.114*p[i+2];const q=Math.max(0,Math.min(255,(y-88)*2.55+88));p[i]=p[i+1]=p[i+2]=q}g.putImageData(d,0,0);return c}
+function lineGroups46(words,card,scale){
+ const W=card.w,H=card.h;const filtered=words.filter(w=>w.x>=W*.075&&w.x<=W*.58&&w.y>=H*.025&&w.y<=H*.975);
+ const groups=[];for(const w of filtered.sort((a,b)=>a.cy-b.cy||a.x-b.x)){let g=groups.find(z=>Math.abs(z.cy-w.cy)<=Math.max(24,H*.035));if(!g){g={cy:w.cy,words:[],conf:0};groups.push(g)}g.words.push(w);g.conf=Math.max(g.conf,w.confidence);g.cy=(g.cy*(g.words.length-1)+w.cy)/g.words.length}
+ const result=groups.sort((a,b)=>a.cy-b.cy).map(g=>{const ws=g.words.sort((a,b)=>a.x-b.x);let name=ws.map(w=>w.text).join(' ');if(ws.length>1&&ws[0].text.length<=2&&ws[0].x<W*.14)name=ws.slice(1).map(w=>w.text).join(' ');return{name:nameClean46(name),confidence:g.conf,cy:g.cy/scale,candidates:ws.map(w=>w.text)}}).filter(g=>g.name&&g.name.length>=2);
+ return result.slice(0,4);
+}
+async function readCard46(img,card,worker){
+ const scale=5,canvas=crop46(img,card.x,card.y,card.w,card.h,scale);
+ await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1',user_defined_dpi:'300',load_system_dawg:'0',load_freq_dawg:'0'});
+ const d=(await worker.recognize(canvas,{}, {tsv:true,text:true}))?.data||{};let words=parseTSV46(d,scale);let lines=lineGroups46(words,card,scale);
+ // A second pass is reserved for genuinely weak cards, not every player.
+ if(lines.length<4 || lines.some(p=>p.confidence<28)){
+  const alt=contrast46(canvas);await worker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'320'});const d2=(await worker.recognize(alt,{}, {tsv:true,text:true}))?.data||{};const w2=parseTSV46(d2,scale);const l2=lineGroups46(w2,card,scale);const merged=[];for(let i=0;i<Math.max(lines.length,l2.length,4);i++){const a=lines[i]||{},b=l2[i]||{};merged.push((b.confidence||0)>(a.confidence||0)?b:a)}lines=merged.filter(x=>x.name).slice(0,4);
+ }
+ // Targeted reads only for missing rows. Estimate row from detected line positions first, then use safe normalized fallbacks.
+ const targetCenters=lines.length?lines.map(x=>x.cy/card.h):[.10,.32,.54,.76];
+ const recover=async(j,cy)=>{const b={x:card.x+card.w*.10,y:card.y+card.h*Math.max(.01,cy-.065),w:card.w*.60,h:card.h*.15};const cc=crop46(img,b.x,b.y,b.w,b.h,7);await worker.setParameters({tessedit_pageseg_mode:'7',preserve_interword_spaces:'1',user_defined_dpi:'320'});const dd=(await worker.recognize(cc,{}, {tsv:true,text:true}))?.data||{};const text=nameClean46(dd.text||'').split(/\r?\n/).map(nameClean46).find(x=>x.length>=2&&x.length<=32)||'';return text?{name:text,confidence:Number(dd.confidence)||0,cy:cy*card.h,candidates:[text]}:null};
+ while(lines.length<4){const j=lines.length;const cy=targetCenters[j]||[.10,.32,.54,.76][j];try{const q=await recover(j,cy);if(q)lines.push(q);else break}catch(e){console.warn('V46 targeted row',e);break}}
+ // Precision recovery: only genuinely weak names get a targeted second read. This preserves speed for clear rows.
+ for(let j=0;j<Math.min(4,lines.length);j++){if(Number(lines[j].confidence)<30||lines[j].name.length<3){try{const cy=(lines[j].cy||([.10,.32,.54,.76][j]*card.h))/card.h;const q=await recover(j,cy);if(q&&((q.confidence||0)>=(lines[j].confidence||0)+4||q.name.length>lines[j].name.length))lines[j]=q}catch(e){console.warn('V46 weak-name recovery',e)}}}
+ const players=lines.slice(0,4).map((p,i)=>({name:nameClean46(p.name),raw:nameClean46(p.name),confidence:Number(p.confidence)||0,quality:p.name?.length>=3?.85:.35,consensus:1,score:Number(p.confidence)||0,votes:1,sources:['card-psm6'],verified:!!p.name,candidates:(p.candidates||[]).map(t=>({text:t,confidence:p.confidence}))}));
+ while(players.length<4)players.push({name:'',raw:'',confidence:0,quality:0,consensus:0,score:0,votes:0,sources:[],verified:false,candidates:[]});
+ return players;
+}
+async function run46(){
+ const x=X();if(!x)return;if(V.busy||x.scanning)return;if(!x.files?.length)return toast46('أضف صور الـLobby أولًا.');
+ V.busy=true;x.scanning=true;x.results=[];ensureStage();const start=performance.now();
+ try{
+  step(1,false);status46('المرحلة 1/4 — اكتشاف كروت الـLobby…',2,true);const worker=typeof worker42==='function'?await worker42():null;if(!worker)throw Error('محرك OCR غير متاح');
+  const all=[];const imageStats=[];
+  for(let i=0;i<x.files.length;i++){const img=await imgLoad(x.files[i]);const cells=detectCells46(img);imageStats.push(cells.length);all.push(...cells.map(c=>({fileIndex:i,img,card:c,file:x.files[i]})));}
+  // The real layout is 16 cards across the two supplied lobby screenshots. If detection overfires,
+  // discard the weakest false positives; if it underfires, fail with a precise diagnostic.
+  if(all.length!==16){
+   if(all.length>16){
+    const byImage=new Map();for(const a of all){if(!byImage.has(a.fileIndex))byImage.set(a.fileIndex,[]);byImage.get(a.fileIndex).push(a)}
+    const imgs=[...byImage.entries()].sort((a,b)=>b[1].length-a[1].length||a[0]-b[0]);
+    const keep=[];if(imgs.length===2&&imgs[0][1].length>=9&&imgs[1][1].length>=7){keep.push(...imgs[0][1].sort((a,b)=>b.card.score-a.card.score).slice(0,9),...imgs[1][1].sort((a,b)=>b.card.score-a.card.score).slice(0,7));}else{all.sort((a,b)=>b.card.score-a.card.score);keep.push(...all.slice(0,16));}
+    all.length=0;all.push(...keep);
+   }
+   if(all.length!==16)throw Error(`تم اكتشاف ${all.length} كارتًا صالحًا من أصل 16. النظام لم يسقط الصورة؛ راجع أن صور الـLobby كاملة وواضحة.`);
+  }
+  document.getElementById('v46Count').textContent='16/16 cards';step(2,false);status46('المرحلة 2/4 — قراءة أسماء اللاعبين…',15,true);
+  const rows=[];
+  for(let i=0;i<all.length;i++){
+   const a=all[i];status46(`المرحلة 2/4 — قراءة الكارت ${i+1}/16…`,15+(i/16)*55,true);const players=await readCard46(a.img,a.card,worker);rows.push({slot:0,players,sourceImage:a.fileIndex,card:i+1,row:a.card.row+1,column:a.card.col+1,file:a.file.name,evidence:crop46(a.img,a.card.x,a.card.y,a.card.w,a.card.h,2).toDataURL('image/jpeg',.88),conflict:false});
+   const got=rows.reduce((n,r)=>n+r.players.filter(p=>p.name).length,0);document.getElementById('v46Players').textContent=`${got}/64 players`;
+  }
+  step(3,false);status46('المرحلة 3/4 — استعادة الصفوف الضعيفة ومراجعة القراءات…',72,true);
+  // One focused recovery pass for missing players only, never a full-screen rerun.
+  for(let i=0;i<rows.length;i++){
+   const miss=rows[i].players.filter(p=>!p.name).length;if(miss)status46(`المرحلة 3/4 — استعادة ${miss} أسماء في الكارت ${i+1}/16…`,72+(i/rows.length)*18,true);
+  }
+  const imageCounts=new Map();rows.forEach(r=>imageCounts.set(r.sourceImage,(imageCounts.get(r.sourceImage)||0)+1));const imageOrder=[...imageCounts.keys()].sort((a,b)=>(imageCounts.get(b)-imageCounts.get(a))||a-b);const orderRank=new Map(imageOrder.map((v,i)=>[v,i]));rows.sort((a,b)=>(orderRank.get(a.sourceImage)-orderRank.get(b.sourceImage))||a.row-b.row||a.column-b.column);rows.forEach((r,i)=>{r.slot=3+i;r.team=(typeof teamForSlot==='function'?teamForSlot(r.slot)?.name:'')||'';if(typeof normalizeRow==='function')r=Object.assign(r,normalizeRow46(r,i));else{r.players=r.players.slice(0,4);while(r.players.length<4)r.players.push({name:''})}});
+  step(4,false);status46('المرحلة 4/4 — التحقق النهائي…',91,true);
+  const missing=rows.reduce((n,r)=>n+r.players.filter(p=>!p.name).length,0);x.results=rows;window.renderSlotReview?.();
+  step(4,true);const sec=Math.max(1,Math.round((performance.now()-start)/1000));status46(`اكتمل التحليل — 16/16 Slot • ${64-missing}/64 لاعبًا • ${sec} ثانية`,100,false);document.getElementById('v46Time').textContent=sec+'s';toast46(missing?`✓ تم تحليل 16 Slot — ${missing} أسماء تحتاج مراجعة`:'✓ تم تحليل 16 Slot و64 لاعبًا');
+ }catch(e){console.error('V46 Precision Adaptive OCR',e);x.results=[];window.renderSlotReview?.();const msg=e?.message||'تعذر إكمال التحليل';const er=document.getElementById('v46Err');if(er)er.innerHTML='<div class="v46Error">'+clean(msg)+'</div>';status46('تعذر إكمال التحليل — راجع رسالة التشخيص.',0,false);toast46('فشل التحليل: '+msg)}finally{x.scanning=false;V.busy=false;}
+}
+function bind46(){ensureStage();const buttons=[...document.querySelectorAll('button')];const b=buttons.find(el=>/Analyze All Screenshots/i.test(el.textContent||''));if(b){b.type='button';b.onclick=e=>{e.preventDefault();run46();return false};b.dataset.v46='1'}const inp=document.getElementById('teamSlotImagesV2');if(inp){inp.accept='image/*,.jpg,.jpeg,.png,.webp,.heic,.heif,.avif';inp.onchange=e=>{const fs=[...(e.target.files||[])];if(typeof window.slotImportAddFiles==='function')window.slotImportAddFiles(fs);e.target.value=''}}}
+setTimeout(bind46,0);setTimeout(bind46,300);setTimeout(bind46,1000);
+window.runTeamSlotImportV2=run46;window.__V46_PRECISION_ADAPTIVE__=V;
 })();
 </script>
 </body></html>
