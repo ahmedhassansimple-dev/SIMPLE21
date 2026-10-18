@@ -2100,7 +2100,7 @@ function status46(msg,p,busy){
 }
 function ensureStage(){
  const anchor=document.getElementById('slotImportStatusV2');if(!anchor||document.getElementById('v46Stage'))return;
- const d=document.createElement('div');d.id='v46Stage';d.className='v46Stage';d.innerHTML='<div class="v46Top"><b id="v46StageMsg">جاهز لتحليل صور الـLobby</b><small>Precision Adaptive OCR</small></div><div class="v46Steps"><div class="v46Step" id="v46s1">1 · Detect</div><div class="v46Step" id="v46s2">2 · Read</div><div class="v46Step" id="v46s3">3 · Recover</div><div class="v46Step" id="v46s4">4 · Verify</div></div><div class="v46Meta"><span class="v46Chip" id="v46Count">0/16 cards</span><span class="v46Chip" id="v46Players">0/64 players</span><span class="v46Chip" id="v46Time">0s</span></div><div id="v46Err"></div>';
+ const d=document.createElement('div');d.id='v46Stage';d.className='v46Stage';d.innerHTML='<div class="v46Top"><b id="v46StageMsg">جاهز لتحليل صور الـLobby</b><small id="v47EngineBadge">Adaptive Precision OCR</small></div><div class="v46Steps"><div class="v46Step" id="v46s1">1 · Detect</div><div class="v46Step" id="v46s2">2 · Read</div><div class="v46Step" id="v46s3">3 · Recover</div><div class="v46Step" id="v46s4">4 · Verify</div></div><div class="v46Meta"><span class="v46Chip" id="v46Count">0/16 cards</span><span class="v46Chip" id="v46Players">0/64 players</span><span class="v46Chip" id="v46Time">0s</span></div><div id="v46Err"></div>';
  anchor.parentNode.insertBefore(d,anchor.nextSibling);
 }
 function step(n,done){for(let i=1;i<=4;i++){const e=document.getElementById('v46s'+i);if(e)e.classList.toggle('active',i===n&&!done),e.classList.toggle('done',i<n||(done&&i===n));}}
@@ -2185,5 +2185,100 @@ function bind46(){ensureStage();const buttons=[...document.querySelectorAll('but
 setTimeout(bind46,0);setTimeout(bind46,300);setTimeout(bind46,1000);
 window.runTeamSlotImportV2=run46;window.__V46_PRECISION_ADAPTIVE__=V;
 })();
+</script>
+
+<script id="v47WorldClassOCR">
+(function(){
+'use strict';
+/* V47 — OCR runtime recovery + adaptive precision engine. */
+const V47={worker:null,loading:null,busy:false,engine:'',started:0};
+const X47=()=>window._slotImportV2;
+const clean47=v=>String(v??'').replace(/[\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim();
+const toast47=m=>{try{if(typeof toast==='function')toast(m);else console.warn(m)}catch(e){console.warn(m)}};
+function ui47(msg,p,busy=true){
+ const s=document.getElementById('slotImportStatusV2'); if(s){s.textContent=msg;s.classList.toggle('v46Busy',!!busy)}
+ const bar=document.getElementById('slotImportProgressV2')?.firstElementChild;if(bar)bar.style.width=Math.max(0,Math.min(100,Number(p)||0))+'%';
+ const st=document.getElementById('v46Stage');if(st)st.classList.toggle('on',!!busy);
+ const m=document.getElementById('v46StageMsg');if(m)m.textContent=msg;
+}
+function diag47(msg){const e=document.getElementById('v46Err');if(e)e.innerHTML='<div class="v46Error">'+String(msg).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</div>'}
+function loadScript47(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.async=true;s.crossOrigin='anonymous';s.src=src;s.onload=()=>res(true);s.onerror=()=>rej(Error('تعذر تحميل مكتبة OCR من '+src));document.head.appendChild(s)})}
+async function loadLib47(){
+ if(V47.loading)return V47.loading;
+ V47.loading=(async()=>{
+  if(window.Tesseract && typeof window.Tesseract.createWorker==='function')return window.Tesseract;
+  ui47('تحميل محرك OCR السريع…',2,true);
+  const urls=['https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js','https://unpkg.com/tesseract.js@7.0.0/dist/tesseract.min.js','https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js'];
+  let last='';
+  for(const u of urls){try{await loadScript47(u);if(window.Tesseract?.createWorker)return window.Tesseract}catch(e){last=e.message||String(e)}}
+  throw Error('تعذر تحميل مكتبة OCR. تأكد من اتصال الإنترنت والسماح للمتصفح بتحميل موارد خارجية. '+last);
+ })();try{return await V47.loading}finally{V47.loading=null}
+}
+async function makeWorker47(){
+ const T=await loadLib47();
+ const logger=m=>{if(m?.status==='recognizing text')ui47('OCR — '+Math.round((Number(m.progress)||0)*100)+'%',6,true)};
+ const configs=[
+  {workerBlobURL:true,workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/worker.min.js',corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@7.0.0',langPath:'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int'},
+  {workerBlobURL:true,workerPath:'https://unpkg.com/tesseract.js@7.0.0/dist/worker.min.js',corePath:'https://unpkg.com/tesseract.js-core@7.0.0',langPath:'https://unpkg.com/@tesseract.js-data/eng/4.0.0_best_int'},
+  {workerBlobURL:false,workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/worker.min.js',corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@7.0.0',langPath:'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int'}
+ ];
+ let last=null;
+ for(const cfg of configs){try{
+   ui47('تهيئة محرك OCR…',5,true);
+   const w=await T.createWorker('eng',1,{logger,errorHandler:e=>console.warn('Tesseract',e),...cfg},{load_system_dawg:'0',load_freq_dawg:'0',load_unambig_dawg:'0',load_punc_dawg:'0',load_number_dawg:'0'});
+   await w.setParameters({preserve_interword_spaces:'1',user_defined_dpi:'300',tessedit_pageseg_mode:'6'});
+   // Runtime probe: catches worker/core/lang failures before the real 16-card job.
+   const c=document.createElement('canvas');c.width=80;c.height=24;const g=c.getContext('2d');g.fillStyle='#000';g.fillRect(0,0,80,24);g.fillStyle='#fff';g.font='16px Arial';g.fillText('TEST',5,17);
+   const probe=await w.recognize(c,{}, {text:true});
+   if(!probe?.data){await w.terminate();throw Error('محرك OCR بدأ لكن لم يُرجع نتيجة')}
+   V47.engine='Tesseract.js '+(T.version||'7.x');const eb=document.getElementById('v47EngineBadge');if(eb)eb.textContent='OCR Engine Ready · '+V47.engine;return w;
+  }catch(e){last=e;console.warn('V47 worker config failed',cfg,e);if(V47.worker){try{await V47.worker.terminate()}catch(_){}V47.worker=null}}
+ }
+ throw Error('محرك OCR غير متاح على هذا الجهاز. '+(last?.message||last||'تعذر تشغيل WebWorker/WASM'));
+}
+async function worker47(){if(V47.worker)return V47.worker;V47.worker=await makeWorker47();return V47.worker}
+function img47(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error('تعذر فتح الصورة '+(file?.name||'')))};im.src=u})}
+function crop47(img,x,y,w,h,s=5){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,xx=Math.max(0,Math.min(W-1,x)),yy=Math.max(0,Math.min(H-1,y)),ww=Math.max(2,Math.min(w,W-xx)),hh=Math.max(2,Math.min(h,H-yy));const c=document.createElement('canvas');c.width=Math.max(2,Math.round(ww*s));c.height=Math.max(2,Math.round(hh*s));const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,xx,yy,ww,hh,0,0,c.width,c.height);return c}
+function ratio47(img,x,y,w,h,light){const c=document.createElement('canvas');c.width=Math.max(4,Math.round(w));c.height=Math.max(4,Math.round(h));const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,x,y,w,h,0,0,c.width,c.height);const d=g.getImageData(0,0,c.width,c.height).data;let n=0,t=d.length/4;for(let i=0;i<d.length;i+=4){const v=.299*d[i]+.587*d[i+1]+.114*d[i+2];if(light?v>125:v<68)n++}return t?n/t:0}
+function detect47(img){
+ const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,cols=[.006,.328,.650],rows=[.115,.405,.695],cells=[];
+ for(let r=0;r<3;r++)for(let c=0;c<3;c++){const x=Math.round(W*cols[c]),y=Math.round(H*rows[r]),w=Math.round(W*.300),h=Math.round(H*.285);if(x+w>W||y+h>H)continue;const dark=ratio47(img,x+2,y+2,w-4,h-4,false),light=ratio47(img,x+w*.08,y+h*.02,w*.76,h*.94,true),name=ratio47(img,x+w*.12,y+h*.16,w*.66,h*.72,true),score=light*9+name*6+(dark<.99?1:0);cells.push({x,y,w,h,row:r,col:c,dark,light,name,score,present:score>1.25&&light>.018&&dark<.995})}
+ return cells;
+}
+function chooseCells47(img,index){
+ const cells=detect47(img);const byRow=[];for(let r=0;r<3;r++){let row=cells.filter(c=>c.row===r&&c.present).sort((a,b)=>b.score-a.score);byRow.push(row)}
+ // Known PUBG lobby geometry used by this project: screenshot 1 is 3/3/3, screenshot 2 is 3/3/1.
+ // This prevents the two empty cells in the second screenshot from becoming fake cards.
+ const target=index===0?[3,3,3]:[3,3,1];let out=[];
+ for(let r=0;r<3;r++)out.push(...byRow[r].slice(0,target[r]));
+ // If a different crop contains a slightly weaker real card, recover from the remaining candidates before failing.
+ if(out.length<target.reduce((a,b)=>a+b,0)){
+   const used=new Set(out);const rest=cells.filter(c=>c.present&&!used.has(c)).sort((a,b)=>b.score-a.score);
+   for(const c of rest){if(out.length>=target.reduce((a,b)=>a+b,0))break;out.push(c)}
+ }
+ return out.sort((a,b)=>a.row-b.row||a.col-b.col);
+}
+function parse47(data,scale){const out=[];const t=String(data?.tsv||'');for(const line of t.split(/\r?\n/).slice(1)){const a=line.split('\t');if(a.length<12)continue;const text=clean47(a.slice(11).join('\t')).replace(/[|¦~`^]+/g,'').trim(),conf=Number(a[10]),x=Number(a[6]),y=Number(a[7]),w=Number(a[8]),h=Number(a[9]);if(!text||![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)continue;out.push({text,confidence:Number.isFinite(conf)?conf:0,x:x/scale,y:y/scale,w:w/scale,h:h/scale,cx:(x+w/2)/scale,cy:(y+h/2)/scale})}return out}
+function lineRead47(words,card,scale){const W=card.w,H=card.h,inside=words.filter(w=>w.x>=W*.08&&w.x<=W*.72&&w.y>=H*.02&&w.y<=H*.94).sort((a,b)=>a.cy-b.cy||a.x-b.x),groups=[];for(const w of inside){let g=groups.find(z=>Math.abs(z.cy-w.cy)<=Math.max(18,H*.035));if(!g){g={cy:w.cy,words:[],conf:0};groups.push(g)}g.words.push(w);g.conf=Math.max(g.conf,w.confidence);g.cy=(g.cy*(g.words.length-1)+w.cy)/g.words.length}return groups.sort((a,b)=>a.cy-b.cy).map(g=>({name:g.words.sort((a,b)=>a.x-b.x).map(w=>w.text).join(' ').replace(/^\d{1,2}\s+/,'').trim(),confidence:g.conf,cy:g.cy/scale,candidates:g.words.map(w=>w.text)})).filter(x=>x.name.length>=2).slice(0,4)}
+function contrast47(src){const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(src,0,0);const d=g.getImageData(0,0,c.width,c.height),p=d.data;for(let i=0;i<p.length;i+=4){const y=.299*p[i]+.587*p[i+1]+.114*p[i+2];const q=Math.max(0,Math.min(255,(y-90)*2.45+90));p[i]=p[i+1]=p[i+2]=q}g.putImageData(d,0,0);return c}
+async function readCard47(img,card,w){
+ const canvas=crop47(img,card.x,card.y,card.w,card.h,4.5);await w.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1',user_defined_dpi:'300'});let d=(await w.recognize(canvas,{}, {tsv:true,text:true}))?.data||{};let lines=lineRead47(parse47(d,4.5),card,4.5);
+ if(lines.length<4||lines.some(x=>x.confidence<30)){const alt=contrast47(canvas);await w.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'320'});const d2=(await w.recognize(alt,{}, {tsv:true,text:true}))?.data||{};const l2=lineRead47(parse47(d2,4.5),card,4.5);for(let i=0;i<Math.max(lines.length,l2.length,4);i++){if(l2[i]&&(!lines[i]||l2[i].confidence>lines[i].confidence))lines[i]=l2[i]}}
+ const centers=[.10,.32,.54,.76];async function recover(j){const cy=lines[j]?.cy||centers[j];const b={x:card.x+card.w*.10,y:card.y+card.h*(cy-.07),w:card.w*.66,h:card.h*.15};const c=crop47(img,b.x,b.y,b.w,b.h,6.5);await w.setParameters({tessedit_pageseg_mode:'7',preserve_interword_spaces:'1',user_defined_dpi:'320'});const q=(await w.recognize(c,{}, {text:true}))?.data||{};const t=clean47(q.text).split(/\r?\n/).map(clean47).find(x=>x.length>=2&&x.length<=32)||'';return t?{name:t,confidence:Number(q.confidence)||0,cy,candidates:[t]}:null}
+ for(let j=0;j<4;j++){if(!lines[j]||lines[j].name.length<3||lines[j].confidence<32){try{const q=await recover(j);if(q&&(!lines[j]||q.confidence>=lines[j].confidence+3||!lines[j].name))lines[j]=q}catch(e){}}}
+ const players=[];for(let j=0;j<4;j++){const p=lines[j]||{name:'',confidence:0,candidates:[]};players.push({name:clean47(p.name),raw:clean47(p.name),confidence:Number(p.confidence)||0,quality:p.name?.length>=3?.85:.25,consensus:1,score:Number(p.confidence)||0,votes:1,sources:['v47'],verified:!!p.name,candidates:(p.candidates||[]).map(t=>({text:t,confidence:p.confidence}))})}return players;
+}
+async function run47(){const x=X47();if(!x)return;if(V47.busy||x.scanning)return;if(!x.files?.length)return toast47('أضف صور الـLobby أولًا.');V47.busy=true;x.scanning=true;x.results=[];const start=performance.now();try{
+ ui47('تجهيز محرك OCR…',1,true);const w=await worker47();
+ const all=[];for(let i=0;i<x.files.length;i++){ui47(`فحص صورة Lobby ${i+1}/${x.files.length}…`,8+i*4,true);const im=await img47(x.files[i]);const cells=chooseCells47(im,i);if(!cells.length)throw Error(`الصورة ${i+1}: لم يتم اكتشاف أي كارت Lobby`);for(const c of cells)all.push({img:im,file:x.files[i],fileIndex:i,card:c})}
+ if(all.length!==16){const detail=all.map(a=>`صورة ${a.fileIndex+1}: ${all.filter(z=>z.fileIndex===a.fileIndex).length}`).join(' · ');throw Error(`تم اكتشاف ${all.length}/16 كارت فقط (${detail}). لم يبدأ OCR حتى لا نحفظ بيانات ناقصة.`)}
+ const rows=[];for(let i=0;i<all.length;i++){ui47(`قراءة اللاعبين — كارت ${i+1}/16…`,15+(i/16)*65,true);const a=all[i],players=await readCard47(a.img,a.card,w);rows.push({slot:0,players,sourceImage:a.fileIndex,card:i+1,row:a.card.row+1,column:a.card.col+1,file:a.file.name,evidence:crop47(a.img,a.card.x,a.card.y,a.card.w,a.card.h,2).toDataURL('image/jpeg',.88),conflict:false});const got=rows.reduce((n,r)=>n+r.players.filter(p=>p.name).length,0);const pe=document.getElementById('v46Players');if(pe)pe.textContent=`${got}/64 players`}
+ rows.sort((a,b)=>a.sourceImage-b.sourceImage||a.row-b.row||a.column-b.column);rows.forEach((r,i)=>{r.slot=3+i;r.team=(typeof teamForSlot==='function'?teamForSlot(r.slot)?.name:'')||'';r.verified=r.players.every(p=>!!clean47(p.name));r.needsReview=!r.verified;r.saveable=r.verified});x.results=rows;window.renderSlotReview?.();const missing=rows.reduce((n,r)=>n+r.players.filter(p=>!p.name).length,0);const sec=Math.max(1,Math.round((performance.now()-start)/1000));ui47(`اكتمل التحليل — 16/16 Slot • ${64-missing}/64 لاعبًا • ${sec} ثانية`,100,false);const te=document.getElementById('v46Time');if(te)te.textContent=sec+'s';toast47(missing?`تم تحليل 16 Slot — ${missing} أسماء تحتاج مراجعة`:'تم تحليل 16 Slot و64 لاعبًا بنجاح');
+ }catch(e){console.error('V47',e);x.results=[];window.renderSlotReview?.();diag47(e?.message||e);ui47('تعذر إكمال التحليل — راجع التشخيص.',0,false);toast47('فشل التحليل: '+(e?.message||e))}finally{x.scanning=false;V47.busy=false}}
+function bind47(){const buttons=[...document.querySelectorAll('button')];const b=buttons.find(el=>/Analyze All Screenshots/i.test(el.textContent||''));if(b){b.type='button';b.onclick=e=>{e.preventDefault();run47();return false};b.dataset.v47='1'}const inp=document.getElementById('teamSlotImagesV2');if(inp){inp.accept='image/*,.jpg,.jpeg,.png,.webp,.heic,.heif,.avif';inp.onchange=e=>{const fs=[...(e.target.files||[])];if(typeof window.slotImportAddFiles==='function')window.slotImportAddFiles(fs);e.target.value=''}}}
+setTimeout(bind47,0);setTimeout(bind47,250);setTimeout(bind47,800);
+window.runTeamSlotImportV2=run47;window.__V47_OCR__=V47;
+})();
+
 </script>
 </body></html>
