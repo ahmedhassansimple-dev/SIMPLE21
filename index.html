@@ -136,28 +136,64 @@ async function setLobbyOCRMode(){
   try{await ocrWorker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});}catch(e){console.warn('Lobby OCR mode:',e)}
 }
 function extractLobbyLines(text){
-  return String(text||'').split(/\r?\n+/).map(cleanOCRText).map(x=>x.replace(/^[-_:.,]+|[-_:.,]+$/g,'')).filter(x=>plausiblePlayer(x)&&!/^\d{1,2}$/.test(x));
+  return String(text||'').split(/\r?\n+/).map(cleanOCRText).map(x=>x.replace(/^[-_:.,]+|[-_:.,]+$/g,'')).filter(x=>plausiblePlayer(x)&&!/^(?:\d{1,2}|\/0|eliminations?)$/i.test(x));
+}
+function prepLobbyCrop(src, mode='normal'){
+  const c=document.createElement('canvas'); c.width=src.width; c.height=src.height;
+  const g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(src,0,0);
+  const im=g.getImageData(0,0,c.width,c.height), d=im.data;
+  for(let i=0;i<d.length;i+=4){
+    const lum=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];
+    let v=lum;
+    if(mode==='contrast') v=Math.max(0,Math.min(255,(lum-80)*1.9));
+    if(mode==='binary') v=lum>145?255:0;
+    d[i]=d[i+1]=d[i+2]=v;
+  }
+  g.putImageData(im,0,0); return c;
+}
+function lobbyCandidateFromTSV(data){
+  const ws=(data?.words||[]).map(w=>({text:cleanOCRText(w.text),conf:Number(w.confidence||0),x:Number(w.bbox?.x0||0),y0:Number(w.bbox?.y0||0),y1:Number(w.bbox?.y1||0)})).filter(w=>w.text&&plausiblePlayer(w.text));
+  if(!ws.length)return [];
+  ws.sort((a,b)=>a.y0-b.y0||a.x-b.x);
+  const lines=[];
+  for(const w of ws){
+    let line=lines[lines.length-1];
+    const cy=(w.y0+w.y1)/2;
+    if(!line || Math.abs(line.cy-cy)>Math.max(8,(w.y1-w.y0)*.9)) { line={cy,text:w.text,conf:w.conf}; lines.push(line); }
+    else { line.text+=' '+w.text; line.conf=Math.max(line.conf,w.conf); }
+  }
+  return lines.map(x=>cleanOCRText(x.text)).filter(plausiblePlayer).slice(0,4);
+}
+async function recognizeLobbyText(canvas, psm='6'){
+  const variants=[canvas,prepLobbyCrop(canvas,'contrast')];
+  for(let vi=0;vi<variants.length;vi++){
+    try{ await ocrWorker.setParameters({tessedit_pageseg_mode:psm,preserve_interword_spaces:'1',user_defined_dpi:'300'}); }catch(e){}
+    const r=await ocrWorker.recognize(variants[vi],{rotateAuto:false},{text:true,blocks:false,hocr:false,tsv:true});
+    const fromTSV=lobbyCandidateFromTSV(r?.data||{});
+    const fromText=extractLobbyLines(r?.data?.text||'');
+    const merged=[];
+    for(const x of [...fromTSV,...fromText]) if(x&&!merged.includes(x)) merged.push(x);
+    if(merged.length)return merged.slice(0,4);
+  }
+  return [];
 }
 async function readLobbyCard(img,rect){
-  // PUBG lobby cards contain exactly four player rows. The old reader cropped
-  // the elimination column too, so Tesseract returned a whole line such as
-  // "UlaR3B /0 Eliminations" which failed the player validator and became blank.
-  // Read the player-name column once per card, then use a narrow row fallback
-  // only when a line is missing. This is both faster and much more reliable.
-  await setLobbyOCRMode();
-  const nameColumn=crop(img,rect.x+rect.w*.14,rect.y+rect.h*.02,rect.w*.56,rect.h*.94,5);
-  const a=await ocrWorker.recognize(nameColumn,{rotateAuto:false},{text:true,blocks:false,hocr:false,tsv:false});
-  let lines=extractLobbyLines(a?.data?.text||'').slice(0,4);
-  if(lines.length<4){
-    for(let i=0;i<4&&lines.length<4;i++){
-      const ry=rect.y+rect.h*(0.025+i*0.238),rh=rect.h*0.205;
-      const row=crop(img,rect.x+rect.w*.14,ry,rect.w*.56,rh,5.4);
-      const r=await ocrWorker.recognize(row,{rotateAuto:false},{text:true,blocks:false,hocr:false,tsv:false});
-      const one=extractLobbyLines(r?.data?.text||'')[0]||'';
-      if(one && !lines.includes(one))lines[i]=one;
+  // Read each known player row independently. PUBG's four rows are fixed;
+  // separating them prevents the elimination counter from contaminating the name.
+  const out=[];
+  for(let i=0;i<4;i++){
+    const ry=rect.y+rect.h*(0.205+i*0.235);
+    const rh=rect.h*.145;
+    const row=crop(img,rect.x+rect.w*.125,ry,rect.w*.60,rh,7);
+    let names=await recognizeLobbyText(row,'7');
+    let name=names[0]||'';
+    if(!name){
+      const wider=crop(img,rect.x+rect.w*.105,ry-rect.h*.025,rect.w*.64,rect.h*.19,7);
+      names=await recognizeLobbyText(wider,'7'); name=names[0]||'';
     }
+    out.push(cleanOCRText(name));
   }
-  return [0,1,2,3].map(i=>cleanOCRText(lines[i]||''));
+  return out;
 }
 function commitRosterRows(rows,verified=false){
   for(const r of rows||[]){
