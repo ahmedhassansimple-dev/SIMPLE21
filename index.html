@@ -131,22 +131,42 @@ async function getWords(file,psm=6){const w=await loadOCR();const r=await w.reco
 function lobbyCellsFor(index){return index===0?{rows:[3,3,3],startSlot:3}:{rows:[3,3,1],startSlot:12}}
 function lobbyCardRects(index){const g=lobbyCellsFor(index),out=[];const cols=[.006,.328,.650],ys=[.115,.405,.695];for(let row=0;row<3;row++){for(let col=0;col<3;col++){if(col>=g.rows[row])continue;out.push({slot:g.startSlot+row*3+col,x:cols[col],y:ys[row],w:.300,h:.285})}}return out}
 function wordsInRect(words,rx,ry,rw,rh){return (words||[]).filter(w=>{const b=w.bbox||{};const cx=((b.x0||0)+(b.x1||0))/2,cy=((b.y0||0)+(b.y1||0))/2;return cx>=rx&&cx<=rx+rw&&cy>=ry&&cy<=ry+rh})}
-async function readLobbyCard(img,rect){
-  const out=[];
-  for(let i=0;i<4;i++){
-    const ry=rect.y+rect.h*(0.025+i*0.238), rh=rect.h*0.205;
-    const row=crop(img,rect.x+rect.w*0.035,ry,rect.w*0.91,rh,5.4);
-    const a=await ocrWorker.recognize(row,{rotateAuto:false},{blocks:false,hocr:false,tsv:true});
-    let text=cleanOCRText(a?.data?.text||'');
-    if(!plausiblePlayer(text)){
-      const words=a?.data?.words||[];
-      text=words.map(w=>cleanOCRText(w.text)).filter(plausiblePlayer).join(' ');
-    }
-    out.push(plausiblePlayer(text)?text:'');
-  }
-  return out;
+async function setLobbyOCRMode(){
+  if(!ocrWorker?.setParameters)return;
+  try{await ocrWorker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});}catch(e){console.warn('Lobby OCR mode:',e)}
 }
-async function runRosterOCR(files){if(!files?.length||ocrBusy)return;if(files.length!==2)return toast('Please select the two lobby screenshots: Slots 03–11 and Slots 12–18');ocrBusy=true;$('rosterReview').innerHTML='<div class="empty">Preparing OCR…</div>';setProgress('rosterProgress',2);try{await loadOCR();const results=[];for(let i=0;i<files.length;i++){const img=await imageFromFile(files[i]);const rects=lobbyCardRects(i);for(let j=0;j<rects.length;j++){const r=rects[j];const players=await readLobbyCard(img,r);results.push({slot:r.slot,players});setProgress('rosterProgress',Math.round(((i*9+j+1)/(files.length===2?16:9))*90)+5)}}if(results.length!==16)throw Error(`Expected 16 lobby slots, detected ${results.length}`);ocrReview={type:'roster',rows:results};renderRosterReview();setProgress('rosterProgress',100);$('rosterStatus').textContent='OCR complete. Review is editable; Save Roster applies it to Slots 03–18.'}catch(e){console.error(e);setProgress('rosterProgress',0);$('rosterStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span><br><span class="muted">If this is the first run, keep the browser online. The engine is downloaded and cached by the browser.</span>`;$('rosterReview').innerHTML='<div class="notice">No roster data was changed. You can use the manual Team List below if OCR is unavailable.</div>'}finally{ocrBusy=false}}
+function extractLobbyLines(text){
+  return String(text||'').split(/\r?\n+/).map(cleanOCRText).map(x=>x.replace(/^[-_:.,]+|[-_:.,]+$/g,'')).filter(x=>plausiblePlayer(x)&&!/^\d{1,2}$/.test(x));
+}
+async function readLobbyCard(img,rect){
+  // PUBG lobby cards contain exactly four player rows. The old reader cropped
+  // the elimination column too, so Tesseract returned a whole line such as
+  // "UlaR3B /0 Eliminations" which failed the player validator and became blank.
+  // Read the player-name column once per card, then use a narrow row fallback
+  // only when a line is missing. This is both faster and much more reliable.
+  await setLobbyOCRMode();
+  const nameColumn=crop(img,rect.x+rect.w*.14,rect.y+rect.h*.02,rect.w*.56,rect.h*.94,5);
+  const a=await ocrWorker.recognize(nameColumn,{rotateAuto:false},{text:true,blocks:false,hocr:false,tsv:false});
+  let lines=extractLobbyLines(a?.data?.text||'').slice(0,4);
+  if(lines.length<4){
+    for(let i=0;i<4&&lines.length<4;i++){
+      const ry=rect.y+rect.h*(0.025+i*0.238),rh=rect.h*0.205;
+      const row=crop(img,rect.x+rect.w*.14,ry,rect.w*.56,rh,5.4);
+      const r=await ocrWorker.recognize(row,{rotateAuto:false},{text:true,blocks:false,hocr:false,tsv:false});
+      const one=extractLobbyLines(r?.data?.text||'')[0]||'';
+      if(one && !lines.includes(one))lines[i]=one;
+    }
+  }
+  return [0,1,2,3].map(i=>cleanOCRText(lines[i]||''));
+}
+function commitRosterRows(rows,verified=false){
+  for(const r of rows||[]){
+    const t=team(r.slot);if(!t)continue;
+    t.players=[0,1,2,3].map(j=>({name:cleanOCRText(r.players?.[j]||''),verified:!!verified}));
+  }
+  persist();
+}
+async function runRosterOCR(files){if(!files?.length||ocrBusy)return;if(files.length!==2)return toast('Please select the two lobby screenshots: Slots 03–11 and Slots 12–18');ocrBusy=true;$('rosterReview').innerHTML='<div class="empty">Preparing OCR…</div>';setProgress('rosterProgress',2);try{await loadOCR();const results=[];let done=0;for(let i=0;i<files.length;i++){const img=await imageFromFile(files[i]);const rects=lobbyCardRects(i);for(let j=0;j<rects.length;j++){const r=rects[j];const players=await readLobbyCard(img,r);results.push({slot:r.slot,players});done++;setProgress('rosterProgress',Math.round((done/16)*90)+5)}}if(results.length!==16)throw Error(`Expected 16 lobby slots, detected ${results.length}`);ocrReview={type:'roster',rows:results};commitRosterRows(results,false);renderRosterReview();renderTeams();renderHome();setProgress('rosterProgress',100);$('rosterStatus').textContent='OCR complete. Player names were saved automatically. You can edit any name and press Save Roster if needed.'}catch(e){console.error(e);setProgress('rosterProgress',0);$('rosterStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span><br><span class="muted">If this is the first run, keep the browser online. The engine is downloaded and cached by the browser.</span>`;$('rosterReview').innerHTML='<div class="notice">No roster data was changed. You can use the manual Team List below if OCR is unavailable.</div>'}finally{ocrBusy=false}}
 function renderRosterReview(){const rows=ocrReview?.rows||[];$('rosterReview').innerHTML=`<div class="notice">Detected 16 slots. Team names are not OCR-read; each slot is bound to its saved Team List entry. Player names remain editable before saving.</div><div class="scroll" style="margin-top:10px"><table class="table"><tr><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th></tr>${rows.map((r,i)=>`<tr><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(team(r.slot)?.name||'Team not set')}</td>${r.players.map((p,j)=>`<td><input id="rr-${i}-${j}" value="${esc(p)}" placeholder="Player ${j+1}"></td>`).join('')}</tr>`).join('')}</table></div>`}
 function saveRosterReview(){if(!ocrReview?.rows)return toast('Run Slot OCR first');for(let i=0;i<ocrReview.rows.length;i++){const r=ocrReview.rows[i];const t=team(r.slot);if(!t)continue;t.players=[0,1,2,3].map(j=>({name:$("rr-"+i+"-"+j)?.value.trim()||'',verified:true}));}persist();renderTeams();renderHome();toast('Roster saved automatically for all 16 slots');}
 function fillMissingRoster(){if(!ocrReview?.rows)return;const map=new Map(state.teams.map(t=>[t.slot,t]));ocrReview.rows.forEach((r,i)=>{const t=map.get(r.slot);if(!t)return;for(let j=0;j<4;j++)if(!r.players[j])r.players[j]=t.players[j]?.name||''});renderRosterReview()}
