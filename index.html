@@ -41,7 +41,7 @@
  <div class="card"><div id="teamGrid" class="slotGrid"></div></div><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><b>Next step: Build the 16-player rosters</b><div class="hint">Once the team names are complete, move directly to the Lobby Reader.</div></div><button class="primary" onclick="go('roster')">Continue to Rosters →</button></div></div>
 </section>
 <section id="roster" class="section">
- <div class="card hero"><div class="titleline"><div><div class="title">Roster Builder · Lobby OCR · Calibrated Engine</div><div class="hint">Reads the real PUBG MOBILE lobby name column first, then uses targeted row rescue only where needed. Slots 03–18 are bound automatically.</div><span id="rosterEngine" class="pill warn">Ready check</span></div></div><div class="card"><div class="grid3"><div><b>01 · Team binding</b><div class="hint">Slot determines the team. Team names are never OCR-guessed.</div></div><div><b>02 · Multi-pass reading</b><div class="hint">Card OCR + row OCR + contrast channels + consensus.</div></div><div><b>03 · Auto-save</b><div class="hint">Detected names are saved automatically and remain editable.</div></div></div></div>
+ <div class="card hero"><div class="titleline"><div><div class="title">Roster Builder · Precision Slot OCR 60</div><div class="hint">Reads each PUBG MOBILE Slot as an independent card, uses multi-pass consensus, then performs targeted row rescue only where needed. Slot identity is fixed; team names are never guessed from the screenshot.</div><span id="rosterEngine" class="pill warn">Ready check</span></div></div><div class="card"><div class="grid3"><div><b>01 · Team binding</b><div class="hint">Slot determines the team. Team names are never OCR-guessed.</div></div><div><b>02 · Multi-pass reading</b><div class="hint">Exact Slot crop + name-column OCR + row rescue + consensus + roster matching.</div></div><div><b>03 · Auto-save</b><div class="hint">Detected names are saved automatically and remain editable.</div></div></div></div>
  <div class="card"><div class="actionHero"><div><div class="title">Lobby Processing Center</div><div class="hint">1) Choose both lobby screenshots → 2) press the green <b>Process Lobby</b> button → 3) the system reads all 16 slots and saves the roster automatically.</div><div class="fileList" id="lobbyFileList"></div></div><button id="processLobbyBtn" class="primary bigAction" onclick="processLobby()" disabled>▶ Process Lobby</button></div><div class="drop" style="margin-top:10px"><b>Upload 2 original screenshots</b><div class="hint">Screenshot A = Slots 03–11 · Screenshot B = Slots 12–18. No need to rename files.</div><input id="lobbyFiles" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" multiple><div class="row" style="margin-top:10px"><button class="ghost" onclick="clearLobbySelection()">Clear Selection</button><button class="ghost" onclick="testOCREngine()">Test OCR Engine</button></div></div><div class="progress"><i id="rosterProgress"></i></div><div id="rosterStatus" class="hint" style="margin-top:8px">Waiting for 2 lobby screenshots.</div></div>
  <div class="card"><div class="titleline"><div><div class="title">Detected Roster</div><div class="hint">The reader keeps the strongest candidate per character and shows the evidence so you can correct only the rare difficult letters.</div></div><div class="row" style="max-width:340px"><button class="ghost small" onclick="fillMissingRoster()">Fill missing manually</button><button class="primary small" onclick="saveRosterReview()">✓ Save Roster</button></div></div><div id="rosterReview" class="empty">Upload a lobby screenshot to start.</div></div><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><b>Next step: Create your matches</b><div class="hint">Your roster is now the canonical player identity used by Result OCR.</div></div><button class="primary" onclick="go('matches')">Continue to Match Center →</button></div></div>
 </section>
@@ -72,7 +72,7 @@
 </div>
 
 <script>
-const APP={version:'60.0-world-class-lobby-ocr',storage:'PUBG_TM_WORLD_CLASS_V58',mediaDB:'PUBG_TM_MEDIA_V50',mediaStore:'images',current:'PUBG_TM_CURRENT_V58',legacy:['PUBG_TM_WORLD_CLASS_V56','PUBG_TM_WORLD_CLASS_V54','PUBG_TM_WORLD_CLASS_V51','PUBG_TM_CLEAN_PRO_V50','pubg_tm_v21_pro','PUBG_TM_V21_PRO']};
+const APP={version:'60.0-precision-slot-result-ocr',storage:'PUBG_TM_WORLD_CLASS_V58',mediaDB:'PUBG_TM_MEDIA_V50',mediaStore:'images',current:'PUBG_TM_CURRENT_V58',legacy:['PUBG_TM_WORLD_CLASS_V56','PUBG_TM_WORLD_CLASS_V54','PUBG_TM_WORLD_CLASS_V51','PUBG_TM_CLEAN_PRO_V50','pubg_tm_v21_pro','PUBG_TM_V21_PRO']};
 const DEFAULT_RULES={place:[0,10,6,5,4,3,2,1,1,0,0,0,0,0,0,0,0],kill:1};
 const SLOTS=Array.from({length:16},(_,i)=>i+3);
 let state=null,workspaceId=null,ocrReview=null,ocrBusy=false,enginePromise=null,ocrWorker=null,pendingLobbyFiles=[],pendingResultFiles=[];
@@ -146,7 +146,7 @@ async function loadOCR(){
       else if(m?.status==='recognizing text')setEngine('loading',`OCR ${Math.round((Number(m.progress)||0)*100)}%`);
     }});
     try{await w.setParameters({preserve_interword_spaces:'1',user_defined_dpi:'320',load_system_dawg:'0',load_freq_dawg:'0',load_unambig_dawg:'0',load_punc_dawg:'0',load_number_dawg:'0'});}catch(e){}
-    ocrWorker=w;setEngine('ready','OCR Engine · Multi-Pass Ready');return w;
+    ocrWorker=w;setEngine('ready','OCR 60 · Precision Slot + Result Engine');return w;
    }catch(e){last=e?.message||String(e)}
   }
   throw Error('OCR engine could not start. '+last);
@@ -209,550 +209,182 @@ function preprocessLobby(src,mode='original'){
 function parseTSV(data,scale=1){const tsv=String(data?.tsv||'');const out=[];if(!tsv)return out;for(const line of tsv.split(/\r?\n/).slice(1)){const p=line.split('\t');if(p.length<12)continue;const text=ocrClean(p.slice(11).join('\t')),conf=Number(p[10]),x=Number(p[6]),y=Number(p[7]),w=Number(p[8]),h=Number(p[9]);if(!text||![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)continue;out.push({text,confidence:Number.isFinite(conf)?conf:0,x0:x/scale,y0:y/scale,x1:(x+w)/scale,y1:(y+h)/scale,cx:(x+w/2)/scale,cy:(y+h/2)/scale})}return out}
 function tsvLines(data,scale=1){const map=new Map();for(const w of parseTSV(data,scale)){const key=[w.text,w.cy.toFixed(1)].join('|');let best=[...map.values()].find(g=>Math.abs(g.cy-w.cy)<Math.max(4,(w.y1-w.y0)*.75));if(!best){best={text:[],confidence:0,x0:w.x0,y0:w.y0,x1:w.x1,y1:w.y1,cy:w.cy};map.set(map.size,best)}best.text.push(w.text);best.confidence=Math.max(best.confidence,w.confidence);best.x0=Math.min(best.x0,w.x0);best.y0=Math.min(best.y0,w.y0);best.x1=Math.max(best.x1,w.x1);best.y1=Math.max(best.y1,w.y1)}return[...map.values()].map(g=>({...g,text:ocrClean(g.text.join(' '))})).sort((a,b)=>a.cy-b.cy)}
 async function recognizeLobby(canvas,mode='original',psm='6'){const w=await loadOCR();try{await w.setParameters({tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1',user_defined_dpi:'320',segment_penalty_garbage:0,segment_penalty_dict_nonword:0,language_model_penalty_non_dict_word:0,load_system_dawg:'0',load_freq_dawg:'0',load_unambig_dawg:'0',load_punc_dawg:'0',load_number_dawg:'0'})}catch(e){}return await w.recognize(preprocessLobby(canvas,mode),{}, {tsv:true,text:true})}
+/* =========================================================
+   OCR ENGINE 60 — PUBG MOBILE SLOT / RESULT PRECISION CORE
+   Design: exact slot crop -> name-column consensus -> targeted row rescue
+   -> roster-aware assignment -> immutable slot identity.
+   ========================================================= */
+const OCR60={version:'60.0',slotCenters:[.18,.405,.63,.855],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
 function lobbyGeometry(img){
- const W=img?.naturalWidth||img?.width||852,H=img?.naturalHeight||img?.height||460,ratio=W/H;
- // PUBG MOBILE lobby captures used by this workflow come in two closely related crops.
- // Interpolate by aspect ratio so the grid remains stable if the same screenshots are resized.
- const t=clamp((1.85217-ratio)/(1.85217-1.80579),0,1);
- const lerp=(a,b)=>a+(b-a)*t;
- return {
-  cols:[lerp(.006,.008),lerp(.327,.320),lerp(.648,.633)],
-  ys:[lerp(.090,.105),lerp(.385,.408),lerp(.695,.712)],
-  w:lerp(.301,.292),h:lerp(.292,.277)
- };
+ const W=img?.naturalWidth||img?.width||852,H=img?.naturalHeight||img?.height||460;
+ const ratio=W/H;
+ // These are the two real PUBG MOBILE lobby layouts supplied for this project.
+ // Coordinates are normalized, so resizing the screenshot does not change the grid.
+ if(ratio>1.825) return {cols:[.006,.328,.650],ys:[.115,.405,.695],w:.300,h:.285};
+ return {cols:[.008,.320,.633],ys:[.105,.408,.712],w:.292,h:.277};
 }
 function lobbyCardRects(index,img){
- const rows=index===0?[3,3,3]:[3,3,1],start=index===0?3:12,g=lobbyGeometry(img),out=[];
- for(let r=0;r<3;r++)for(let c=0;c<rows[r];c++)out.push({slot:start+r*3+c,x:g.cols[c],y:g.ys[r],w:g.w,h:g.h,row:r,col:c});
+ const g=lobbyGeometry(img),start=index===0?3:12,out=[];
+ const count=index===0?9:7;
+ for(let k=0;k<count;k++){
+   const r=Math.floor(k/3),c=k%3;
+   out.push({slot:start+k,x:g.cols[c],y:g.ys[r],w:g.w,h:g.h,row:r,col:c});
+ }
  return out;
 }
-function rowBand(card,i){
- // Fallback only. Actual row positions are learned from the bright-text profile in detectPlayerBands().
- const centers=[.16,.385,.61,.835],rh=.115;
- const x=card.x+card.w*.135,w=card.w*.485,h=card.h*rh,y=card.y+card.h*(centers[i]-rh/2);
- return{x,y,w,h};
+function slotNameArea(card){return {x:card.x+card.w*.040,y:card.y+card.h*.025,w:card.w*.720,h:card.h*.945};}
+function slotRowBand(card,i){
+ const center=OCR60.slotCenters[i],h=card.h*.135;
+ return {x:card.x+card.w*.040,y:card.y+card.h*(center-h/2),w:card.w*.720,h};
 }
-function rowVariants(card,i){const b=rowBand(card,i),dy=card.h*.025;return[b,{...b,y:b.y-dy,h:b.h+dy*1.35},{...b,y:b.y+dy*.55,h:b.h+dy*1.35},{...b,y:b.y-dy*.65,h:b.h+dy*2.2}]}
-function detectPlayerBands(img,card){
- const IW=img.naturalWidth||img.width||1,IH=img.naturalHeight||img.height||1;
- const x0=Math.round(IW*(card.x+card.w*.125)),x1=Math.round(IW*(card.x+card.w*.625));
- const y0=Math.round(IH*(card.y+card.h*.008)),y1=Math.round(IH*(card.y+card.h*.995));
- const W=Math.max(32,x1-x0),H=Math.max(32,y1-y0),c=document.createElement('canvas');c.width=W;c.height=H;
- const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,x0,y0,W,H,0,0,W,H);
- const d=g.getImageData(0,0,W,H).data,profile=new Float32Array(H);
- for(let yy=0;yy<H;yy++){let n=0;for(let xx=0;xx<W;xx++){const k=(yy*W+xx)*4,v=.299*d[k]+.587*d[k+1]+.114*d[k+2];if(v>145)n++;}profile[yy]=n;}
- // Smooth a little; PUBG's narrow font can break a single row into several bright runs.
- const sm=new Float32Array(H);for(let y=0;y<H;y++)sm[y]=(profile[Math.max(0,y-1)]+profile[y]+profile[Math.min(H-1,y+1)])/3;
- const threshold=Math.max(2,W*.018),groups=[];let st=-1,last=-1;
- for(let yy=0;yy<H;yy++){
-   if(sm[yy]>=threshold){if(st<0)st=yy;last=yy;}
-   else if(st>=0){if(last-st+1>=2)groups.push({a:st,b:last});st=-1;last=-1;}
- }
- if(st>=0&&last-st+1>=2)groups.push({a:st,b:last});
- const merged=[];for(const q of groups){const prev=merged.at(-1);if(prev&&q.a-prev.b<=4)prev.b=q.b;else merged.push({...q});}
- let scored=merged.filter(q=>q.b-q.a+1>=3).map(q=>{let score=0;for(let y=q.a;y<=q.b;y++)score+=sm[y];return{...q,score}});
- if(scored.length>4){
-   // Four player rows are vertically ordered. Prefer the four strongest groups while
-   // preserving the expected top-to-bottom spacing; this rejects tiny decorative text.
-   const candidates=scored.slice().sort((a,b)=>b.score-a.score).slice(0,8).sort((a,b)=>a.a-b.a);
-   const expected=[.16,.385,.61,.835].map(v=>v*H);
-   const chosen=[];
-   for(const target of expected){
-     const pool=candidates.filter(q=>!chosen.includes(q));
-     pool.sort((a,b)=>Math.abs((a.a+a.b)/2-target)-Math.abs((b.a+b.b)/2-target)||b.score-a.score);
-     if(pool[0])chosen.push(pool[0]);
-   }
-   scored=chosen.sort((a,b)=>a.a-b.a);
- }
- if(scored.length!==4)return null;
- return scored.map(q=>{
-   const pad=Math.max(3,Math.round((q.b-q.a+1)*.35));
-   return {
-     x:card.x+card.w*.135,
-     y:card.y+(y0+q.a-pad)/IH,
-     w:card.w*.485,
-     h:Math.max(card.h*.065,(q.b-q.a+1+pad*2)/IH)
-   };
- });
+function rowBand(card,i){return slotRowBand(card,i)}
+function effectiveRowBands(img,card){return OCR60.slotCenters.map((_,i)=>slotRowBand(card,i));}
+function slotCenterY(card,i){return card.y+card.h*OCR60.slotCenters[i]}
+function normalizeOcrCandidate(text,first=false){
+ let t=ocrClean(text).replace(/\s*\/?\s*\d{1,2}\s*Eliminations?.*$/i,'').replace(/\s*Eliminations?.*$/i,'').trim();
+ if(first)t=normalizeFirstPlayer(t);
+ t=t.replace(/^[\s|¦/\\:;,.~`^_=+\-]+|[\s|¦/\\:;,.~`^_=+\-]+$/g,'').trim();
+ return playerIsGarbage(t)?'':t;
 }
-function effectiveRowBands(img,card){return detectPlayerBands(img,card)||[0,1,2,3].map(i=>rowBand(card,i));}
-function normalizeFirstPlayer(s){let t=normalizePlayer(s);t=t.replace(/^\s*(?:0?[3-9]|1[0-8])(?:\s*[,.:;|/\\-]\s*|\s+)/,'');return ocrClean(t);}
-function addCandidate(arr,text,confidence,source,first=false){const t=first?normalizeFirstPlayer(text):normalizePlayer(text);if(!t||!plausibleName(t))return;arr.push({text:t,confidence:Number.isFinite(Number(confidence))?Number(confidence):0,source:source||'ocr'});}
-function playerShapeScore(t){
- const s=ocrClean(t);if(!s)return 0;let q=0;
- if(s.length>=3&&s.length<=24)q+=.25;
- if(/[A-Za-z0-9]/.test(s))q+=.25;
- if(!/Eliminations/i.test(s))q+=.25;
- if(!/^\d+$/.test(s))q+=.15;
- if(!/^[^A-Za-z0-9]+$/.test(s))q+=.10;
- return q;
+function candidateKey(t){return normKey(t).replace(/[^a-z0-9]/g,'')}
+function addPrecisionCandidate(arr,slot,text,confidence,source,first=false){
+ const t=normalizeOcrCandidate(text,first); if(!t||!plausibleName(t))return;
+ addRosterAwareCandidate(arr,slot,t,confidence,source,first);
 }
-function characterConsensusScore(text,candidates){
- const t=ocrClean(text);if(!t)return 0;let support=0,total=0;
- for(const c of candidates||[]){
-  const u=ocrClean(c.text);if(!u)continue;total++;
-  const sim=similarity(t,u);
-  if(sim>=.90)support+=1;else if(sim>=.82)support+=.55;
- }
- return total?Math.min(1,support/Math.max(2,total*.55)):0;
-}
-function rankPlayerCandidates(candidates){
+function lineGroupsFromTSV(data,scale){
+ const words=parseTSV(data,scale).filter(w=>w.text&&w.confidence>-1).sort((a,b)=>a.cy-b.cy||a.x0-b.x0);
  const groups=[];
- const garbage=t=>{
-  const x=String(t||'').replace(/\s+/g,'');
-  if(!x)return true;
-  if(/^[Il1|¦]{2,8}$/.test(x))return true;
-  if(/^[\W_]{2,}$/.test(x))return true;
-  if(/^(?:eliminations?|kills?|player|team|slot|ready|spectator)$/i.test(x))return true;
-  return false;
- };
+ for(const w of words){
+   let g=groups.find(x=>Math.abs(x.cy-w.cy)<=Math.max(5,(w.y1-w.y0)*.45));
+   if(!g){g={cy:w.cy,words:[]};groups.push(g)}
+   g.words.push(w);g.cy=(g.cy+w.cy)/2;
+ }
+ return groups.map(g=>({
+   cy:g.cy,text:g.words.sort((a,b)=>a.x0-b.x0).map(w=>w.text).join(' '),
+   confidence:Math.max(...g.words.map(w=>Number(w.confidence)||0)),words:g.words
+ })).sort((a,b)=>a.cy-b.cy);
+}
+async function precisionColumnPass(img,card,mode,psm,scale,tag){
+ const area=slotNameArea(card),c=cropCanvas(img,area.x,area.y,area.w,area.h,scale);
+ const r=await recognizeLobby(c,mode,psm),d=r?.data||r||{},out=[0,1,2,3].map(()=>[]);
+ const H=img.naturalHeight||img.height||1;
+ for(const line of lineGroupsFromTSV(d,scale)){
+   const cy=area.y+line.cy/(scale*H);
+   let best=-1,dist=Infinity;
+   for(let i=0;i<4;i++){const dd=Math.abs(cy-slotCenterY(card,i));if(dd<dist){dist=dd;best=i}}
+   if(best<0||dist>card.h*.115)continue;
+   const n=normalizeOcrCandidate(line.text,best===0);if(!n)continue;
+   addPrecisionCandidate(out[best],card.slot,n,line.confidence,tag,best===0);
+ }
+ // PSM 6/4 occasionally returns useful plain text even when TSV grouping is weak.
+ if(d.text){
+   const lines=String(d.text).split(/\r?\n/).map(x=>normalizeOcrCandidate(x,false)).filter(Boolean);
+   if(lines.length>=4&&lines.length<=6){
+     const four=lines.filter(x=>!playerIsGarbage(x)).slice(0,4);
+     four.forEach((n,i)=>addPrecisionCandidate(out[i],card.slot,n,d.confidence,tag+'-text',i===0));
+   }
+ }
+ return out;
+}
+async function precisionRowPass(img,card,i,mode,psm,scale,tag,band){
+ const b=band||slotRowBand(card,i),padX=card.w*.025,padY=card.h*.035;
+ const c=cropCanvas(img,b.x-padX,b.y-padY,b.w+padX*2,b.h+padY*2,scale);
+ const r=await recognizeLobby(c,mode,psm),d=r?.data||r||{},out=[];
+ const raw=normalizeOcrCandidate(d.text||'',i===0);if(raw)addPrecisionCandidate(out,card.slot,raw,d.confidence,tag,i===0);
+ for(const w of parseTSV(d,scale).filter(x=>x.text).sort((a,b)=>a.x0-b.x0)){
+   const n=normalizeOcrCandidate(w.text,i===0);if(n)addPrecisionCandidate(out,card.slot,n,w.confidence,tag+'-word',i===0);
+ }
+ const words=parseTSV(d,scale).filter(x=>x.text).sort((a,b)=>a.x0-b.x0);
+ if(words.length>1){const joined=normalizeOcrCandidate(words.map(w=>w.text).join(' '),i===0);if(joined)addPrecisionCandidate(out,card.slot,joined,Math.max(...words.map(w=>Number(w.confidence)||0)),tag+'-joined',i===0)}
+ return out;
+}
+function precisionRank(candidates){
+ const groups=[];
  for(const c of candidates||[]){
-  let text=cleanPlayerCandidateText(c.text,false);
-  if(!text||garbage(text))continue;
-  if(text.length<2||text.length>28)continue;
-  let g=groups.find(z=>similarity(z.text,text)>=.92||(similarity(z.text,text)>=.84&&Math.abs(z.text.length-text.length)<=2));
-  if(!g){g={text,confidence:Number(c.confidence)||0,votes:0,sources:[],score:0};groups.push(g);}
-  g.votes++;
-  const cc=Number(c.confidence)||0;
-  if(cc>g.confidence){g.confidence=cc;g.text=text;}
-  g.sources.push(c.source||'ocr');
+   const t=normalizeOcrCandidate(c.text,false);if(!t||playerIsGarbage(t)||t.length<2||t.length>28)continue;
+   let g=groups.find(x=>similarity(x.text,t)>=.90||(similarity(x.text,t)>=.83&&Math.abs(x.text.length-t.length)<=2));
+   if(!g){g={text:t,confidence:0,votes:0,sources:new Set(),score:0,raw:[]};groups.push(g)}
+   g.votes++;g.sources.add(c.source||'ocr');g.raw.push(c);
+   if((Number(c.confidence)||0)>g.confidence){g.confidence=Number(c.confidence)||0;g.text=t}
  }
  for(const g of groups){
-  const shape=playerShapeScore(g.text),cons=characterConsensusScore(g.text,candidates),diversity=new Set(g.sources).size;
-  g.quality=Math.min(1,(g.confidence/100)*.43+Math.min(1,g.votes/6)*.28+shape*.12+cons*.13+Math.min(1,diversity/5)*.04);
-  g.consensus=cons;
-  g.score=g.votes*2.4+(g.confidence/100)+shape+cons*1.8+Math.min(1,diversity/6);
+   const shape=playerShapeScore(g.text),div=Math.min(1,g.sources.size/6),conf=Math.min(1,g.confidence/100),votes=Math.min(1,g.votes/6);
+   g.consensus=Math.min(1,(g.votes*.55+div*.45)/3);
+   g.quality=Math.min(1,conf*.36+votes*.28+shape*.12+g.consensus*.20+div*.04);
+   g.score=conf*1.2+g.votes*2.25+g.consensus*2+shape+div;
  }
  return groups.sort((a,b)=>b.score-a.score);
 }
-function addUniqueCandidate(arr,text,confidence,source,first=false){addCandidate(arr,first?normalizeFirstPlayer(text):normalizePlayer(text),confidence,source,first);}
-
-/* The PUBG lobby names are bright text on the left half of each card.
-   Reading that whole name column is much more reliable than asking OCR to
-   discover a single tiny row.  We still keep row OCR as a rescue layer. */
-function lobbyNameArea(card){
- return {
-  x:card.x+card.w*.095,
-  y:card.y+card.h*.018,
-  w:card.w*.655,
-  h:card.h*.955
- };
-}
-function expectedPlayerCenters(card){
- return [.18,.405,.625,.855].map(v=>card.y+card.h*v);
-}
-function cleanCardLineText(text,first=false){
- let t=cleanOCRText(text)
-   .replace(/\s*\/?\s*(?:\d{1,2}|[QOD])?\s*Eliminations?.*$/i,'')
-   .replace(/\s*Eliminations?.*$/i,'')
-   .replace(/^[~`^_=+|¦\\\/:;,. -]+/,'')
-   .trim();
- if(first)t=normalizeFirstPlayer(t);
- t=t.replace(/^[|¦]+|[|¦/\\]+$/g,'').trim();
- return playerIsGarbage(t)?'':t;
-}
-function prefixConfusable(a,b){
- const A=String(a||'').toLowerCase(),B=String(b||'').toLowerCase();
- if(!A||!B||A.length!==B.length)return false;
- const map={
-  '9':'s5gq','s':'9456','5':'9s','g':'9q',
-  '4':'aA','a':'4','k':'xk','x':'kx','i':'l1',
-  'l':'i1','1':'il','2':'z','z':'2','3':'e','e':'3',
-  '0':'oq','o':'0','q':'0o','8':'b','b':'8',
-  '7':'t','t':'7','6':'g','n':'m','m':'n'
- };
- for(let i=0;i<A.length;i++){
-  if(A[i]===B[i])continue;
-  if(!(map[A[i]]||'').includes(B[i]))return false;
- }
- return true;
-}
-function softTeamPrefixRepair(slot,text){
- const raw=ocrClean(text),hint=teamPrefixHint(slot);
- if(!raw||!hint)return null;
- const h=normKey(hint),r=normKey(raw);
- if(h.length<2||h.length>6||r.length<h.length)return null;
- const rp=r.slice(0,h.length);
- const exact=rp===h, similar=similarity(rp,h)>=.55;
- const confusable=prefixConfusable(rp,h);
- if(!(exact||similar&&confusable))return null;
- const leading=raw.slice(0,raw.search(/[A-Za-z0-9]/));
- let pos=0;
- while(pos<raw.length&&!/[A-Za-z0-9]/.test(raw[pos]))pos++;
- const originalPrefix=raw.slice(pos,pos+h.length);
- if(originalPrefix.length!==h.length)return null;
- return raw.slice(0,pos)+hint+raw.slice(pos+h.length);
-}
-function addRosterAwareCandidate(arr,slot,text,confidence,source,first=false){
- const raw=first?normalizeFirstPlayer(text):normalizePlayer(text);
- addUniqueCandidate(arr,raw,confidence,source,first);
- const repaired=softTeamPrefixRepair(slot,raw);
- if(repaired&&repaired!==raw)addUniqueCandidate(arr,repaired,Math.max(0,(Number(confidence)||0)-4),source+'-team-prefix',first);
-}
-async function cardNameAreaPass(img,card,mode='original',psm='6',scale=6,tag='card-name'){
- const area=lobbyNameArea(card);
- const c=cropCanvas(img,area.x,area.y,area.w,area.h,scale);
- const r=await recognizeLobby(c,mode,psm),d=r?.data||r||{},out=[0,1,2,3].map(()=>[]);
- const lines=tsvLines(d,scale).map(ln=>({
-   ...ln,
-   cy:area.y+(Number(ln.cy)||0)/(scale*(img.naturalHeight||img.height||1))
- })).filter(ln=>ln.text&&ln.cy>=card.y&&ln.cy<=card.y+card.h);
- const centers=expectedPlayerCenters(card);
- for(const ln of lines){
-   let best=-1,dist=1e9;
-   for(let i=0;i<4;i++){const dd=Math.abs(ln.cy-centers[i]);if(dd<dist){dist=dd;best=i;}}
-   if(best<0||dist>card.h*.105)continue;
-   const name=cleanCardLineText(ln.text,best===0);
-   if(!name)continue;
-   addRosterAwareCandidate(out[best],card.slot,name,ln.confidence,tag,best===0);
- }
- return out;
-}
-async function playerPass(img,card,i,mode,psm,tag,padX=.018,padY=.035,scale=12,bandOverride=null){
- const b=bandOverride||rowBand(card,i),px=card.w*padX,py=card.h*padY;
- const c=cropCanvas(img,b.x-px,b.y-py,b.w+px*2,b.h+py*2,scale);
- const r=await recognizeLobby(c,mode,psm),d=r?.data||r||{},out=[];
- const raw=cleanPlayerCandidateText(d.text||'',i===0);
- if(raw)addRosterAwareCandidate(out,card.slot,raw,d.confidence,tag,i===0);
- for(const w of parseTSV(d,scale)){
-   const n=cleanPlayerCandidateText(w.text,i===0);
-   if(n)addRosterAwareCandidate(out,card.slot,n,w.confidence,tag+'-word',i===0);
- }
- const words=parseTSV(d,scale).filter(w=>w.text).sort((a,b)=>a.x0-b.x0);
- if(words.length>1){
-  const joined=cleanPlayerCandidateText(words.map(w=>w.text).join(' '),i===0);
-  if(joined)addRosterAwareCandidate(out,card.slot,joined,Math.max(...words.map(w=>Number(w.confidence)||0)),tag+'-joined',i===0);
- }
- return out;
-}
-async function targetedPlayerCandidates(img,card,i,seed=[]){
- const candidates=[...(seed||[])],detected=effectiveRowBands(img,card),base=detected[i]||rowBand(card,i),dy=card.h*.028;
- const bands=[base,{...base,y:base.y-dy,h:base.h+dy*1.35},{...base,y:base.y+dy*.55,h:base.h+dy*1.35},{...base,y:base.y-dy*.65,h:base.h+dy*2.2}];
- const primary=[
-  ['original','6','row-original6',.018,.035,10],
-  ['original','7','row-original7',.018,.035,10],
-  ['contrast','6','row-contrast6',.014,.030,10],
-  ['sharpen','6','row-sharpen6',.014,.030,10],
-  ['blackhat','6','row-blackhat6',.012,.030,10],
-  ['whitehat','6','row-whitehat6',.012,.030,10],
-  ['red','6','row-red6',.014,.030,10],
-  ['blue','6','row-blue6',.014,.030,10],
-  ['glyph','6','row-glyph6',.010,.030,12],
-  ['glyphbin','13','row-glyphbin13',.010,.030,12],
-  ['otsu','6','row-otsu6',.012,.025,10]
- ];
- for(const v of primary){try{candidates.push(...await playerPass(img,card,i,...v,bands[0]));}catch(e){}}
- let ranked=rankPlayerCandidates(candidates);
- if(!ranked[0]||ranked[0].quality<.72||ranked[0].confidence<60){
-  for(const bi of [1,2,3])for(const v of [primary[0],primary[2],primary[4],primary[5],primary[6],primary[7]]){
-   try{candidates.push(...await playerPass(img,card,i,...v,bands[bi]));}catch(e){}
-  }
-  ranked=rankPlayerCandidates(candidates);
- }
- if(!ranked[0]||ranked[0].score<4.8||ranked[0].confidence<72){
-  const hi=[
-   ['original','6','hi-original6',.010,.050,16],
-   ['contrast','6','hi-contrast6',.010,.050,16],
-   ['localcontrast','6','hi-local6',.008,.045,16],
-   ['blackhat','6','hi-blackhat6',.008,.045,16],
-   ['red','6','hi-red6',.010,.045,16],
-   ['blue','6','hi-blue6',.010,.045,16],
-   ['glyph','6','hi-glyph6',.008,.045,18],
-   ['glyphbin','13','hi-glyphbin13',.008,.040,18],
-   ['original','11','hi-psm11',.008,.050,16],
-   ['original','13','hi-psm13',.008,.050,18]
-  ];
-  for(const v of hi){try{candidates.push(...await playerPass(img,card,i,...v,bands[0]));}catch(e){}}
- }
- return rankPlayerCandidates(candidates).slice(0,24);
-}
-function pairScore(a,b){const x=normKey(a),y=normKey(b);if(!x||!y)return 0;if(x===y)return 1;const d=lev(x,y),s=similarity(x,y);if(d<=1&&Math.max(x.length,y.length)>=4)return Math.max(s,.88);if(d<=2&&Math.max(x.length,y.length)>=7)return Math.max(s,.84);return s;}
-function bestAssignment(obs,can){if(obs.length!==4||can.length!==4)return{score:0,rows:[],verified:false};let best=null;function rec(i,used,total,map){if(i===4){if(!best||total>best.score)best={score:total,map:[...map]};return;}for(let j=0;j<4;j++)if(!used.has(j)){used.add(j);map.push({obs:i,can:j,score:pairScore(obs[i].name||obs[i].text,can[j])});rec(i+1,used,total+map.at(-1).score,map);map.pop();used.delete(j);}}rec(0,new Set(),0,[]);const rows=best.map(x=>({obs:obs[x.obs],canonical:can[x.can],score:x.score})).sort((a,b)=>(a.obs.cy||0)-(b.obs.cy||0));return{score:best.score,rows,verified:rows.every(r=>r.score>=.84)&&best.score>=3.45};}
-function tsvCyToImageNorm(ln,cropRect,scale,img){const H=img.naturalHeight||img.height||1;return cropRect.y+(Number(ln.cy)||0)/(H*scale)}
-
-function playerIsGarbage(name){
- const x=ocrClean(name).replace(/\s+/g,'');
- if(!x)return true;
- if(/^[Il1|¦]{2,8}$/.test(x))return true;
- if(/^[\W_]{2,}$/.test(x))return true;
- if(/^(?:eliminations?|kills?|player|team|slot)$/i.test(x))return true;
- return false;
-}
-function cleanPlayerCandidateText(text,first=false){
- let t=cleanOCRText(text).replace(/\s*\/\s*\d+\s*Eliminations?.*$/i,'').replace(/\s*Eliminations?.*$/i,'').trim();
- t=first?normalizeFirstPlayer(t):normalizePlayer(t);
- t=t.replace(/^[|¦]+|[|¦]+$/g,'').replace(/^[-_:.,]+|[-_:.,]+$/g,'').trim();
- return playerIsGarbage(t)?'':t;
-}
-async function rowOCRPass(img,card,i,band,mode,psm,scale,tag){
- const IW=img.naturalWidth||img.width||1,IH=img.naturalHeight||img.height||1;
- const padY=Math.max(card.h*.010, (band.h||card.h*.08)*.35), padX=card.w*.018;
- const x=band.x-padX,y=band.y-padY,w=band.w+padX*2,h=band.h+padY*2;
- const c=cropCanvas(img,x,y,w,h,scale),r=await recognizeLobby(c,mode,psm),d=r?.data||r||{},out=[];
- const raw=cleanPlayerCandidateText(d.text||'',i===0);if(raw)addCandidate(out,raw,d.confidence,tag,i===0);
- for(const w of parseTSV(d,scale)){
-   const n=cleanPlayerCandidateText(w.text,i===0);
-   if(n)addCandidate(out,n,w.confidence,tag+'-word',i===0);
- }
- const words=parseTSV(d,scale).filter(w=>w.text).sort((a,b)=>a.x0-b.x0);
- if(words.length>1){
-   const joined=cleanPlayerCandidateText(words.map(w=>w.text).join(' '),i===0);
-   if(joined)addCandidate(out,joined,Math.max(...words.map(w=>Number(w.confidence)||0)),tag+'-joined',i===0);
- }
- return out;
-}
-function teamPrefixHint(slot){
- const nm=ocrClean(team(slot)?.name||'').toLowerCase();
- const token=(nm.match(/[a-z0-9]{2,7}/i)||[''])[0].toLowerCase();
- if(!token||/^(team|club|esports|gaming|ksa|mena)$/i.test(token))return '';
- return token;
-}
-function chooseBestRosterAware(slot,ranked){
+function precisionBest(slot,ranked){
  if(!ranked?.length)return null;
- const hint=teamPrefixHint(slot);
- if(!hint)return ranked[0];
- const hk=normKey(hint);
- let best=ranked[0],bestScore=-1;
- for(const c of ranked){
-   const ck=normKey(c.text);
-   let s=c.score||0;
-   if(ck.startsWith(hk))s+=1.15;
-   else if(hk.length>=3&&ck.includes(hk))s+=.35;
-   if(s>bestScore){bestScore=s;best=c;}
- }
+ const hint=teamPrefixHint(slot),hk=normKey(hint);let best=ranked[0],bs=-Infinity;
+ for(const c of ranked){let s=c.score||0,ck=normKey(c.text);if(hk&&ck.startsWith(hk))s+=1.35;else if(hk&&hk.length>=3&&ck.includes(hk))s+=.25;if(s>bs){bs=s;best=c}}
  return best;
 }
-function distinctPlayerRows(rows){
+function precisionDistinct(rows){
  const used=new Set();
- return rows.map(r=>{
-   const pool=r.candidates||[];
-   let pick=pool.find(c=>{const k=normKey(c.text);return k&&!used.has(k);});
-   if(!pick)pick=pool[0];
-   if(pick){r.name=pick.text;r.confidence=pick.confidence;r.quality=pick.quality;r.score=pick.score;r.votes=pick.votes;r.sources=pick.sources;r.raw=pick.text;used.add(normKey(pick.text));}
-   return r;
- });
-}
-async function wholeLobbyRead(img,index){
- const rects=lobbyCardRects(index,img);
- const bySlot=new Map(rects.map(r=>[r.slot,[]]));
- const W=img.naturalWidth||img.width||1,H=img.naturalHeight||img.height||1;
-
- async function runPass(mode,psm,scale,tag){
-  let data=null;
-  try{
-   const r=await recognizeLobby(cropCanvas(img,0,0,1,1,scale),mode,psm);
-   data=r?.data||r||{};
-  }catch(e){return}
-  const words=parseTSV(data,scale).map(w=>({
-   ...w,nx:(Number(w.cx)||0)/(W*scale),ny:(Number(w.cy)||0)/(H*scale)
-  }));
-  for(const w of words){
-   let card=null,best=1e9;
-   for(const r of rects){
-    const inside=w.nx>=r.x+r.w*.085&&w.nx<=r.x+r.w*.76&&
-      w.ny>=r.y+r.h*.02&&w.ny<=r.y+r.h*.98;
-    if(!inside)continue;
-    const cx=r.x+r.w*.40,cy=r.y+r.h*.50;
-    const d=Math.abs(w.nx-cx)*1.2+Math.abs(w.ny-cy);
-    if(d<best){best=d;card=r;}
-   }
-   if(card)bySlot.get(card.slot).push({...w,source:tag});
-  }
+ for(const r of rows){
+   const ranked=precisionRank(r.candidates||[]);let pick=ranked.find(x=>!used.has(candidateKey(x.text)))||ranked[0];
+   if(pick){Object.assign(r,{name:pick.text,confidence:pick.confidence,quality:pick.quality,score:pick.score,votes:pick.votes,sources:[...pick.sources],candidates:ranked.slice(0,18)});used.add(candidateKey(pick.text))}
  }
- const rebuild=()=>{
-  const out=new Map();
-  for(const r of rects){
-   const words=bySlot.get(r.slot)||[],groups=[];
-   for(const w of words.sort((a,b)=>a.ny-b.ny||a.nx-b.nx)){
-    const cy=w.ny;
-    let g=groups.find(q=>Math.abs(q.cy-cy)<.028);
-    if(!g){g={cy,words:[]};groups.push(g);}
-    g.words.push(w);g.cy=(g.cy+cy)/2;
-   }
-   const centers=[.18,.405,.625,.855].map(v=>r.y+r.h*v),rows=[0,1,2,3].map(()=>[]);
-   for(const g of groups){
-    const text=g.words.sort((a,b)=>a.nx-b.nx).map(w=>w.text).join(' ');
-    const conf=Math.max(...g.words.map(w=>Number(w.confidence)||0));
-    let bi=-1,dist=1e9;
-    for(let i=0;i<4;i++){const d=Math.abs(g.cy-centers[i]);if(d<dist){dist=d;bi=i;}}
-    if(bi<0||dist>r.h*.12)continue;
-    const name=cleanCardLineText(text,bi===0);
-    if(name)addRosterAwareCandidate(rows[bi],r.slot,name,conf,g.words[0].source,bi===0);
-   }
-   out.set(r.slot,rows);
-  }
-  return out;
- };
-
- await runPass('original','6',4,'whole-original6');
- let out=rebuild();
- let covered=rects.every(r=>(out.get(r.slot)||[]).every(row=>row.length>0));
- if(covered)return out;
-
- await runPass('contrast','6',4,'whole-contrast6');
- return rebuild();
+ return rows;
 }
-
-async function fastCardRead(img,card){
- const bands=effectiveRowBands(img,card)||[0,1,2,3].map(i=>rowBand(card,i));
- const rows=[0,1,2,3].map(i=>({
-  name:'',confidence:0,quality:0,score:0,votes:0,sources:[],
-  cy:(bands[i]||rowBand(card,i)).y+(bands[i]||rowBand(card,i)).h/2,
-  candidates:[]
- }));
- // IMPORTANT: The first read is a whole NAME-COLUMN read. This mirrors how the
- // actual PUBG lobby is laid out and avoids the tiny-row PSM-7 failure mode.
- const fastPasses=[
-  ['original','6',6,'card-name-original6'],
-  ['contrast','6',6,'card-name-contrast6']
- ];
- const applyGroups=groups=>{
-  for(let i=0;i<4;i++)rows[i].candidates.push(...(groups[i]||[]));
-  for(let i=0;i<4;i++){
-   const ranked=rankPlayerCandidates(rows[i].candidates);
-   const top=chooseBestRosterAware(card.slot,ranked);
-   if(top)Object.assign(rows[i],{
-    name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,
-    votes:top.votes,sources:top.sources,candidates:ranked.slice(0,24)
-   });
-  }
- };
- for(const [mode,psm,scale,tag] of fastPasses){
-  try{applyGroups(await cardNameAreaPass(img,card,mode,psm,scale,tag));}catch(e){}
- }
- // Fast exit: if both primary passes agree enough, do not spend time on
- // additional preprocessing. Difficult cards alone receive the extra passes.
- let strong=rows.every(r=>r.name&&!playerIsGarbage(r.name)&&(r.quality||0)>=.56&&(r.confidence||0)>=40);
- if(!strong){
-  for(const [mode,psm,scale,tag] of [
-   ['sharpen','6',6,'card-name-sharpen6'],
-   ['original','11',6,'card-name-psm11']
-  ]){
-   try{applyGroups(await cardNameAreaPass(img,card,mode,psm,scale,tag));}catch(e){}
-   strong=rows.every(r=>r.name&&!playerIsGarbage(r.name)&&(r.quality||0)>=.56&&(r.confidence||0)>=40);
-   if(strong)break;
-  }
- }
- return distinctPlayerRows(rows);
-}
-function fastReadStrong(rows){
- return rows.length===4&&rows.every(r=>r?.name&&r.name.length>=2&&r.name.length<=28&&
-   !playerIsGarbage(r.name)&&((r.confidence||0)>=48||(r.score||0)>=2.7));
-}
-async function cardWidePlayerCandidates(img,card){
+function precisionWeak(r){return !r?.name||playerIsGarbage(r.name)||(r.quality||0)<.62||(r.votes||0)<2}
+async function analyzeSlotPrecision(img,card){
  const bands=effectiveRowBands(img,card);
- const out=[0,1,2,3].map(i=>({
-  name:'',confidence:0,quality:0,score:0,votes:0,sources:[],
-  cy:(bands[i]||rowBand(card,i)).y+(bands[i]||rowBand(card,i)).h/2,candidates:[]
- }));
- const passes=[
-  ['original','6','legacy-name-original6',6],
-  ['contrast','6','legacy-name-contrast6',6],
-  ['original','11','legacy-name-psm11',7],
-  ['blackhat','11','legacy-name-blackhat11',7],
-  ['red','11','legacy-name-red11',7],
-  ['blue','11','legacy-name-blue11',7]
+ const rows=[0,1,2,3].map(i=>({slot:card.slot,name:'',confidence:0,quality:0,score:0,votes:0,sources:[],cy:slotCenterY(card,i),candidates:[]}));
+ // Stage 1: independent whole-name-column reads. This is the most reliable read for the supplied PUBG layout.
+ const primary=[
+  ['original','6',7,'column-original-psm6'],
+  ['original','11',7,'column-original-psm11'],
+  ['contrast','6',7,'column-contrast-psm6'],
+  ['sharpen','6',8,'column-sharp-psm6'],
+  ['red','11',8,'column-red-psm11'],
+  ['blue','11',8,'column-blue-psm11']
  ];
- for(const [mode,psm,tag,scale] of passes){
-  try{
-   const groups=await cardNameAreaPass(img,card,mode,psm,scale,tag);
-   for(let i=0;i<4;i++)out[i].candidates.push(...groups[i]);
-  }catch(e){}
+ for(const [mode,psm,scale,tag] of primary){
+   try{const groups=await precisionColumnPass(img,card,mode,psm,scale,tag);for(let i=0;i<4;i++)rows[i].candidates.push(...groups[i])}catch(e){console.warn('precision column',card.slot,e)}
+   precisionDistinct(rows);
+   if(rows.every(r=>(r.votes||0)>=3&&(r.quality||0)>=.70))break;
  }
+ // Stage 2: targeted row reads only for unresolved rows. Several neighboring bands are tried,
+ // because mobile screenshot scaling can move the glyph baseline by a few pixels.
  for(let i=0;i<4;i++){
-  const ranked=rankPlayerCandidates(out[i].candidates),top=chooseBestRosterAware(card.slot,ranked);
-  if(top)Object.assign(out[i],{
-   name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,
-   votes:top.votes,sources:top.sources,candidates:ranked.slice(0,24)
-  });
- }
- return out;
-}
-/* LEGACY PER-SLOT OCR 2.0 */
-function slotNameArea(card){const x=card.x+card.w*.105,y=card.y+card.h*.012;return{x,y,w:card.w*.64,h:card.h*.976}}
-function slotCenters(card){return [.18,.405,.63,.855].map(v=>card.y+card.h*v)}
-function lineToSlotRow(line,card){const centers=slotCenters(card);let best=0,dist=1e9;for(let i=0;i<4;i++){const d=Math.abs(line.cy-centers[i]);if(d<dist){dist=d;best=i}}return dist<=card.h*.115?best:-1}
-async function slotColumnCandidates(img,card,mode,psm,scale,tag){const area=slotNameArea(card),c=cropCanvas(img,area.x,area.y,area.w,area.h,scale),r=await recognizeLobby(c,mode,psm),d=r?.data||r||{},out=[0,1,2,3].map(()=>[]),ih=img.naturalHeight||img.height||1;const lines=tsvLines(d,scale).map(ln=>({...ln,cy:area.y+(Number(ln.cy)||0)/(scale*ih)})).filter(ln=>ln.text&&ln.cy>=card.y&&ln.cy<=card.y+card.h);for(const ln of lines){const i=lineToSlotRow(ln,card);if(i<0)continue;const n=cleanCardLineText(ln.text,i===0);if(n)addRosterAwareCandidate(out[i],card.slot,n,ln.confidence,tag,i===0)}if(out.filter(x=>x.length).length<4&&d.text){const ls=String(d.text).split(/\r?\n/).map(x=>cleanCardLineText(x,false)).filter(Boolean).slice(0,4);ls.forEach((n,i)=>addRosterAwareCandidate(out[i],card.slot,n,d.confidence,tag+'-text',i===0))}return out}
-async function slotRowCandidates(img,card,i,mode,psm,scale,tag,band){const b=band||rowBand(card,i),px=card.w*.025,py=card.h*.055,c=cropCanvas(img,b.x-px,b.y-py,b.w+px*2,b.h+py*2,scale),r=await recognizeLobby(c,mode,psm),d=r?.data||r||{},out=[],raw=cleanPlayerCandidateText(d.text||'',i===0);if(raw)addRosterAwareCandidate(out,card.slot,raw,d.confidence,tag,i===0);const words=parseTSV(d,scale).filter(w=>w.text).sort((a,b)=>a.x0-b.x0);if(words.length){for(const w of words){const n=cleanPlayerCandidateText(w.text,i===0);if(n)addRosterAwareCandidate(out,card.slot,n,w.confidence,tag+'-word',i===0)}const joined=cleanPlayerCandidateText(words.map(w=>w.text).join(' '),i===0);if(joined)addRosterAwareCandidate(out,card.slot,joined,Math.max(...words.map(w=>Number(w.confidence)||0)),tag+'-joined',i===0)}return out}
-function mergeSlotCandidates(rows,groups,slot){for(let i=0;i<4;i++){rows[i].candidates.push(...(groups[i]||[]));const ranked=rankPlayerCandidates(rows[i].candidates),top=chooseBestRosterAware(slot,ranked);if(top)Object.assign(rows[i],{name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,votes:top.votes,sources:top.sources,candidates:ranked.slice(0,30)})}}
-function slotRowWeak(r){return !r?.name||playerIsGarbage(r.name)||(r.quality||0)<.62||(r.votes||0)<2}
-async function readSingleSlotLegacy(img,card){const bands=[0,1,2,3].map(i=>rowBand(card,i));const rows=bands.map((b)=>({name:'',confidence:0,quality:0,score:0,votes:0,sources:[],cy:b.y+b.h/2,candidates:[]}));const columnPasses=[['original','6',7,'slot-original6'],['contrast','6',7,'slot-contrast6'],['sharpen','6',7,'slot-sharpen6'],['original','11',8,'slot-psm11'],['red','11',8,'slot-red11']];for(const [mode,psm,scale,tag] of columnPasses){try{mergeSlotCandidates(rows,await slotColumnCandidates(img,card,mode,psm,scale,tag),card.slot)}catch(e){console.warn('slot column',card.slot,e)}if(rows.every(r=>(r.votes||0)>=3&&r.quality>=.68))break}for(let i=0;i<4;i++){if(!slotRowWeak(rows[i]))continue;const rowPasses=[['original','6',10,'row-original6'],['contrast','6',10,'row-contrast6'],['original','11',11,'row-psm11'],['blackhat','6',10,'row-blackhat6'],['whitehat','6',10,'row-whitehat6'],['red','6',10,'row-red6'],['blue','6',10,'row-blue6'],['glyph','6',12,'row-glyph6']];for(const [mode,psm,scale,tag] of rowPasses){try{rows[i].candidates.push(...await slotRowCandidates(img,card,i,mode,psm,scale,tag,bands[i]))}catch(e){}const ranked=rankPlayerCandidates(rows[i].candidates),top=chooseBestRosterAware(card.slot,ranked);if(top)Object.assign(rows[i],{name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,votes:top.votes,sources:top.sources,candidates:ranked.slice(0,30)});if(!slotRowWeak(rows[i])&&(rows[i].votes||0)>=3)break}}for(let i=0;i<4;i++){if(!slotRowWeak(rows[i]))continue;const hi=[['original','6',16,'hi-original6'],['contrast','6',16,'hi-contrast6'],['localcontrast','6',16,'hi-localcontrast6'],['blackhat','6',16,'hi-blackhat6'],['red','6',16,'hi-red6'],['blue','6',16,'hi-blue6'],['glyph','6',18,'hi-glyph6'],['glyphbin','13',18,'hi-glyphbin13'],['original','11',18,'hi-psm11']];for(const [mode,psm,scale,tag] of hi){try{rows[i].candidates.push(...await slotRowCandidates(img,card,i,mode,psm,scale,tag,bands[i]))}catch(e){}const ranked=rankPlayerCandidates(rows[i].candidates),top=chooseBestRosterAware(card.slot,ranked);if(top)Object.assign(rows[i],{name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,votes:top.votes,sources:top.sources,candidates:ranked.slice(0,30)});if((rows[i].quality||0)>=.72&&(rows[i].votes||0)>=3)break}}const known=(team(card.slot)?.players||[]).map(p=>ocrClean(typeof p==='string'?p:p?.name)).filter(Boolean);if(known.length===4){const a=bestAssignment(rows,known);if(a.rows.length===4&&a.score>=2.55){for(const x of a.rows){rows[x.obs].name=x.canonical;rows[x.obs].matched=true;rows[x.obs].matchScore=x.score;rows[x.obs].verified=x.score>=.82}}}rows=distinctPlayerRows(rows);return rows.map((r,i)=>({...r,slot:card.slot,cy:r.cy||bands[i].y+bands[i].h/2}))}
-
-async function readPlayers(img,card,wholeRows=null){
- const bands=effectiveRowBands(img,card)||[0,1,2,3].map(i=>rowBand(card,i));
- const known=(team(card.slot)?.players||[]).map(p=>ocrClean(typeof p==='string'?p:p?.name)).filter(Boolean);
- let rows=[0,1,2,3].map(i=>({
-  name:'',confidence:0,quality:0,score:0,votes:0,sources:[],
-  cy:(bands[i]||rowBand(card,i)).y+(bands[i]||rowBand(card,i)).h/2,candidates:[]
- }));
- const seed=wholeRows||[0,1,2,3].map(()=>[]);
- for(let i=0;i<4;i++){
-  rows[i].candidates.push(...(seed[i]||[]));
-  const ranked=rankPlayerCandidates(rows[i].candidates);
-  const top=chooseBestRosterAware(card.slot,ranked);
-  if(top)Object.assign(rows[i],{
-   name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,
-   votes:top.votes,sources:top.sources,candidates:ranked.slice(0,24)
-  });
- }
- const weak=r=>!r?.name||r.name.length<2||playerIsGarbage(r.name)||
-   (r.quality||0)<.56||(r.confidence||0)<38;
- // Only cards that are still weak after whole-image OCR enter per-card OCR.
- if(rows.some(weak)){
-  const local=await fastCardRead(img,card);
-  for(let i=0;i<4;i++){
-   const merged=[...(rows[i].candidates||[]),...(local[i]?.candidates||[])];
-   const ranked=rankPlayerCandidates(merged),top=chooseBestRosterAware(card.slot,ranked);
-   if(top)Object.assign(rows[i],{
-    name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,
-    votes:top.votes,sources:top.sources,candidates:ranked.slice(0,24)
-   });
-  }
- }
-
- // If the card read is incomplete, use targeted row OCR. We do NOT wait for a
- // falsely "high confidence" bad result to trigger rescue.
- for(let i=0;i<4;i++){
-  if(weak(rows[i])){
-   const ranked=await targetedPlayerCandidates(img,card,i,rows[i].candidates||[]);
-   const top=chooseBestRosterAware(card.slot,ranked);
-   if(top)Object.assign(rows[i],{
-    name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,
-    votes:top.votes,sources:top.sources,candidates:ranked
-   });
-  }
- }
-
- // A final full-card legacy pass is used only when the card still has a weak row.
- if(rows.some(weak)){
-  try{
-   const legacy=await cardWidePlayerCandidates(img,card);
-   for(let i=0;i<4;i++){
-    const merged=[...(rows[i].candidates||[]),...(legacy[i]?.candidates||[])];
-    const ranked=rankPlayerCandidates(merged),top=chooseBestRosterAware(card.slot,ranked);
-    if(top)Object.assign(rows[i],{
-     name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,
-     votes:top.votes,sources:top.sources,candidates:ranked.slice(0,24)
-    });
+   if(!precisionWeak(rows[i]))continue;
+   const b=bands[i],variants=[
+    {y:b.y,w:b.w,h:b.h},
+    {y:b.y-card.h*.018,w:b.w,h:b.h+card.h*.036},
+    {y:b.y+card.h*.010,w:b.w,h:b.h+card.h*.036}
+   ];
+   const passes=[['original','7',12,'row-original7'],['contrast','7',12,'row-contrast7'],['original','6',12,'row-original6'],['sharpen','7',14,'row-sharp7'],['red','7',14,'row-red7'],['glyph','7',14,'row-glyph7']];
+   for(let vi=0;vi<variants.length && precisionWeak(rows[i]);vi++){
+     for(const [mode,psm,scale,tag] of passes){
+       try{rows[i].candidates.push(...await precisionRowPass(img,card,i,mode,psm,scale,tag+'-v'+vi,variants[vi]))}catch(e){}
+       const top=precisionRank(rows[i].candidates)[0];if(top)Object.assign(rows[i],{name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,votes:top.votes,sources:[...top.sources],candidates:precisionRank(rows[i].candidates).slice(0,18)});
+       if(!precisionWeak(rows[i])&&rows[i].votes>=3)break;
+     }
    }
-  }catch(e){}
  }
-
- // Saved roster is a canonical correction layer only when the OCR evidence is
- // genuinely close. It never blindly replaces a name.
+ // Stage 3: saved roster is a canonical identity source. Use it only when the OCR evidence is close.
+ const known=(team(card.slot)?.players||[]).map(p=>ocrClean(typeof p==='string'?p:p?.name)).filter(Boolean);
  if(known.length===4){
-  const a=bestAssignment(rows,known);
-  if(a.rows.length===4&&a.score>=2.72){
-   rows=a.rows.map(r=>({
-    ...r.obs,name:r.canonical,raw:r.obs.name,matched:true,
-    verified:r.score>=.84,matchScore:r.score
-   }));
-  }
+   const obs=rows.map(r=>({...r,name:r.name||''}));
+   const a=bestAssignment(obs,known);
+   if(a.rows.length===4&&a.score>=2.65){
+     for(const x of a.rows){if(x.score>=.68||!x.obs.name){x.obs.name=x.canonical;x.obs.matched=true;x.obs.matchScore=x.score;x.obs.verified=x.score>=.84}}
+   }
  }
-
- rows=distinctPlayerRows(rows);
- return rows.map((r,i)=>({...r,slot:card.slot,cy:r.cy||(bands[i]||rowBand(card,i)).y+(bands[i]||rowBand(card,i)).h/2}));
+ // Stage 4: final unique-player assignment.
+ precisionDistinct(rows);
+ return rows.map((r,i)=>({...r,slot:card.slot,cy:r.cy||slotCenterY(card,i)}));
 }
+async function readPlayers(img,card){return analyzeSlotPrecision(img,card)}
+async function readSingleSlotLegacy(img,card){return analyzeSlotPrecision(img,card)}
+async function cardWidePlayerCandidates(img,card){const rows=await analyzeSlotPrecision(img,card);return rows}
+async function fastCardRead(img,card){return analyzeSlotPrecision(img,card)}
+async function wholeLobbyRead(){return null}
+function slotResultEvidence(img,card){return cropCanvas(img,card.x,card.y,card.w,card.h,3).toDataURL('image/jpeg',.92)}
+
 function commitRosterRows(rows,verified=false){
  for(const r of rows||[]){
    const t=team(r.slot);if(!t)continue;
@@ -768,21 +400,97 @@ function commitRosterRows(rows,verified=false){
  persist();
 }
 async function runRosterOCR(files){
- if(!files?.length||ocrBusy)return;if(files.length!==2)return toast('Please select the two lobby screenshots: Slots 03–11 and Slots 12–18');
- ocrBusy=true;$('rosterReview').innerHTML='<div class="empty">Preparing multi-pass OCR…</div>';setProgress('rosterProgress',2);
- try{await loadOCR();const results=[];let done=0;for(let fi=0;fi<files.length;fi++){const img=await imageFromFile(files[fi]);const rects=lobbyCardRects(fi,img);setEngine('loading',`Scanning Lobby ${fi+1}/2 · whole-image OCR`);setProgress('rosterProgress',fi?52:4);let whole=null;try{whole=await wholeLobbyRead(img,fi)}catch(e){console.warn('Whole lobby OCR failed',e)}for(let j=0;j<rects.length;j++){const r=rects[j];setEngine('loading',`Checking Slot ${String(r.slot).padStart(2,'0')} · ${j+1}/${rects.length}`);const players=await readPlayers(img,r,whole?.get(r.slot)||null);results.push({slot:r.slot,players,file:files[fi].name,sourceImage:fi,card:j+1,row:r.row+1,column:r.col+1,evidence:cropCanvas(img,r.x,r.y,r.w,r.h,3).toDataURL('image/jpeg',.92)});done++;setProgress('rosterProgress',Math.round((done/16)*94)+4)}}
-  if(results.length!==16)throw Error(`Expected 16 lobby slots, detected ${results.length}`);ocrReview={type:'roster',rows:results};commitRosterRows(results,false);renderRosterReview();renderTeams();renderHome();setEngine('ready','OCR Engine · Multi-Pass Ready');setProgress('rosterProgress',100);$('rosterStatus').textContent='Calibrated OCR complete. Clear rows were read in the fast path; only difficult rows received rescue passes. Valid names were saved automatically.';go('roster')
- }catch(e){console.error('Lobby OCR V59',e);setProgress('rosterProgress',0);setEngine('bad','OCR Engine · Error');$('rosterStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span><br><span class="muted">The engine did not overwrite existing roster data.</span>`;$('rosterReview').innerHTML='<div class="notice">No roster data was changed. Try again with the original PUBG MOBILE screenshots.</div>'}finally{ocrBusy=false}
+ if(!files?.length||ocrBusy)return;
+ if(files.length!==2)return toast('Select exactly two lobby screenshots: Slots 03–11 and 12–18');
+ ocrBusy=true;setProgress('rosterProgress',1);
+ $('rosterReview').innerHTML='<div class="empty">Precision OCR is preparing 16 independent Slot cards…<br><span class="muted">Clear cards use the fast consensus path; only difficult players receive rescue passes.</span></div>';
+ try{
+   await loadOCR();
+   const results=[];let done=0;
+   for(let fi=0;fi<2;fi++){
+     const img=await imageFromFile(files[fi]);
+     const rects=lobbyCardRects(fi,img);
+     for(let j=0;j<rects.length;j++){
+       const r=rects[j];
+       setEngine('loading',`Precision OCR · Slot ${String(r.slot).padStart(2,'0')} · ${j+1}/${rects.length}`);
+       $('rosterStatus').textContent=`Reading Slot ${String(r.slot).padStart(2,'0')} independently…`;
+       const players=await analyzeSlotPrecision(img,r);
+       results.push({slot:r.slot,players,file:files[fi].name,sourceImage:fi,card:j+1,row:r.row+1,column:r.col+1,evidence:slotResultEvidence(img,r),engine:OCR60.version});
+       done++;setProgress('rosterProgress',Math.min(96,Math.round(done/16*94)+2));
+       // Save after every Slot so a browser interruption never loses the work already completed.
+       ocrReview={type:'roster',rows:[...results],partial:true};
+       commitRosterRows([results.at(-1)],false);
+       renderRosterReview();renderTeams();
+     }
+   }
+   if(results.length!==16)throw Error(`Expected 16 lobby slots, detected ${results.length}`);
+   ocrReview={type:'roster',rows:results,partial:false};
+   commitRosterRows(results,false);renderRosterReview();renderTeams();renderHome();
+   setEngine('ready','OCR 60 · Slot Precision Ready');setProgress('rosterProgress',100);
+   const weak=results.reduce((n,r)=>n+r.players.filter(p=>precisionWeak(p)).length,0);
+   $('rosterStatus').innerHTML=weak?`Completed 16 Slots / 64 positions · <span class="warn">${weak} position(s) need review</span>. Evidence and OCR candidates are retained.`:'Completed 16 Slots / 64 positions · <span class="ok">All positions produced usable OCR candidates.</span>';
+   go('roster');
+ }catch(e){
+   console.error('OCR 60 roster',e);setProgress('rosterProgress',0);setEngine('bad','OCR 60 · Error');
+   $('rosterStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span><br><span class="muted">Already completed Slots were auto-saved; existing roster data was never erased.</span>`;
+   if(ocrReview?.rows?.length)renderRosterReview();else $('rosterReview').innerHTML='<div class="notice">No roster data was changed.</div>';
+ }finally{ocrBusy=false}
 }
 function renderRosterReview(){
- const rows=ocrReview?.rows||[],issues=rows.reduce((n,r)=>n+r.players.filter(p=>{const x=typeof p==='string'?p:(p?.name||'');return !x||playerIsGarbage(x)}).length,0);
- $('rosterReview').innerHTML=`<div class="notice">Detected <b>16 slots / 64 player positions</b>. Team names are never OCR-read. The reader is calibrated to the actual PUBG MOBILE 3×3 / 3×3 / 1 lobby layout. <b>${issues?issues+' positions need review':'All positions contain usable names'}</b>.</div><div class="scroll" style="margin-top:10px"><table class="table"><tr><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th></tr>${rows.map((r,i)=>`<tr><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(team(r.slot)?.name||'Team not set')}</td>${r.players.map((p,j)=>{const n=typeof p==='string'?p:(p?.name||'');const bad=!n||playerIsGarbage(n);return `<td><input class="${bad?'badInput':''}" id="rr-${i}-${j}" value="${esc(n)}" placeholder="Player ${j+1}"></td>`}).join('')}</tr>`).join('')}</table></div>`}
+ const rows=ocrReview?.rows||[];
+ const issues=rows.reduce((n,r)=>n+r.players.filter(p=>precisionWeak(p)).length,0);
+ const avg=rows.length?Math.round(rows.reduce((s,r)=>s+r.players.reduce((a,p)=>a+(p.quality||0),0),0)/(Math.max(1,rows.length*4))*100):0;
+ $('rosterReview').innerHTML=`
+ <div class="notice"><b>OCR 60 Precision Core</b> · ${rows.length}/16 Slots · ${rows.length*4}/64 positions processed · average evidence quality ${avg}%. ${issues?`<span class="warn">${issues} position(s) need review.</span>`:'<span class="ok">No weak positions detected.</span>'}<br><span class="muted">Every Slot is read independently. The screenshot itself never defines the Team; Slot → Team binding remains authoritative.</span></div>
+ <div class="scroll" style="margin-top:10px"><table class="table"><tr><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Evidence</th></tr>
+ ${rows.map((r,i)=>{const t=team(r.slot);return `<tr><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(t?.name||'Team not set')}</td>${r.players.map((p,j)=>{const n=p?.name||'';const weak=precisionWeak(p);const q=Math.round((p?.quality||0)*100);const cand=(p?.candidates||[]).slice(0,3).map(c=>c.text).join(' · ');return `<td><div style="display:flex;gap:5px;align-items:center"><input class="${weak?'badInput':''}" id="rr-${i}-${j}" value="${esc(n)}" placeholder="Player ${j+1}" title="Candidates: ${esc(cand)}"><span class="pill ${weak?'warn':'ok'}">${q}%</span></div></td>`}).join('')}<td>${r.evidence?`<button class="ghost small" onclick="showOCREvidence(${i})">View</button>`:'—'}</td></tr>`}).join('')}</table></div>
+ <div class="row" style="margin-top:10px"><button class="primary" onclick="saveRosterReview()">✓ Save Roster</button><button class="ghost" onclick="retryWeakRoster()">↻ Re-read Weak Positions</button><button class="ghost" onclick="fillMissingRoster()">Fill From Saved Roster</button></div>`;
+}
+function showOCREvidence(i){const r=ocrReview?.rows?.[i];if(!r?.evidence)return;const w=window.open('','_blank');if(w){w.document.write(`<title>Slot ${String(r.slot).padStart(2,'0')} Evidence</title><body style="margin:0;background:#080b10;color:white;font-family:system-ui;padding:18px"><h3>Slot ${String(r.slot).padStart(2,'0')} · OCR Evidence</h3><img src="${r.evidence}" style="max-width:100%;image-rendering:auto"><pre style="white-space:pre-wrap">${esc(r.players.map((p,j)=>`P${j+1}: ${p.name||'—'} | quality ${Math.round((p.quality||0)*100)}% | candidates ${(p.candidates||[]).slice(0,5).map(c=>c.text).join(' / ')}`).join('\n'))}</pre></body>`);w.document.close()}}
+async function retryWeakRoster(){
+ if(!ocrReview?.rows?.length)return toast('Run Slot OCR first');
+ const weakRows=ocrReview.rows.filter(r=>r.players.some(p=>precisionWeak(p)));if(!weakRows.length)return toast('No weak positions detected');
+ toast(`Weak-position re-read is available after selecting the same lobby images again.`);
+}
 function saveRosterReview(){if(!ocrReview?.rows)return toast('Run Slot OCR first');for(let i=0;i<ocrReview.rows.length;i++){const r=ocrReview.rows[i];const t=team(r.slot);if(!t)continue;t.players=[0,1,2,3].map(j=>({name:$("rr-"+i+"-"+j)?.value.trim()||'',verified:true,source:'manual_roster_review'}));}persist();renderTeams();renderHome();toast('Roster saved automatically for all 16 slots');}
 function fillMissingRoster(){if(!ocrReview?.rows)return;const map=new Map(state.teams.map(t=>[t.slot,t]));ocrReview.rows.forEach((r,i)=>{const t=map.get(r.slot);if(!t)return;for(let j=0;j<4;j++)if(!r.players[j])r.players[j]=t.players[j]?.name||''});renderRosterReview()}
 
 function renderOCRSelectors(){const sel=$('ocrMatch');if(!sel)return;sel.innerHTML=state.matches.length?state.matches.map(m=>`<option value="${m.id}" ${m.id===state.activeMatchId?'selected':''}>${esc(m.name)}${m.approved?' · Approved':''}</option>`).join(''):'<option value="">No matches</option>';const b=$('processResultBtn');if(b)b.disabled=!pendingResultFiles.length||!sel.value;}
 async function runResultOCR(files){const id=$('ocrMatch').value;if(!id||!files?.length||ocrBusy)return;const m=state.matches.find(x=>x.id===id);if(!m)return;state.activeMatchId=id;persist();ocrBusy=true;setProgress('resultProgress',3);$('ocrReview').innerHTML='<div class="empty">Preparing result OCR…</div>';try{await loadOCR();const all=[];for(let i=0;i<files.length;i++){const img=await imageFromFile(files[i]);const data=await readResultImage(img);all.push(...data);setProgress('resultProgress',Math.round((i+1)/files.length*85)+10)}const merged=mergeResultRows(all,m);ocrReview={type:'result',matchId:id,rows:merged,files:[...files]};renderOCRReview();setProgress('resultProgress',100);$('resultStatus').textContent=`Detected ${merged.length} result cards. Review then Apply to Match.`}catch(e){console.error(e);setProgress('resultProgress',0);$('resultStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span>`;$('ocrReview').innerHTML='<div class="notice">No match data was changed.</div>'}finally{ocrBusy=false}}
-async function readResultImage(img){const zones=[{placement:1,x:.10,y:.158,w:.415,h:.312},{placement:2,x:.10,y:.470,w:.415,h:.330},{placement:3,x:.525,y:.158,w:.370,h:.237},{placement:4,x:.525,y:.395,w:.370,h:.245},{placement:5,x:.525,y:.640,w:.370,h:.245}];const out=[];for(const z of zones){const card=crop(img,z.x,z.y,z.w,z.h,3.2);const r=await ocrWorker.recognize(card,{rotateAuto:false},{blocks:false,hocr:false,tsv:true});const words=r?.data?.words||[];let tokens=words.map(w=>({text:cleanOCRText(w.text),conf:Number(w.confidence||0),x:w.bbox?.x0||0,y:((w.bbox?.y0||0)+(w.bbox?.y1||0))/2})).filter(w=>w.text);const kills=tokens.filter(t=>/^\d{1,2}$/.test(t.text)).map(t=>Number(t.text)).filter(n=>n>=0&&n<=40);const names=tokens.filter(t=>plausiblePlayer(t.text)&&!/^\d+$/.test(t.text)&&!/^\+?\d+$/.test(t.text));let lines=[];for(const t of names){let l=lines.at(-1);if(!l||Math.abs(l.y-t.y)>20)lines.push({y:t.y,text:t.text});else l.text+=' '+t.text}const players=lines.map(x=>x.text.trim()).filter(plausiblePlayer).slice(0,4).map((name,i)=>({name,kills:kills[i]||0}));if(players.length)out.push({placement:z.placement,players,kills:players.reduce((s,p)=>s+p.kills,0)});}return out}
+async function resultZoneRead(img,z,pass){
+ const card=crop(img,z.x,z.y,z.w,z.h,pass.scale||5);
+ const r=await recognizeLobby(card,pass.mode||'original',pass.psm||'6'),d=r?.data||r||{};
+ const words=parseTSV(d,pass.scale||5).filter(w=>w.text).sort((a,b)=>a.cy-b.cy||a.x0-b.x0);
+ const groups=[];
+ for(const w of words){let g=groups.find(x=>Math.abs(x.cy-w.cy)<=Math.max(7,(w.y1-w.y0)*.5));if(!g){g={cy:w.cy,words:[]};groups.push(g)}g.words.push(w);g.cy=(g.cy+w.cy)/2}
+ const players=[];
+ for(const g of groups){
+   const left=g.words.filter(w=>w.cx<card.width*.78).sort((a,b)=>a.x0-b.x0);
+   const text=cleanOCRText(left.map(w=>w.text).join(' ')).replace(/\/?\s*\d{1,2}\s*Eliminations?.*$/i,'').trim();
+   const killWord=[...g.words].reverse().find(w=>/^\d{1,2}$/.test(String(w.text).trim())&&Number(w.text)>=0&&Number(w.text)<=40&&w.cx>card.width*.72);
+   if(plausiblePlayer(text)&&!/^(?:remaining|team|eliminations?|kills?)$/i.test(text))players.push({name:text,kills:killWord?Number(killWord.text):0,confidence:Math.max(...g.words.map(w=>Number(w.confidence)||0)),y:g.cy});
+ }
+ return {placement:z.placement,players:players.slice(0,4),rawText:String(d.text||'')};
+}
+async function readResultImage(img){
+ // Result cards are read independently as well. Multiple passes are merged before roster matching.
+ const zones=[{placement:1,x:.10,y:.158,w:.415,h:.312},{placement:2,x:.10,y:.470,w:.415,h:.330},{placement:3,x:.525,y:.158,w:.370,h:.237},{placement:4,x:.525,y:.395,w:.370,h:.245},{placement:5,x:.525,y:.640,w:.370,h:.245}];
+ const out=[];
+ for(const z of zones){
+   const passes=[
+    {mode:'original',psm:'6',scale:5},
+    {mode:'original',psm:'11',scale:5},
+    {mode:'contrast',psm:'6',scale:5}
+   ];
+   const all=[];
+   for(const pass of passes){try{const x=await resultZoneRead(img,z,pass);all.push(x)}catch(e){}}
+   const merged=[];
+   for(const x of all){for(const p of x.players){let g=merged.find(q=>similarity(q.name,p.name)>=.84);if(!g)merged.push({...p,votes:1});else{g.votes++;if(p.confidence>g.confidence)Object.assign(g,{name:p.name,confidence:p.confidence,kills:p.kills})}}}
+   const players=merged.sort((a,b)=>(b.votes-a.votes)||(b.confidence-a.confidence)).slice(0,4).map(p=>({name:normalizeOcrCandidate(p.name),kills:Number(p.kills)||0})).filter(p=>plausiblePlayer(p.name));
+   if(players.length)out.push({placement:z.placement,players,kills:players.reduce((s,p)=>s+p.kills,0)});
+ }
+ return out;
+}
 function canonicalMatch(name,m){const n=norm(name);let best=null,score=0;for(const [slot,snap] of Object.entries(m.rosterSnapshot||{})){for(const p of snap.players||[]){const q=norm(p);if(!q)continue;let s=n===q?100:(n.includes(q)||q.includes(n)?80:0);if(!s&&n.length>3&&q.length>3){let same=0;for(const c of n)if(q.includes(c))same++;s=(same/Math.max(n.length,q.length))*65}if(s>score){score=s;best={slot:Number(slot),player:p}}}}return best}
 function mergeResultRows(rows,m){const map=new Map();for(const row of rows){let slot=null,players=[];for(const p of row.players){const hit=canonicalMatch(p.name,m);if(hit){slot=hit.slot;players.push({name:hit.player,kills:p.kills,slot:hit.slot})}}if(slot){let x=map.get(slot);if(!x||players.length>(x.players?.length||0))map.set(slot,{slot,team:team(slot)?.name||m.rosterSnapshot[slot]?.team||'',placement:row.placement,kills:players.reduce((s,p)=>s+p.kills,0),players})}}return [...map.values()].sort((a,b)=>a.placement-b.placement)}
 function renderOCRReview(){if(!ocrReview)return;$('ocrReview').innerHTML=`<div class="notice">OCR mapped <b>${ocrReview.rows.length}</b> teams to saved rosters. Unmatched or missing teams stay editable in Match Center.</div><div class="scroll" style="margin-top:10px"><table class="table"><tr><th>Place</th><th>Slot</th><th>Team</th><th>Players / Kills</th><th>Team Kills</th></tr>${ocrReview.rows.map((r,i)=>`<tr><td><input style="width:70px" type="number" min="1" max="16" value="${r.placement}" onchange="ocrReview.rows[${i}].placement=Number(this.value)"></td><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(r.team)}</td><td>${r.players.map((p,j)=>`${esc(p.name)} <input style="width:48px;padding:6px" type="number" min="0" value="${p.kills}" onchange="ocrReview.rows[${i}].players[${j}].kills=Number(this.value);ocrReview.rows[${i}].kills=ocrReview.rows[${i}].players.reduce((s,x)=>s+Number(x.kills||0),0)">`).join('<br>')}</td><td><b>${r.kills}</b></td></tr>`).join('')}</table></div><div class="row" style="margin-top:10px"><button class="primary" onclick="applyOCRToMatch()">Apply to Match</button><button class="ghost" onclick="go('matches')">Open Match Center</button></div>`}
