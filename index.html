@@ -22,7 +22,7 @@
   <div class="topActions"><select id="currentTournamentSelect" class="tournamentSelect" onchange="quickSwitchWorkspace(this.value)" aria-label="Current tournament"></select><button class="blue" onclick="openWorkspace()">🏆 Manage</button><button class="ghost" onclick="createWorkspaceQuick()">＋ New</button><button class="ghost" onclick="backup()">Backup</button></div>
 </header>
 <nav class="nav" id="nav">
-<button data-page="home">⌂<br>Home</button><button data-page="teams">01 · Teams</button><button data-page="teams">02 · Teams + OCR</button><button data-page="matches">03 · Matches</button><button data-page="ocr">04 · Result OCR</button><button data-page="overall">Leaderboard</button><button data-page="analytics">Analytics</button><button data-page="stats">Players</button><button data-page="assistant">AI</button><button data-page="settings">Settings</button>
+<button data-page="home">⌂<br>Home</button><button data-page="teams">01 · Teams + OCR</button><button data-page="matches">02 · Matches</button><button data-page="ocr">04 · Result OCR</button><button data-page="overall">Leaderboard</button><button data-page="analytics">Analytics</button><button data-page="stats">Players</button><button data-page="assistant">AI</button><button data-page="settings">Settings</button>
 </nav>
 
 <section id="home" class="section active">
@@ -41,7 +41,7 @@
  <div class="card"><div id="teamGrid" class="slotGrid"></div></div><div class="card hero" id="teamLobbyReader"><div class="titleline"><div><div class="title">Lobby + Slot Reader · Integrated</div><div class="hint">Team List and Lobby OCR are now one workspace. Upload the two original PUBG MOBILE lobby screenshots, read each Slot independently, review candidates, and save directly into the four player fields above.</div></div><span id="integratedOcrBadge" class="pill warn">OCR ready check</span></div><div class="stepGrid" style="margin-top:10px"><div class="step"><b>01 · Fixed Slot</b><span class="muted">03–18 is the source of team identity.</span></div><div class="step"><b>02 · Per-Slot OCR</b><span class="muted">Every card is isolated before recognition.</span></div><div class="step"><b>03 · Multi-pass</b><span class="muted">Consensus + row rescue for difficult names.</span></div><div class="step"><b>04 · Review</b><span class="muted">A good saved name is never replaced by OCR garbage.</span></div></div><div class="actionHero" style="margin-top:10px"><div><div class="title">Process Lobby</div><div class="hint">Screenshot A: Slots 03–11 · Screenshot B: Slots 12–18. Processing can take time; the system saves after every Slot.</div><div class="fileList" id="teamLobbyFileList"></div></div><button id="teamProcessLobbyBtn" class="primary bigAction" onclick="processLobbyIntegrated()" disabled>▶ Read 16 Slots</button></div><div class="drop" style="margin-top:10px"><b>Select 2 original lobby screenshots</b><input id="teamLobbyFiles" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" multiple><div class="row" style="margin-top:10px"><button class="ghost" onclick="clearIntegratedLobbySelection()">Clear</button><button class="ghost" onclick="testOCREngine()">Test OCR Engine</button></div></div><div class="progress"><i id="teamLobbyProgress"></i></div><div id="teamLobbyStatus" class="hint" style="margin-top:8px">Waiting for 2 screenshots.</div></div><div class="card"><div class="titleline"><div><div class="title">Integrated OCR Review</div><div class="hint">Review only difficult names. OCR candidates are retained for every player.</div></div><button class="primary small" onclick="saveIntegratedReview()">✓ Save to Team List</button></div><div id="teamLobbyReview" class="empty">No lobby analysis yet.</div></div><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><b>Roster reading is now part of Team List</b><div class="hint">Use the integrated Lobby Reader above. Player names are saved into the same Team List records.</div></div><button class="primary" onclick="document.getElementById('teamLobbyReader').scrollIntoView({behavior:'smooth'})">Open Lobby Reader →</button></div></div>
 </section>
 <section id="roster" class="section">
- <div class="card hero"><div class="titleline"><div><div class="title">Roster Builder · Precision Slot OCR 61</div><div class="hint">Reads each PUBG MOBILE Slot as an independent card, uses multi-pass consensus, then performs targeted row rescue only where needed. Slot identity is fixed; team names are never guessed from the screenshot.</div><span id="rosterEngine" class="pill warn">Ready check</span></div></div><div class="card"><div class="grid3"><div><b>01 · Team binding</b><div class="hint">Slot determines the team. Team names are never OCR-guessed.</div></div><div><b>02 · Multi-pass reading</b><div class="hint">Exact Slot crop + name-column OCR + row rescue + consensus + roster matching.</div></div><div><b>03 · Auto-save</b><div class="hint">Detected names are saved automatically and remain editable.</div></div></div></div>
+ <div class="card hero"><div class="titleline"><div><div class="title">Roster Builder · Precision Slot OCR 62</div><div class="hint">Reads each PUBG MOBILE Slot as an independent card, uses multi-pass consensus, then performs targeted row rescue only where needed. Slot identity is fixed; team names are never guessed from the screenshot.</div><span id="rosterEngine" class="pill warn">Ready check</span></div></div><div class="card"><div class="grid3"><div><b>01 · Team binding</b><div class="hint">Slot determines the team. Team names are never OCR-guessed.</div></div><div><b>02 · Multi-pass reading</b><div class="hint">Exact Slot crop + name-column OCR + row rescue + consensus + roster matching.</div></div><div><b>03 · Auto-save</b><div class="hint">Detected names are saved automatically and remain editable.</div></div></div></div>
  <div class="card"><div class="actionHero"><div><div class="title">Lobby Processing Center</div><div class="hint">1) Choose both lobby screenshots → 2) press the green <b>Process Lobby</b> button → 3) the system reads all 16 slots and saves the roster automatically.</div><div class="fileList" id="lobbyFileList"></div></div><button id="processLobbyBtn" class="primary bigAction" onclick="processLobby()" disabled>▶ Process Lobby</button></div><div class="drop" style="margin-top:10px"><b>Upload 2 original screenshots</b><div class="hint">Screenshot A = Slots 03–11 · Screenshot B = Slots 12–18. No need to rename files.</div><input id="lobbyFiles" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" multiple><div class="row" style="margin-top:10px"><button class="ghost" onclick="clearLobbySelection()">Clear Selection</button><button class="ghost" onclick="testOCREngine()">Test OCR Engine</button></div></div><div class="progress"><i id="rosterProgress"></i></div><div id="rosterStatus" class="hint" style="margin-top:8px">Waiting for 2 lobby screenshots.</div></div>
  <div class="card"><div class="titleline"><div><div class="title">Detected Roster</div><div class="hint">The reader keeps the strongest candidate per character and shows the evidence so you can correct only the rare difficult letters.</div></div><div class="row" style="max-width:340px"><button class="ghost small" onclick="fillMissingRoster()">Fill missing manually</button><button class="primary small" onclick="saveRosterReview()">✓ Save Roster</button></div></div><div id="rosterReview" class="empty">Upload a lobby screenshot to start.</div></div><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><b>Next step: Create your matches</b><div class="hint">Your roster is now the canonical player identity used by Result OCR.</div></div><button class="primary" onclick="go('matches')">Continue to Match Center →</button></div></div>
 </section>
@@ -146,7 +146,7 @@ async function loadOCR(){
       else if(m?.status==='recognizing text')setEngine('loading',`OCR ${Math.round((Number(m.progress)||0)*100)}%`);
     }});
     try{await w.setParameters({preserve_interword_spaces:'1',user_defined_dpi:'320',load_system_dawg:'0',load_freq_dawg:'0',load_unambig_dawg:'0',load_punc_dawg:'0',load_number_dawg:'0'});}catch(e){}
-    ocrWorker=w;setEngine('ready','OCR 61 · Integrated Precision Engine');return w;
+    ocrWorker=w;setEngine('ready','OCR 62 · Integrated Precision Engine');return w;
    }catch(e){last=e?.message||String(e)}
   }
   throw Error('OCR engine could not start. '+last);
@@ -163,6 +163,10 @@ function similarity(a,b){a=normKey(a);b=normKey(b);if(!a||!b)return 0;if(a===b)r
 function plausibleName(s){s=ocrClean(s).replace(/^[-_:.,]+|[-_:.,]+$/g,'');return s.length>=2&&s.length<=28&&!/^(player|team|slot|ready|spectator|eliminations?|kills?)$/i.test(s)}
 function normalizePlayer(s,first=false){let t=ocrClean(s).replace(/\s*\/\s*[0-9]+\s*Eliminations?.*$/i,'').replace(/\s*Eliminations?.*$/i,'');if(first)t=t.replace(/^\s*(?:0?[3-9]|1[0-8])(?:\s*[,.:;|/\\-]\s*|\s+)/,'');t=t.replace(/^\s*[|/\\:;]+\s*/,'').replace(/^[-_:.,]+|[-_:.,]+$/g,'');return ocrClean(t)}
 function cropCanvas(img,x,y,w,h,scale=10){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;const xx=clamp(x,0,W-1),yy=clamp(y,0,H-1),ww=clamp(w,2,W-xx),hh=clamp(h,2,H-yy);const c=document.createElement('canvas');c.width=Math.max(2,Math.round(ww*scale));c.height=Math.max(2,Math.round(hh*scale));const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,xx,yy,ww,hh,0,0,c.width,c.height);return c}
+// Coordinate-safe helpers: normalized geometry is NEVER passed to a pixel cropper.
+function cropCanvasNorm(img,x,y,w,h,scale=8){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;return cropCanvas(img,x*W,y*H,w*W,h*H,scale)}
+function imageDimensions(img){return {w:img.naturalWidth||img.width||0,h:img.naturalHeight||img.height||0,ratio:(img.naturalWidth||img.width||1)/(img.naturalHeight||img.height||1)}}
+function assertImageReady(img){const d=imageDimensions(img);if(d.w<500||d.h<250)throw Error('Lobby screenshot resolution is too small for precision OCR.');return d}
 function addBorder(src,pad=12,bg=0){const c=document.createElement('canvas');c.width=src.width+pad*2;c.height=src.height+pad*2;const g=c.getContext('2d');g.fillStyle=`rgb(${bg},${bg},${bg})`;g.fillRect(0,0,c.width,c.height);g.drawImage(src,pad,pad);return c}
 function preprocessLobby(src,mode='original'){
  if(mode==='original')return addBorder(src,10,0);
@@ -214,7 +218,7 @@ async function recognizeLobby(canvas,mode='original',psm='6'){const w=await load
    Design: exact slot crop -> name-column consensus -> targeted row rescue
    -> roster-aware assignment -> immutable slot identity.
    ========================================================= */
-const OCR60={version:'60.0',slotCenters:[.18,.405,.63,.855],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
+const OCR60={version:'62.0',slotCenters:[.18,.405,.63,.855],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
 function lobbyGeometry(img){
  const W=img?.naturalWidth||img?.width||852,H=img?.naturalHeight||img?.height||460;
  const ratio=W/H;
@@ -245,7 +249,35 @@ function playerIsGarbage(text){const t=ocrClean(text).replace(/\s+/g,' ').trim()
 function playerShapeScore(text){const t=ocrClean(text);if(!t)return 0;const len=t.length,alpha=(t.match(/[A-Za-z\u0600-\u06ff]/g)||[]).length,digits=(t.match(/\d/g)||[]).length,symbols=(t.match(/[^A-Za-z0-9\u0600-\u06ff\s]/g)||[]).length;let s=.35;if(len>=3&&len<=18)s+=.35;else if(len<=28)s+=.18;if(alpha>0)s+=.18;if(digits<=Math.ceil(len*.5))s+=.08;if(symbols<=Math.ceil(len*.25))s+=.08;return clamp(s,0,1)}
 function teamPrefixHint(slot){const n=String(team(slot)?.name||'').trim(),compact=n.replace(/[^A-Za-z0-9]/g,'');return compact.length>=2?compact.slice(0,Math.min(4,compact.length)):''}
 function addRosterAwareCandidate(arr,slot,text,confidence,source,first=false){const t=ocrClean(text);if(!t||playerIsGarbage(t))return;const hint=teamPrefixHint(slot),ck=normKey(t),hk=normKey(hint);let bonus=hk&&ck.startsWith(hk)?4:0;const known=(team(slot)?.players||[]).map(p=>ocrClean(typeof p==='string'?p:p?.name)).filter(Boolean);let best=0;for(const k of known)best=Math.max(best,similarity(t,k));arr.push({text:t,confidence:(Number(confidence)||0)+bonus,source:source||'ocr',rosterSimilarity:best,first:!!first})}
-function bestAssignment(obs,known){const rows=obs||[],n=known.length;let best={score:-Infinity,rows:[]};function dfs(i,used,score,chosen){if(i>=rows.length){if(score>best.score)best={score,rows:chosen.slice()};return}const row=rows[i],raw=row.name||'';if(!raw){dfs(i+1,used,score,chosen.concat({obs:row,canonical:known[i%n],score:0}));return}for(let k=0;k<n;k++)if(!used.has(k)){const sim=similarity(raw,known[k]),sc=sim*1.5+(row.quality||0)*.25+(row.votes||0)*.05,u=new Set(used);u.add(k);dfs(i+1,u,score+sc,chosen.concat({obs:row,canonical:known[k],score:sim}))}}if(!rows.length||!n)return best;dfs(0,new Set(),0,[]);return best}
+function bestAssignment(obs,known){
+ const rows=obs||[], n=known?.length||0;
+ if(!rows.length||!n)return {score:-Infinity,rows:[]};
+ let best={score:-Infinity,rows:[]};
+ function dfs(i,used,total,chosen){
+   if(i>=rows.length){if(total>best.score)best={score:total,rows:chosen.slice()};return}
+   const row=rows[i]||{},raw=ocrClean(row.name||'');
+   // Missing OCR is not evidence for a canonical name. Keep it unresolved.
+   if(!raw){dfs(i+1,used,total,chosen.concat({obs:row,canonical:'',score:0}));return}
+   for(let k=0;k<n;k++){if(used.has(k))continue;const sim=similarity(raw,known[k]);
+     const score=sim*2.4+(row.quality||0)*.35+Math.min(1,(row.votes||0)/4)*.15;
+     const u=new Set(used);u.add(k);dfs(i+1,u,total+score,chosen.concat({obs:row,canonical:known[k],score:sim}));
+   }
+ }
+ dfs(0,new Set(),0,[]);
+ return best;
+}
+function applyCanonicalRoster(rows,known){
+ if(!Array.isArray(rows)||known.length!==4)return rows;
+ const assignment=bestAssignment(rows,known);
+ if(!assignment.rows.length)return rows;
+ for(const x of assignment.rows){
+   if(!x.canonical||x.score<0.76)continue;
+   const obs=x.obs;
+   obs.name=x.canonical;obs.matched=true;obs.matchScore=x.score;obs.verified=x.score>=0.86;
+ }
+ return rows;
+}
+
 function normalizeOcrCandidate(text,first=false){
  let t=ocrClean(text).replace(/\s*\/?\s*\d{1,2}\s*Eliminations?.*$/i,'').replace(/\s*Eliminations?.*$/i,'').trim();
  if(first)t=normalizeFirstPlayer(t);
@@ -271,7 +303,7 @@ function lineGroupsFromTSV(data,scale){
  })).sort((a,b)=>a.cy-b.cy);
 }
 async function precisionColumnPass(img,card,mode,psm,scale,tag){
- const area=slotNameArea(card),c=cropCanvas(img,area.x,area.y,area.w,area.h,scale);
+ const area=slotNameArea(card),c=cropCanvasNorm(img,area.x,area.y,area.w,area.h,scale);
  const r=await recognizeLobby(c,mode,psm),d=r?.data||r||{},out=[0,1,2,3].map(()=>[]);
  const H=img.naturalHeight||img.height||1;
  for(const line of lineGroupsFromTSV(d,scale)){
@@ -294,7 +326,7 @@ async function precisionColumnPass(img,card,mode,psm,scale,tag){
 }
 async function precisionRowPass(img,card,i,mode,psm,scale,tag,band){
  const b=band||slotRowBand(card,i),padX=card.w*.025,padY=card.h*.035;
- const c=cropCanvas(img,b.x-padX,b.y-padY,b.w+padX*2,b.h+padY*2,scale);
+ const c=cropCanvasNorm(img,b.x-padX,b.y-padY,b.w+padX*2,b.h+padY*2,scale);
  const r=await recognizeLobby(c,mode,psm),d=r?.data||r||{},out=[];
  const raw=normalizeOcrCandidate(d.text||'',i===0);if(raw)addPrecisionCandidate(out,card.slot,raw,d.confidence,tag,i===0);
  for(const w of parseTSV(d,scale).filter(x=>x.text).sort((a,b)=>a.x0-b.x0)){
@@ -339,6 +371,22 @@ function precisionWeak(r){return !r?.name||playerIsGarbage(r.name)||(r.quality||
 async function analyzeSlotPrecision(img,card){
  const bands=effectiveRowBands(img,card);
  const rows=[0,1,2,3].map(i=>({slot:card.slot,name:'',confidence:0,quality:0,score:0,votes:0,sources:[],cy:slotCenterY(card,i),candidates:[]}));
+ // Stage 0: whole-card anchor read. This mirrors the legacy engine: the complete Slot card is
+ // recognized first, then the player-name rows are recovered from the TSV geometry. It gives us
+ // a second independent source before any targeted crop is attempted.
+ try{
+   const whole=cropCanvasNorm(img,card.x,card.y,card.w,card.h,7);
+   const wr=await recognizeLobby(whole,'original','6'),wd=wr?.data||wr||{};
+   for(const line of lineGroupsFromTSV(wd,7)){
+     const text=normalizeOcrCandidate(line.text,false);
+     if(!text||/eliminations?/i.test(text)||/^\d{1,2}$/.test(text))continue;
+     const localY=line.cy/(whole.height||1);
+     let best=-1,dist=Infinity;
+     for(let i=0;i<4;i++){const dd=Math.abs(localY-OCR60.slotCenters[i]);if(dd<dist){dist=dd;best=i}}
+     if(best>=0&&dist<=.105){addPrecisionCandidate(rows[best],card.slot,text,line.confidence,'card-anchor',best===0)}
+   }
+ }catch(e){console.warn('card-anchor',card.slot,e)}
+ precisionDistinct(rows);
  // Stage 1: independent whole-name-column reads. This is the most reliable read for the supplied PUBG layout.
  const primary=[
   ['original','6',7,'column-original-psm6'],
@@ -371,15 +419,9 @@ async function analyzeSlotPrecision(img,card){
      }
    }
  }
- // Stage 3: saved roster is a canonical identity source. Use it only when the OCR evidence is close.
+ // Stage 3: saved roster is a canonical identity source, but only when OCR evidence is close.
  const known=(team(card.slot)?.players||[]).map(p=>ocrClean(typeof p==='string'?p:p?.name)).filter(Boolean);
- if(known.length===4){
-   const obs=rows.map(r=>({...r,name:r.name||''}));
-   const a=bestAssignment(obs,known);
-   if(a.rows.length===4&&a.score>=2.65){
-     for(const x of a.rows){if(x.score>=.68||!x.obs.name){x.obs.name=x.canonical;x.obs.matched=true;x.obs.matchScore=x.score;x.obs.verified=x.score>=.84}}
-   }
- }
+ if(known.length===4)applyCanonicalRoster(rows,known);
  // Stage 4: final unique-player assignment.
  precisionDistinct(rows);
  return rows.map((r,i)=>({...r,slot:card.slot,cy:r.cy||slotCenterY(card,i)}));
@@ -389,7 +431,7 @@ async function readSingleSlotLegacy(img,card){return analyzeSlotPrecision(img,ca
 async function cardWidePlayerCandidates(img,card){const rows=await analyzeSlotPrecision(img,card);return rows}
 async function fastCardRead(img,card){return analyzeSlotPrecision(img,card)}
 async function wholeLobbyRead(){return null}
-function slotResultEvidence(img,card){return cropCanvas(img,card.x,card.y,card.w,card.h,3).toDataURL('image/jpeg',.92)}
+function slotResultEvidence(img,card){return cropCanvasNorm(img,card.x,card.y,card.w,card.h,3).toDataURL('image/jpeg',.92)}
 
 function cleanPlayerCandidateText(text,first=false){
   // Single canonical sanitizer used by every roster commit path.
@@ -409,10 +451,12 @@ function commitRosterRows(rows,verified=false){
      const incoming=cleanPlayerCandidateText(r.players?.[j]?.name||r.players?.[j]||'',j===0);
      const existingRaw=ocrClean(t.players?.[j]?.name||'');
      const existing=playerIsGarbage(existingRaw)?'':existingRaw;
-     const name=incoming||existing;
-     return {name,verified:!!verified||!!(incoming&&existing&&similarity(incoming,existing)>=.96),source:incoming?'lobby_calibrated_ocr':(existing?'preserved_valid_roster':'')};
+     let name=incoming||existing,source=incoming?'lobby_calibrated_ocr':(existing?'preserved_valid_roster':'');
+     // A previously saved roster is authoritative when OCR is recognizably the same player.
+     if(incoming&&existing){const sim=similarity(incoming,existing);if(sim>=.76){name=existing;source='canonical_saved_roster'}else{name=existing;source='preserved_canonical_low_similarity'}}
+     return {name,verified:!!verified||!!(name&&existing&&similarity(name,existing)>=.96),source};
    });
-   t.players=next;t.rosterVerified=next.every(p=>p.name);t.rosterSource='lobby_calibrated_ocr';t.rosterUpdated=new Date().toISOString();
+   t.players=next;t.rosterVerified=next.every(p=>p.name);t.rosterSource='lobby_calibrated_ocr';t.rosterUpdated=new Date().toISOString();t.rosterAudit=(rows||[]).find(x=>x.slot===t.slot)?.players?.map(p=>({name:p?.name||'',quality:p?.quality||0,votes:p?.votes||0,matched:!!p?.matched,candidates:(p?.candidates||[]).slice(0,6).map(c=>c.text)}))||t.rosterAudit||[];
  }
  persist();
 }
@@ -424,15 +468,20 @@ async function runRosterOCR(files){
  try{
    await loadOCR();
    const results=[];let done=0;
+   const loaded=await Promise.all(files.slice(0,2).map(async f=>({file:f,img:await imageFromFile(f)})));
+   loaded.forEach(x=>assertImageReady(x.img));
+   // The two supplied layouts have different aspect ratios. Use the wider ratio as the 03–11 sheet
+   // when filenames are supplied in arbitrary order; if ratios are effectively equal, keep user order.
+   loaded.sort((a,b)=>{const ra=imageDimensions(a.img).ratio,rb=imageDimensions(b.img).ratio;return rb-ra});
    for(let fi=0;fi<2;fi++){
-     const img=await imageFromFile(files[fi]);
+     const img=loaded[fi].img;
      const rects=lobbyCardRects(fi,img);
      for(let j=0;j<rects.length;j++){
        const r=rects[j];
        setEngine('loading',`Precision OCR · Slot ${String(r.slot).padStart(2,'0')} · ${j+1}/${rects.length}`);
        $('rosterStatus').textContent=`Reading Slot ${String(r.slot).padStart(2,'0')} independently…`;if($('teamLobbyStatus'))$('teamLobbyStatus').textContent=`Reading Slot ${String(r.slot).padStart(2,'0')} independently…`;if($('teamLobbyProgress'))$('teamLobbyProgress').style.width=Math.min(96,Math.round(done/16*94)+2)+'%';
        const players=await analyzeSlotPrecision(img,r);
-       results.push({slot:r.slot,players,file:files[fi].name,sourceImage:fi,card:j+1,row:r.row+1,column:r.col+1,evidence:slotResultEvidence(img,r),engine:OCR60.version});
+       results.push({slot:r.slot,players,file:loaded[fi].file.name,sourceImage:fi,card:j+1,row:r.row+1,column:r.col+1,evidence:slotResultEvidence(img,r),engine:OCR60.version});
        done++;setProgress('rosterProgress',Math.min(96,Math.round(done/16*94)+2));
        // Save after every Slot so a browser interruption never loses the work already completed.
        ocrReview={type:'roster',rows:[...results],partial:true};
@@ -443,12 +492,12 @@ async function runRosterOCR(files){
    if(results.length!==16)throw Error(`Expected 16 lobby slots, detected ${results.length}`);
    ocrReview={type:'roster',rows:results,partial:false};
    commitRosterRows(results,false);renderRosterReview();renderTeams();renderHome();
-   setEngine('ready','OCR 61 · Slot Precision Ready');setProgress('rosterProgress',100);setIntegratedOCRBadge('ok','OCR Ready · 16 Slots');if($('teamLobbyProgress'))$('teamLobbyProgress').style.width='100%';if($('teamLobbyStatus'))$('teamLobbyStatus').textContent='Completed 16 Slots / 64 positions. Review and save above.';renderIntegratedReview();
+   setEngine('ready','OCR 62 · Slot Precision Ready');setProgress('rosterProgress',100);setIntegratedOCRBadge('ok','OCR Ready · 16 Slots');if($('teamLobbyProgress'))$('teamLobbyProgress').style.width='100%';if($('teamLobbyStatus'))$('teamLobbyStatus').textContent='Completed 16 Slots / 64 positions. Review and save above.';renderIntegratedReview();
    const weak=results.reduce((n,r)=>n+r.players.filter(p=>precisionWeak(p)).length,0);
    $('rosterStatus').innerHTML=weak?`Completed 16 Slots / 64 positions · <span class="warn">${weak} position(s) need review</span>. Evidence and OCR candidates are retained.`:'Completed 16 Slots / 64 positions · <span class="ok">All positions produced usable OCR candidates.</span>';
    go('roster');
  }catch(e){
-   console.error('OCR 60 roster',e);setProgress('rosterProgress',0);setEngine('bad','OCR 60 · Error');
+   console.error('OCR 62 roster',e);setProgress('rosterProgress',0);setEngine('bad','OCR 62 · Error');
    if($('teamLobbyStatus'))$('teamLobbyStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span>`;setIntegratedOCRBadge('bad','OCR Error');$('rosterStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span><br><span class="muted">Already completed Slots were auto-saved; existing roster data was never erased.</span>`;
    if(ocrReview?.rows?.length)renderRosterReview();else $('rosterReview').innerHTML='<div class="notice">No roster data was changed.</div>';
  }finally{ocrBusy=false}
@@ -458,7 +507,7 @@ function renderRosterReview(){
  const issues=rows.reduce((n,r)=>n+r.players.filter(p=>precisionWeak(p)).length,0);
  const avg=rows.length?Math.round(rows.reduce((s,r)=>s+r.players.reduce((a,p)=>a+(p.quality||0),0),0)/(Math.max(1,rows.length*4))*100):0;
  $('rosterReview').innerHTML=`
- <div class="notice"><b>OCR 61 Precision Core</b> · ${rows.length}/16 Slots · ${rows.length*4}/64 positions processed · average evidence quality ${avg}%. ${issues?`<span class="warn">${issues} position(s) need review.</span>`:'<span class="ok">No weak positions detected.</span>'}<br><span class="muted">Every Slot is read independently. The screenshot itself never defines the Team; Slot → Team binding remains authoritative.</span></div>
+ <div class="notice"><b>OCR 62 Precision Core</b> · ${rows.length}/16 Slots · ${rows.length*4}/64 positions processed · average evidence quality ${avg}%. ${issues?`<span class="warn">${issues} position(s) need review.</span>`:'<span class="ok">No weak positions detected.</span>'}<br><span class="muted">Every Slot is read independently. The screenshot itself never defines the Team; Slot → Team binding remains authoritative.</span></div>
  <div class="scroll" style="margin-top:10px"><table class="table"><tr><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Evidence</th></tr>
  ${rows.map((r,i)=>{const t=team(r.slot);return `<tr><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(t?.name||'Team not set')}</td>${r.players.map((p,j)=>{const n=p?.name||'';const weak=precisionWeak(p);const q=Math.round((p?.quality||0)*100);const cand=(p?.candidates||[]).slice(0,3).map(c=>c.text).join(' · ');return `<td><div style="display:flex;gap:5px;align-items:center"><input class="${weak?'badInput':''}" id="rr-${i}-${j}" value="${esc(n)}" placeholder="Player ${j+1}" title="Candidates: ${esc(cand)}"><span class="pill ${weak?'warn':'ok'}">${q}%</span></div></td>`}).join('')}<td>${r.evidence?`<button class="ghost small" onclick="showOCREvidence(${i})">View</button>`:'—'}</td></tr>`}).join('')}</table></div>
  <div class="row" style="margin-top:10px"><button class="primary" onclick="saveRosterReview()">✓ Save Roster</button><button class="ghost" onclick="retryWeakRoster()">↻ Re-read Weak Positions</button><button class="ghost" onclick="fillMissingRoster()">Fill From Saved Roster</button></div>`;
@@ -466,8 +515,17 @@ function renderRosterReview(){
 function showOCREvidence(i){const r=ocrReview?.rows?.[i];if(!r?.evidence)return;const w=window.open('','_blank');if(w){w.document.write(`<title>Slot ${String(r.slot).padStart(2,'0')} Evidence</title><body style="margin:0;background:#080b10;color:white;font-family:system-ui;padding:18px"><h3>Slot ${String(r.slot).padStart(2,'0')} · OCR Evidence</h3><img src="${r.evidence}" style="max-width:100%;image-rendering:auto"><pre style="white-space:pre-wrap">${esc(r.players.map((p,j)=>`P${j+1}: ${p.name||'—'} | quality ${Math.round((p.quality||0)*100)}% | candidates ${(p.candidates||[]).slice(0,5).map(c=>c.text).join(' / ')}`).join('\n'))}</pre></body>`);w.document.close()}}
 async function retryWeakRoster(){
  if(!ocrReview?.rows?.length)return toast('Run Slot OCR first');
- const weakRows=ocrReview.rows.filter(r=>r.players.some(p=>precisionWeak(p)));if(!weakRows.length)return toast('No weak positions detected');
- toast(`Weak-position re-read is available after selecting the same lobby images again.`);
+ if(pendingLobbyFiles.length!==2)return toast('Keep the same two lobby screenshots selected to re-read weak positions');
+ const weakSlots=new Set(ocrReview.rows.filter(r=>r.players.some(p=>precisionWeak(p))).map(r=>Number(r.slot)));
+ if(!weakSlots.size)return toast('No weak positions detected');
+ if(ocrBusy)return toast('OCR is already running');
+ ocrBusy=true;try{
+   await loadOCR();
+   const loaded=await Promise.all(pendingLobbyFiles.map(async f=>({file:f,img:await imageFromFile(f)})));
+   loaded.sort((a,b)=>imageDimensions(b.img).ratio-imageDimensions(a.img).ratio);
+   for(let fi=0;fi<2;fi++){const img=loaded[fi].img;for(const card of lobbyCardRects(fi,img)){if(!weakSlots.has(Number(card.slot)))continue;setEngine('loading',`Rescue OCR · Slot ${String(card.slot).padStart(2,'0')}`);const fresh=await analyzeSlotPrecision(img,card);const idx=ocrReview.rows.findIndex(r=>Number(r.slot)===Number(card.slot));if(idx>=0){ocrReview.rows[idx]=Object.assign(ocrReview.rows[idx],{players:fresh,evidence:slotResultEvidence(img,card),engine:OCR60.version});commitRosterRows([ocrReview.rows[idx]],false);renderRosterReview();renderIntegratedReview();}}}
+   persist();setEngine('ready','OCR 62 · Rescue Complete');toast(`Re-read ${weakSlots.size} weak Slot(s)`);
+ }catch(e){console.error(e);setEngine('bad','OCR 62 · Rescue Error');toast('Weak-position OCR failed: '+(e.message||e))}finally{ocrBusy=false}
 }
 function saveRosterReview(){if(!ocrReview?.rows)return toast('Run Slot OCR first');for(let i=0;i<ocrReview.rows.length;i++){const r=ocrReview.rows[i];const t=team(r.slot);if(!t)continue;t.players=[0,1,2,3].map(j=>({name:$("rr-"+i+"-"+j)?.value.trim()||'',verified:true,source:'manual_roster_review'}));}persist();renderTeams();renderHome();toast('Roster saved automatically for all 16 slots');}
 function fillMissingRoster(){if(!ocrReview?.rows)return;const map=new Map(state.teams.map(t=>[t.slot,t]));ocrReview.rows.forEach((r,i)=>{const t=map.get(r.slot);if(!t)return;for(let j=0;j<4;j++)if(!r.players[j])r.players[j]=t.players[j]?.name||''});renderRosterReview()}
@@ -519,7 +577,16 @@ function renderStats(){const map=new Map();for(const m of state.matches.filter(m
 
 function renderRules(){const a=state.rules.place;$('rulesGrid').innerHTML=SLOTS.slice(0,16).map((_,i)=>{const p=i+1;return `<div><label>${p}${p===1?'st':p===2?'nd':p===3?'rd':'th'}</label><input data-place="${p}" type="number" min="0" value="${a[p]||0}"></div>`}).join('');$('killPoint').value=state.rules.kill}
 function saveRules(){for(let p=1;p<=16;p++)state.rules.place[p]=Math.max(0,Number(document.querySelector(`[data-place="${p}"]`)?.value)||0);state.rules.kill=Math.max(0,Number($('killPoint').value)||0);state.matches.forEach(m=>{if(m.approved)m.results=m.results.map(r=>({...r,pp:state.rules.place[r.placement]||0,total:points(r)}))});persist();renderAll();toast('Scoring rules saved')}
-function runHealth(){const required=['normalizeFirstPlayer','playerIsGarbage','playerShapeScore','teamPrefixHint','addRosterAwareCandidate','bestAssignment','cleanPlayerCandidateText','readPlayers','readResultImage','renderStats','renderRules'];const missing=required.filter(k=>typeof window[k]!=='function');const issues=healthIssues().concat(missing.map(k=>'Missing runtime function: '+k));$('diagnostics').innerHTML=`<div class="healthRow"><span>Storage</span><span class="ok">Local + IndexedDB</span></div><div class="healthRow"><span>OCR</span><span class="${ocrWorker?'ok':'warn'}">${ocrWorker?'Ready':'Not initialized'}</span></div><div class="healthRow"><span>Teams</span><span>${state.teams.filter(t=>t.name).length}/16</span></div><div class="healthRow"><span>Full rosters</span><span>${state.teams.filter(t=>t.players.every(p=>p.name)).length}/16</span></div><div class="healthRow"><span>Approved matches</span><span>${state.matches.filter(m=>m.approved).length}/${state.matches.length}</span></div>${issues.map(x=>`<div class="healthRow"><span>${esc(x)}</span><span class="bad">Issue</span></div>`).join('')||'<div class="notice" style="margin-top:8px">No critical integrity issues.</div>'}`}
+function runEngineSelfTest(){
+ const required=['normalizeFirstPlayer','playerIsGarbage','playerShapeScore','teamPrefixHint','addRosterAwareCandidate','bestAssignment','applyCanonicalRoster','cleanPlayerCandidateText','readPlayers','readResultImage','renderStats','renderRules','cropCanvasNorm'];
+ const missing=required.filter(k=>typeof window[k]!=='function');
+ const checks=[];
+ try{checks.push({name:'Name sanitizer',ok:cleanPlayerCandidateText('94BROK /0 Eliminations',false)==='94BROK'});}catch(e){checks.push({name:'Name sanitizer',ok:false,error:e.message})}
+ try{const x=normalizeOcrCandidate('||',false);checks.push({name:'Garbage rejection',ok:x===''});}catch(e){checks.push({name:'Garbage rejection',ok:false,error:e.message})}
+ try{checks.push({name:'Normalized crop API',ok:typeof cropCanvasNorm==='function'});}catch(e){checks.push({name:'Normalized crop API',ok:false,error:e.message})}
+ return {missing,checks,ok:!missing.length&&checks.every(x=>x.ok)};
+}
+function runHealth(){const self=runEngineSelfTest();const required=['normalizeFirstPlayer','playerIsGarbage','playerShapeScore','teamPrefixHint','addRosterAwareCandidate','bestAssignment','applyCanonicalRoster','cleanPlayerCandidateText','readPlayers','readResultImage','renderStats','renderRules','cropCanvasNorm'];const missing=[...new Set(required.filter(k=>typeof window[k]!=='function').concat(self.missing))];const issues=healthIssues().concat(missing.map(k=>'Missing runtime function: '+k)).concat(self.checks.filter(x=>!x.ok).map(x=>'OCR self-test failed: '+x.name));$('diagnostics').innerHTML=`<div class="healthRow"><span>Storage</span><span class="ok">Local + IndexedDB</span></div><div class="healthRow"><span>OCR</span><span class="${ocrWorker?'ok':'warn'}">${ocrWorker?'Ready':'Not initialized'}</span></div><div class="healthRow"><span>Teams</span><span>${state.teams.filter(t=>t.name).length}/16</span></div><div class="healthRow"><span>Full rosters</span><span>${state.teams.filter(t=>t.players.every(p=>p.name)).length}/16</span></div><div class="healthRow"><span>Approved matches</span><span>${state.matches.filter(m=>m.approved).length}/${state.matches.length}</span></div>${issues.map(x=>`<div class="healthRow"><span>${esc(x)}</span><span class="bad">Issue</span></div>`).join('')||'<div class="notice" style="margin-top:8px">No critical integrity issues.</div>'}`}
 function backup(){const payload={app:APP,state,exportedAt:new Date().toISOString()};download((state.tournament||'tournament').replace(/[^a-z0-9_-]+/gi,'_')+'_backup.json',JSON.stringify(payload,null,2),'application/json');toast('Backup exported')}
 function download(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 $('restoreFile').addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);const x=j.state||j;if(!x?.teams)throw Error('Invalid backup');state=normalizeState(x);persist();renderAll();toast('Backup restored')}catch(err){toast('Restore failed: '+err.message)}};r.readAsText(f)})
