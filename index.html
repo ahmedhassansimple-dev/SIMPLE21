@@ -385,6 +385,17 @@ async function fastCardRead(img,card){return analyzeSlotPrecision(img,card)}
 async function wholeLobbyRead(){return null}
 function slotResultEvidence(img,card){return cropCanvas(img,card.x,card.y,card.w,card.h,3).toDataURL('image/jpeg',.92)}
 
+function cleanPlayerCandidateText(text,first=false){
+  // Single canonical sanitizer used by every roster commit path.
+  // Keep PUBG player spelling, numbers and symbols while rejecting OCR garbage.
+  let t=normalizeOcrCandidate(text,first);
+  if(!t) return '';
+  // OCR sometimes leaves the elimination counter attached to the player name.
+  t=t.replace(/\s*\/\s*\d{1,2}\s*Eliminations?\b.*$/i,'').trim();
+  t=t.replace(/[|¦]+/g,' ').replace(/\s{2,}/g,' ').trim();
+  if(playerIsGarbage(t)||!plausibleName(t)) return '';
+  return t.slice(0,40);
+}
 function commitRosterRows(rows,verified=false){
  for(const r of rows||[]){
    const t=team(r.slot);if(!t)continue;
