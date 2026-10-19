@@ -11,6 +11,7 @@
 @media(max-width:800px){.slotGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.twoCol{grid-template-columns:1fr}.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){body{padding-bottom:92px}.grid,.grid3{grid-template-columns:1fr}.slotGrid{grid-template-columns:1fr}.resultRow{grid-template-columns:32px minmax(110px,1fr) 75px 80px 65px;font-size:11px}.teamCell{min-width:170px}.nav{grid-template-columns:repeat(10,72px)}.topActions button{padding:8px 9px}}
 @media(min-width:760px){body{padding-bottom:20px}.nav{position:sticky;top:0;bottom:auto;max-width:1180px;margin:0 auto 14px;border:1px solid var(--line);border-radius:14px}}
+.badInput{border-color:#a44!important;box-shadow:0 0 0 1px rgba(255,90,90,.15)}
 </style>
 </head>
 <body>
@@ -71,7 +72,7 @@
 </div>
 
 <script>
-const APP={version:'57.0-world-class-legacy-turbo-ocr',storage:'PUBG_TM_WORLD_CLASS_V57',mediaDB:'PUBG_TM_MEDIA_V50',mediaStore:'images',current:'PUBG_TM_CURRENT_V57',legacy:['PUBG_TM_WORLD_CLASS_V56','PUBG_TM_WORLD_CLASS_V54','PUBG_TM_WORLD_CLASS_V51','PUBG_TM_CLEAN_PRO_V50','pubg_tm_v21_pro','PUBG_TM_V21_PRO']};
+const APP={version:'59.0-world-class-calibrated-ocr',storage:'PUBG_TM_WORLD_CLASS_V58',mediaDB:'PUBG_TM_MEDIA_V50',mediaStore:'images',current:'PUBG_TM_CURRENT_V58',legacy:['PUBG_TM_WORLD_CLASS_V56','PUBG_TM_WORLD_CLASS_V54','PUBG_TM_WORLD_CLASS_V51','PUBG_TM_CLEAN_PRO_V50','pubg_tm_v21_pro','PUBG_TM_V21_PRO']};
 const DEFAULT_RULES={place:[0,10,6,5,4,3,2,1,1,0,0,0,0,0,0,0,0],kill:1};
 const SLOTS=Array.from({length:16},(_,i)=>i+3);
 let state=null,workspaceId=null,ocrReview=null,ocrBusy=false,enginePromise=null,ocrWorker=null,pendingLobbyFiles=[],pendingResultFiles=[];
@@ -154,7 +155,7 @@ async function loadOCR(){
 }
 function injectScript(src){return new Promise((res,rej)=>{if([...document.scripts].some(s=>s.src===src))return res();const x=document.createElement('script');x.src=src;x.async=true;x.crossOrigin='anonymous';x.onload=()=>res();x.onerror=()=>rej(Error('Network blocked: '+src));document.head.appendChild(x)})}
 function setEngine(type,text){const cls=type==='ready'?'ok':type==='loading'?'warn':'bad';for(const id of ['engineBadge','rosterEngine','resultEngine']){const e=$(id);if(e){e.className='pill '+cls;e.textContent=text}}}
-function ocrClean(s){return String(s??'').replace(/[“”‘’]/g,'').replace(/[|¦]/g,'I').replace(/[\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim()}
+function ocrClean(s){return String(s??'').replace(/[“”‘’]/g,'').replace(/[\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim()}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function normKey(s){return ocrClean(s).toLowerCase().replace(/[\s\-_.:/\\|]+/g,'').replace(/[“”‘’'`]/g,'')}
 function lev(a,b){a=String(a||'');b=String(b||'');const m=a.length,n=b.length;if(!m)return n;if(!n)return m;const prev=new Array(n+1);for(let j=0;j<=n;j++)prev[j]=j;for(let i=1;i<=m;i++){let cur=[i];for(let j=1;j<=n;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));for(let j=0;j<=n;j++)prev[j]=cur[j]}return prev[n]}
@@ -208,23 +209,71 @@ function preprocessLobby(src,mode='original'){
 function parseTSV(data,scale=1){const tsv=String(data?.tsv||'');const out=[];if(!tsv)return out;for(const line of tsv.split(/\r?\n/).slice(1)){const p=line.split('\t');if(p.length<12)continue;const text=ocrClean(p.slice(11).join('\t')),conf=Number(p[10]),x=Number(p[6]),y=Number(p[7]),w=Number(p[8]),h=Number(p[9]);if(!text||![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)continue;out.push({text,confidence:Number.isFinite(conf)?conf:0,x0:x/scale,y0:y/scale,x1:(x+w)/scale,y1:(y+h)/scale,cx:(x+w/2)/scale,cy:(y+h/2)/scale})}return out}
 function tsvLines(data,scale=1){const map=new Map();for(const w of parseTSV(data,scale)){const key=[w.text,w.cy.toFixed(1)].join('|');let best=[...map.values()].find(g=>Math.abs(g.cy-w.cy)<Math.max(4,(w.y1-w.y0)*.75));if(!best){best={text:[],confidence:0,x0:w.x0,y0:w.y0,x1:w.x1,y1:w.y1,cy:w.cy};map.set(map.size,best)}best.text.push(w.text);best.confidence=Math.max(best.confidence,w.confidence);best.x0=Math.min(best.x0,w.x0);best.y0=Math.min(best.y0,w.y0);best.x1=Math.max(best.x1,w.x1);best.y1=Math.max(best.y1,w.y1)}return[...map.values()].map(g=>({...g,text:ocrClean(g.text.join(' '))})).sort((a,b)=>a.cy-b.cy)}
 async function recognizeLobby(canvas,mode='original',psm='6'){const w=await loadOCR();try{await w.setParameters({tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1',user_defined_dpi:'320',segment_penalty_garbage:0,segment_penalty_dict_nonword:0,language_model_penalty_non_dict_word:0,load_system_dawg:'0',load_freq_dawg:'0',load_unambig_dawg:'0',load_punc_dawg:'0',load_number_dawg:'0'})}catch(e){}return await w.recognize(preprocessLobby(canvas,mode),{}, {tsv:true,text:true})}
-function lobbyCardRects(index){const rows=index===0?[3,3,3]:[3,3,1],start=index===0?3:12,cols=[.006,.328,.650],ys=[.115,.405,.695],out=[];for(let r=0;r<3;r++)for(let c=0;c<rows[r];c++)out.push({slot:start+r*3+c,x:cols[c],y:ys[r],w:.300,h:.285,row:r,col:c});return out}
-function rowBand(card,i){const x=card.x+card.w*.145,y=card.y+card.h*.025,w=card.w*.64,h=card.h*.90,centers=[.12,.34,.56,.78];return{x,y:y+h*centers[i]-h*.075,w,h:h*.15}}
+function lobbyGeometry(img){
+ const W=img?.naturalWidth||img?.width||852,H=img?.naturalHeight||img?.height||460,ratio=W/H;
+ // PUBG MOBILE lobby captures used by this workflow come in two closely related crops.
+ // Interpolate by aspect ratio so the grid remains stable if the same screenshots are resized.
+ const t=clamp((1.85217-ratio)/(1.85217-1.80579),0,1);
+ const lerp=(a,b)=>a+(b-a)*t;
+ return {
+  cols:[lerp(.006,.008),lerp(.327,.320),lerp(.648,.633)],
+  ys:[lerp(.090,.105),lerp(.385,.408),lerp(.695,.712)],
+  w:lerp(.301,.292),h:lerp(.292,.277)
+ };
+}
+function lobbyCardRects(index,img){
+ const rows=index===0?[3,3,3]:[3,3,1],start=index===0?3:12,g=lobbyGeometry(img),out=[];
+ for(let r=0;r<3;r++)for(let c=0;c<rows[r];c++)out.push({slot:start+r*3+c,x:g.cols[c],y:g.ys[r],w:g.w,h:g.h,row:r,col:c});
+ return out;
+}
+function rowBand(card,i){
+ // Fallback only. Actual row positions are learned from the bright-text profile in detectPlayerBands().
+ const centers=[.16,.385,.61,.835],rh=.115;
+ const x=card.x+card.w*.135,w=card.w*.485,h=card.h*rh,y=card.y+card.h*(centers[i]-rh/2);
+ return{x,y,w,h};
+}
 function rowVariants(card,i){const b=rowBand(card,i),dy=card.h*.025;return[b,{...b,y:b.y-dy,h:b.h+dy*1.35},{...b,y:b.y+dy*.55,h:b.h+dy*1.35},{...b,y:b.y-dy*.65,h:b.h+dy*2.2}]}
 function detectPlayerBands(img,card){
- const W=Math.max(32,Math.round((img.naturalWidth||img.width)*card.w*.56)),H=Math.max(32,Math.round((img.naturalHeight||img.height)*card.h*.90));
- const x=Math.round((img.naturalWidth||img.width)*(card.x+card.w*.135)),y=Math.round((img.naturalHeight||img.height)*(card.y+card.h*.025));
- const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,x,y,W,H,0,0,W,H);
- const d=g.getImageData(0,0,W,H).data,profile=new Array(H).fill(0);
+ const IW=img.naturalWidth||img.width||1,IH=img.naturalHeight||img.height||1;
+ const x0=Math.round(IW*(card.x+card.w*.125)),x1=Math.round(IW*(card.x+card.w*.625));
+ const y0=Math.round(IH*(card.y+card.h*.008)),y1=Math.round(IH*(card.y+card.h*.995));
+ const W=Math.max(32,x1-x0),H=Math.max(32,y1-y0),c=document.createElement('canvas');c.width=W;c.height=H;
+ const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,x0,y0,W,H,0,0,W,H);
+ const d=g.getImageData(0,0,W,H).data,profile=new Float32Array(H);
  for(let yy=0;yy<H;yy++){let n=0;for(let xx=0;xx<W;xx++){const k=(yy*W+xx)*4,v=.299*d[k]+.587*d[k+1]+.114*d[k+2];if(v>145)n++;}profile[yy]=n;}
- const threshold=Math.max(3,Math.round(W*.018)),groups=[];let st=-1,last=-1;
- for(let yy=0;yy<H;yy++){if(profile[yy]>=threshold){if(st<0)st=yy;last=yy;}else if(st>=0){if(last-st+1>=2)groups.push({a:st,b:last});st=-1;last=-1;}}
+ // Smooth a little; PUBG's narrow font can break a single row into several bright runs.
+ const sm=new Float32Array(H);for(let y=0;y<H;y++)sm[y]=(profile[Math.max(0,y-1)]+profile[y]+profile[Math.min(H-1,y+1)])/3;
+ const threshold=Math.max(2,W*.018),groups=[];let st=-1,last=-1;
+ for(let yy=0;yy<H;yy++){
+   if(sm[yy]>=threshold){if(st<0)st=yy;last=yy;}
+   else if(st>=0){if(last-st+1>=2)groups.push({a:st,b:last});st=-1;last=-1;}
+ }
  if(st>=0&&last-st+1>=2)groups.push({a:st,b:last});
- const merged=[];for(const q of groups){const prev=merged.at(-1);if(prev&&q.a-prev.b<=3)prev.b=q.b;else merged.push({...q});}
- let scored=merged.map(q=>{let sum=0;for(let yy=q.a;yy<=q.b;yy++)sum+=profile[yy];return{...q,score:sum};}).filter(q=>q.b-q.a+1>=3);
- if(scored.length>4){scored.sort((a,b)=>b.score-a.score);const pick=scored.slice(0,Math.min(8,scored.length)).sort((a,b)=>a.a-b.a),chosen=[];for(let i=0;i<4;i++){const target=(i+.13)*H/4,pool=pick.filter(q=>!chosen.includes(q));pool.sort((a,b)=>(Math.abs((a.a+a.b)/2-target)-Math.abs((b.a+b.b)/2-target))||(b.score-a.score));if(pool[0])chosen.push(pool[0]);}scored=chosen.sort((a,b)=>a.a-b.a);}
- if(scored.length===4)return scored.map(q=>({x:card.x+card.w*.145,y:card.y+card.h*.025+Math.max(0,q.a-5)/(img.naturalHeight||img.height),w:card.w*.64,h:Math.min(card.h*.18,(q.b-q.a+1)/(img.naturalHeight||img.height)+10/(img.naturalHeight||img.height))}));
- return null;
+ const merged=[];for(const q of groups){const prev=merged.at(-1);if(prev&&q.a-prev.b<=4)prev.b=q.b;else merged.push({...q});}
+ let scored=merged.filter(q=>q.b-q.a+1>=3).map(q=>{let score=0;for(let y=q.a;y<=q.b;y++)score+=sm[y];return{...q,score}});
+ if(scored.length>4){
+   // Four player rows are vertically ordered. Prefer the four strongest groups while
+   // preserving the expected top-to-bottom spacing; this rejects tiny decorative text.
+   const candidates=scored.slice().sort((a,b)=>b.score-a.score).slice(0,8).sort((a,b)=>a.a-b.a);
+   const expected=[.16,.385,.61,.835].map(v=>v*H);
+   const chosen=[];
+   for(const target of expected){
+     const pool=candidates.filter(q=>!chosen.includes(q));
+     pool.sort((a,b)=>Math.abs((a.a+a.b)/2-target)-Math.abs((b.a+b.b)/2-target)||b.score-a.score);
+     if(pool[0])chosen.push(pool[0]);
+   }
+   scored=chosen.sort((a,b)=>a.a-b.a);
+ }
+ if(scored.length!==4)return null;
+ return scored.map(q=>{
+   const pad=Math.max(3,Math.round((q.b-q.a+1)*.35));
+   return {
+     x:card.x+card.w*.135,
+     y:card.y+(y0+q.a-pad)/IH,
+     w:card.w*.485,
+     h:Math.max(card.h*.065,(q.b-q.a+1+pad*2)/IH)
+   };
+ });
 }
 function effectiveRowBands(img,card){return detectPlayerBands(img,card)||[0,1,2,3].map(i=>rowBand(card,i));}
 function normalizeFirstPlayer(s){let t=normalizePlayer(s);t=t.replace(/^\s*(?:0?[3-9]|1[0-8])(?:\s*[,.:;|/\\-]\s*|\s+)/,'');return ocrClean(t);}
@@ -233,25 +282,184 @@ function playerShapeScore(t){
  const s=ocrClean(t);if(!s)return 0;let q=0;if(s.length>=3&&s.length<=20)q+=.25;if(/[A-Za-z0-9]/.test(s))q+=.25;if(!/Eliminations/i.test(s))q+=.25;if(!/^\d+$/.test(s))q+=.15;if(!/^[^A-Za-z0-9]+$/.test(s))q+=.10;return q;
 }
 function characterConsensusScore(text,candidates){const t=ocrClean(text);if(!t)return 0;let support=0,total=0;for(const c of candidates||[]){const u=ocrClean(c.text);if(!u)continue;total++;const sim=similarity(t,u);if(sim>=.90)support+=1;else if(sim>=.82)support+=.55;}return total?Math.min(1,support/Math.max(2,total*.55)):0;}
-function rankPlayerCandidates(candidates){const groups=[];for(const c of candidates||[]){let text=normalizePlayer(c.text);if(!text)continue;text=text.replace(/\s*\/\s*\d+.*$/,'').trim();if(text.length<2||text.length>28)continue;let g=groups.find(z=>similarity(z.text,text)>=.92||(similarity(z.text,text)>=.84&&Math.abs(z.text.length-text.length)<=1));if(!g){g={text,confidence:Number(c.confidence)||0,votes:0,sources:[],score:0};groups.push(g);}g.votes++;const cc=Number(c.confidence)||0;if(cc>g.confidence){g.confidence=cc;g.text=text;}g.sources.push(c.source||'ocr');}for(const g of groups){const shape=playerShapeScore(g.text),cons=characterConsensusScore(g.text,candidates),diversity=new Set(g.sources).size;g.quality=Math.min(1,(g.confidence/100)*.45+Math.min(1,g.votes/7)*.25+shape*.12+cons*.14+Math.min(1,diversity/5)*.04);g.consensus=cons;g.score=g.votes*2.35+(g.confidence/100)+shape+cons*1.7+Math.min(1,diversity/6);}return groups.sort((a,b)=>b.score-a.score);}
+function rankPlayerCandidates(candidates){
+ const groups=[];
+ const garbage=t=>{const x=String(t||'').replace(/\s+/g,'');if(!x)return true;if(/^[Il1|¦]{2,5}$/.test(x))return true;if(/^[_\-.:,|]{2,}$/.test(x))return true;return false;};
+ for(const c of candidates||[]){let text=normalizePlayer(c.text);if(!text||garbage(text))continue;text=text.replace(/\s*\/\s*\d+.*$/,'').trim();if(text.length<2||text.length>28)continue;let g=groups.find(z=>similarity(z.text,text)>=.92||(similarity(z.text,text)>=.84&&Math.abs(z.text.length-text.length)<=1));if(!g){g={text,confidence:Number(c.confidence)||0,votes:0,sources:[],score:0};groups.push(g);}g.votes++;const cc=Number(c.confidence)||0;if(cc>g.confidence){g.confidence=cc;g.text=text;}g.sources.push(c.source||'ocr');}
+ for(const g of groups){const shape=playerShapeScore(g.text),cons=characterConsensusScore(g.text,candidates),diversity=new Set(g.sources).size;g.quality=Math.min(1,(g.confidence/100)*.45+Math.min(1,g.votes/7)*.25+shape*.12+cons*.14+Math.min(1,diversity/5)*.04);g.consensus=cons;g.score=g.votes*2.35+(g.confidence/100)+shape+cons*1.7+Math.min(1,diversity/6);}
+ return groups.sort((a,b)=>b.score-a.score);
+}
 function addUniqueCandidate(arr,text,confidence,source,first=false){addCandidate(arr,first?normalizeFirstPlayer(text):normalizePlayer(text),confidence,source,first);}
 async function playerPass(img,card,i,mode,psm,tag,padX=.018,padY=.035,scale=12,bandOverride=null){const b=bandOverride||rowBand(card,i),px=card.w*padX,py=card.h*padY,c=cropCanvas(img,b.x-px,b.y-py,b.w+px*2,b.h+py*2,scale),r=await recognizeLobby(c,mode,psm),d=r?.data||r||{},out=[];let raw=normalizePlayer(d.text||'');if(i===0)raw=normalizeFirstPlayer(raw);addUniqueCandidate(out,raw,d.confidence,tag,i===0);for(const w of parseTSV(d,scale))addUniqueCandidate(out,i===0?normalizeFirstPlayer(w.text):w.text,w.confidence,tag+'-word',i===0);const words=parseTSV(d,scale).sort((a,z)=>a.x0-z.x0);if(words.length>1)addUniqueCandidate(out,i===0?normalizeFirstPlayer(words.map(z=>z.text).join(' ')):words.map(z=>z.text).join(' '),Math.max(...words.map(z=>z.confidence||0)),tag+'-joined',i===0);return out;}
 async function targetedPlayerCandidates(img,card,i,seed=[]){const candidates=[...(seed||[])],detected=effectiveRowBands(img,card),base=detected[i]||rowBand(card,i),dy=card.h*.028,bands=[base,{...base,y:base.y-dy,h:base.h+dy*1.35},{...base,y:base.y+dy*.55,h:base.h+dy*1.35},{...base,y:base.y-dy*.65,h:base.h+dy*2.2}];const primary=[['original','7','raw-line',.018,.035,12],['contrast','7','contrast-line',.018,.035,12],['localcontrast','7','local-contrast',.014,.030,12],['sharpen','7','sharpen-line',.018,.035,12],['blackhat','7','blackhat',.012,.030,12],['whitehat','7','whitehat',.012,.030,12],['red','7','red-channel',.014,.030,12],['green','7','green-channel',.014,.030,12],['blue','7','blue-channel',.014,.030,12],['soft','13','soft-raw',.012,.025,12],['original','8','single-word',.010,.035,14],['original','13','raw-line-13',.010,.035,14],['glyph','7','glyph-fusion',.010,.030,14],['glyphbin','13','glyph-binary',.010,.030,14],['ink','7','ink-separation',.010,.030,14],['otsu','13','otsu-raw',.012,.025,12],['adaptive','7','adaptive-line',.012,.030,12]];for(const v of primary){try{candidates.push(...await playerPass(img,card,i,...v,bands[0]));}catch(e){}}let ranked=rankPlayerCandidates(candidates);if(!ranked[0]||ranked[0].quality<.70||ranked[0].confidence<62){for(const bi of [1,2,3])for(const v of [primary[0],primary[1],primary[4],primary[5],primary[6],primary[8]]){try{candidates.push(...await playerPass(img,card,i,...v,bands[bi]));}catch(e){}}ranked=rankPlayerCandidates(candidates);}if(!ranked[0]||ranked[0].score<4.5||ranked[0].confidence<76){const hi=[['original','7','hi-original',.010,.050,16],['contrast','7','hi-contrast',.010,.050,16],['localcontrast','7','hi-local',.008,.045,16],['blackhat','7','hi-blackhat',.008,.045,16],['red','7','hi-red',.010,.045,16],['blue','7','hi-blue',.010,.045,16],['glyph','7','hi-glyph',.008,.045,18],['glyphbin','13','hi-glyphbin',.008,.040,18],['ink','7','hi-ink',.008,.045,18],['original','6','hi-psm6',.008,.050,16],['original','8','hi-psm8',.008,.050,16],['original','13','hi-psm13',.008,.050,18],['otsu','13','hi-otsu',.008,.040,16]];for(const v of hi){try{candidates.push(...await playerPass(img,card,i,...v,bands[0]));}catch(e){}}}return rankPlayerCandidates(candidates).slice(0,20);}
 function pairScore(a,b){const x=normKey(a),y=normKey(b);if(!x||!y)return 0;if(x===y)return 1;const d=lev(x,y),s=similarity(x,y);if(d<=1&&Math.max(x.length,y.length)>=4)return Math.max(s,.88);if(d<=2&&Math.max(x.length,y.length)>=7)return Math.max(s,.84);return s;}
 function bestAssignment(obs,can){if(obs.length!==4||can.length!==4)return{score:0,rows:[],verified:false};let best=null;function rec(i,used,total,map){if(i===4){if(!best||total>best.score)best={score:total,map:[...map]};return;}for(let j=0;j<4;j++)if(!used.has(j)){used.add(j);map.push({obs:i,can:j,score:pairScore(obs[i].name||obs[i].text,can[j])});rec(i+1,used,total+map.at(-1).score,map);map.pop();used.delete(j);}}rec(0,new Set(),0,[]);const rows=best.map(x=>({obs:obs[x.obs],canonical:can[x.can],score:x.score})).sort((a,b)=>(a.obs.cy||0)-(b.obs.cy||0));return{score:best.score,rows,verified:rows.every(r=>r.score>=.84)&&best.score>=3.45};}
-async function fastCardRead(img,card){const bands=effectiveRowBands(img,card),region={x:card.x+card.w*.145,y:card.y+card.h*.065,w:card.w*.64,h:card.h*.875},out=[0,1,2,3].map(i=>({name:'',confidence:0,quality:0,score:0,votes:0,sources:[],cy:(bands[i]||rowBand(card,i)).y+(bands[i]||rowBand(card,i)).h/2,candidates:[]}));for(const [mode,psm,tag] of [['original','4','fast-card-original'],['contrast','6','fast-card-contrast']]){try{const r=await recognizeLobby(cropCanvas(img,region.x,region.y,region.w,region.h,10),mode,psm),d=r?.data||r||{},lines=tsvLines(d,10);for(const ln of lines){const n=normalizePlayer(ln.text);if(!plausibleName(n))continue;const cy=region.y+ln.cy;let bi=-1,dist=1e9;for(let i=0;i<4;i++){const b=bands[i]||rowBand(card,i),dd=Math.abs(cy-(b.y+b.h/2));if(dd<dist){dist=dd;bi=i;}}if(bi>=0&&dist<card.h*.16)addUniqueCandidate(out[bi].candidates,bi===0?normalizeFirstPlayer(n):n,ln.confidence,tag,bi===0);}}catch(e){}}for(let i=0;i<4;i++){const ranked=rankPlayerCandidates(out[i].candidates);const top=ranked[0];if(top){Object.assign(out[i],top);out[i].name=top.text;out[i].candidates=ranked.slice(0,12);}}return out;}
-function fastReadStrong(rows){return rows.length===4&&rows.every(r=>r.name&&r.name.length>=2&&r.name.length<=28&&((r.confidence||0)>=52||(r.score||0)>=2.7));}
-async function readPlayers(img,card){const bands=effectiveRowBands(img,card);let rows=await fastCardRead(img,card);const known=(team(card.slot)?.players||[]).map(p=>ocrClean(typeof p==='string'?p:p?.name)).filter(Boolean);if(fastReadStrong(rows)){if(known.length===4){const a=bestAssignment(rows,known);if(a.verified||a.score>=3.15)return a.rows.map(r=>({name:r.canonical,raw:r.obs.name,confidence:r.obs.confidence,quality:r.obs.quality||0,score:r.obs.score||0,votes:r.obs.votes||0,sources:r.obs.sources||[],verified:r.score>=.84,matched:true,matchScore:r.score,cy:r.obs.cy,candidates:r.obs.candidates||[]}));}else if(rows.every(r=>(r.confidence||0)>=55))return rows;}const out=[];for(let i=0;i<4;i++){const c=await targetedPlayerCandidates(img,card,i,rows[i]?.candidates||[]),top=c[0]||{text:'',confidence:0,quality:0,score:0,votes:0,sources:[]};out.push({name:top.text||'',raw:top.text||'',confidence:top.confidence||0,quality:top.quality||0,score:top.score||0,votes:top.votes||0,sources:top.sources||[],verified:false,matched:false,cy:bands[i].y+bands[i].h/2,candidates:c});}try{const region={x:card.x+card.w*.145,y:card.y+card.h*.065,w:card.w*.64,h:card.h*.875};for(const [mode,psm,tag] of [['original','4','card-lines'],['contrast','6','card-contrast'],['localcontrast','6','card-local'],['blackhat','11','card-blackhat'],['sharpen','11','card-sharpen'],['red','11','card-red'],['blue','11','card-blue'],['otsu','11','card-otsu']]){const r=await recognizeLobby(cropCanvas(img,region.x,region.y,region.w,region.h,10),mode,psm),d=r?.data||r||{},lines=tsvLines(d,10);for(const ln of lines){const n=normalizePlayer(ln.text);if(!plausibleName(n))continue;const cy=region.y+ln.cy;let best=0,dist=1e9;for(let i=0;i<4;i++){const b=bands[i]||rowBand(card,i),dd=Math.abs(cy-(b.y+b.h/2));if(dd<dist){dist=dd;best=i;}}if(dist<card.h*.12)addUniqueCandidate(out[best].candidates,best===0?normalizeFirstPlayer(n):n,ln.confidence,tag,best===0);}}}catch(e){}for(let i=0;i<4;i++){const ranked=rankPlayerCandidates(out[i].candidates||[]),top=ranked[0]||{text:'',confidence:0,quality:0,score:0,votes:0,sources:[]};Object.assign(out[i],{name:top.text||'',raw:top.text||'',confidence:top.confidence||0,quality:top.quality||0,score:top.score||0,votes:top.votes||0,sources:top.sources||[],candidates:ranked.slice(0,20)});}if(known.length===4){const a=bestAssignment(out,known);if(a.rows.length===4)for(const r of a.rows){r.obs.name=r.canonical;r.obs.matched=true;r.obs.verified=r.score>=.84;r.obs.matchScore=r.score;}}return out;}
+function tsvCyToImageNorm(ln,cropRect,scale,img){const H=img.naturalHeight||img.height||1;return cropRect.y+(Number(ln.cy)||0)/(H*scale)}
 
-function commitRosterRows(rows,verified=false){for(const r of rows||[]){const t=team(r.slot);if(!t)continue;t.players=[0,1,2,3].map(j=>({name:ocrClean(r.players?.[j]?.name||r.players?.[j]||''),verified:!!verified,source:'lobby_multi_pass'}));t.rosterVerified=!!verified;t.rosterSource='lobby_multi_pass';t.rosterUpdated=new Date().toISOString()}persist()}
+function playerIsGarbage(name){
+ const x=ocrClean(name).replace(/\s+/g,'');
+ if(!x)return true;
+ if(/^[Il1|¦]{2,8}$/.test(x))return true;
+ if(/^[\W_]{2,}$/.test(x))return true;
+ if(/^(?:eliminations?|kills?|player|team|slot)$/i.test(x))return true;
+ return false;
+}
+function cleanPlayerCandidateText(text,first=false){
+ let t=cleanOCRText(text).replace(/\s*\/\s*\d+\s*Eliminations?.*$/i,'').replace(/\s*Eliminations?.*$/i,'').trim();
+ t=first?normalizeFirstPlayer(t):normalizePlayer(t);
+ t=t.replace(/^[|¦]+|[|¦]+$/g,'').replace(/^[-_:.,]+|[-_:.,]+$/g,'').trim();
+ return playerIsGarbage(t)?'':t;
+}
+async function rowOCRPass(img,card,i,band,mode,psm,scale,tag){
+ const IW=img.naturalWidth||img.width||1,IH=img.naturalHeight||img.height||1;
+ const padY=Math.max(card.h*.010, (band.h||card.h*.08)*.35), padX=card.w*.018;
+ const x=band.x-padX,y=band.y-padY,w=band.w+padX*2,h=band.h+padY*2;
+ const c=cropCanvas(img,x,y,w,h,scale),r=await recognizeLobby(c,mode,psm),d=r?.data||r||{},out=[];
+ const raw=cleanPlayerCandidateText(d.text||'',i===0);if(raw)addCandidate(out,raw,d.confidence,tag,i===0);
+ for(const w of parseTSV(d,scale)){
+   const n=cleanPlayerCandidateText(w.text,i===0);
+   if(n)addCandidate(out,n,w.confidence,tag+'-word',i===0);
+ }
+ const words=parseTSV(d,scale).filter(w=>w.text).sort((a,b)=>a.x0-b.x0);
+ if(words.length>1){
+   const joined=cleanPlayerCandidateText(words.map(w=>w.text).join(' '),i===0);
+   if(joined)addCandidate(out,joined,Math.max(...words.map(w=>Number(w.confidence)||0)),tag+'-joined',i===0);
+ }
+ return out;
+}
+function teamPrefixHint(slot){
+ const nm=ocrClean(team(slot)?.name||'').toLowerCase();
+ const token=(nm.match(/[a-z0-9]{2,7}/i)||[''])[0].toLowerCase();
+ if(!token||/^(team|club|esports|gaming|ksa|mena)$/i.test(token))return '';
+ return token;
+}
+function chooseBestRosterAware(slot,ranked){
+ if(!ranked?.length)return null;
+ const hint=teamPrefixHint(slot);
+ if(!hint)return ranked[0];
+ const hk=normKey(hint);
+ let best=ranked[0],bestScore=-1;
+ for(const c of ranked){
+   const ck=normKey(c.text);
+   let s=c.score||0;
+   if(ck.startsWith(hk))s+=1.15;
+   else if(hk.length>=3&&ck.includes(hk))s+=.35;
+   if(s>bestScore){bestScore=s;best=c;}
+ }
+ return best;
+}
+function distinctPlayerRows(rows){
+ const used=new Set();
+ return rows.map(r=>{
+   const pool=r.candidates||[];
+   let pick=pool.find(c=>{const k=normKey(c.text);return k&&!used.has(k);});
+   if(!pick)pick=pool[0];
+   if(pick){r.name=pick.text;r.confidence=pick.confidence;r.quality=pick.quality;r.score=pick.score;r.votes=pick.votes;r.sources=pick.sources;r.raw=pick.text;used.add(normKey(pick.text));}
+   return r;
+ });
+}
+async function fastCardRead(img,card){
+ const bands=effectiveRowBands(img,card)||[0,1,2,3].map(i=>rowBand(card,i));
+ const rows=[0,1,2,3].map(i=>({name:'',confidence:0,quality:0,score:0,votes:0,sources:[],cy:(bands[i]||rowBand(card,i)).y+(bands[i]||rowBand(card,i)).h/2,candidates:[]}));
+ for(let i=0;i<4;i++){
+   const b=bands[i]||rowBand(card,i);
+   try{
+     // One small, clean PSM-7 read is the speed path. It is much more stable than
+     // asking Tesseract to discover all four rows in a busy full card.
+     rows[i].candidates.push(...await rowOCRPass(img,card,i,b,'original','7',8,'fast-row-original'));
+   }catch(e){}
+   const ranked=rankPlayerCandidates(rows[i].candidates);
+   const top=chooseBestRosterAware(card.slot,ranked);
+   if(top)Object.assign(rows[i],{name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,votes:top.votes,sources:top.sources,candidates:ranked.slice(0,20)});
+ }
+ return distinctPlayerRows(rows);
+}
+
+function fastReadStrong(rows){return rows.length===4&&rows.every(r=>r.name&&r.name.length>=2&&r.name.length<=28&&((r.confidence||0)>=52||(r.score||0)>=2.7));}
+async function cardWidePlayerCandidates(img,card){
+ const bands=effectiveRowBands(img,card);const out=[0,1,2,3].map(i=>({name:'',confidence:0,quality:0,score:0,votes:0,sources:[],cy:(bands[i]||rowBand(card,i)).y+(bands[i]||rowBand(card,i)).h/2,candidates:[]}));const full={x:card.x,y:card.y,w:card.w,h:card.h};
+ const passes=[['original','6','legacy-full-psm6',7],['contrast','6','legacy-full-contrast6',7],['original','11','legacy-full-psm11',7],['original','12','legacy-full-psm12',7],['blackhat','11','legacy-full-blackhat11',7],['red','11','legacy-full-red11',7],['blue','11','legacy-full-blue11',7],['sharpen','11','legacy-full-sharpen11',7]];
+ for(const [mode,psm,tag,scale] of passes){try{const d=await recognizeLobby(cropCanvas(img,full.x,full.y,full.w,full.h,scale),mode,psm),data=d?.data||d||{},lines=tsvLines(data,scale);for(const ln of lines){let n=normalizePlayer(ln.text);if(!plausibleName(n)||/^[Il1|¦]{2,5}$/.test(n.replace(/\s+/g,'')))continue;n=normalizeFirstPlayer(n);const cy=tsvCyToImageNorm(ln,full,scale,img);let best=-1,dist=1e9;for(let i=0;i<4;i++){const b=bands[i]||rowBand(card,i),dd=Math.abs(cy-(b.y+b.h/2));if(dd<dist){dist=dd;best=i;}}if(best>=0&&dist<card.h*.085)addCandidate(out[best].candidates,n,ln.confidence,tag,best===0);}}catch(e){}}
+ for(let i=0;i<4;i++){const ranked=rankPlayerCandidates(out[i].candidates),top=ranked[0];if(top)Object.assign(out[i],{name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,votes:top.votes,sources:top.sources,candidates:ranked.slice(0,20)});}return out;
+}
+async function readPlayers(img,card){
+ const bands=effectiveRowBands(img,card)||[0,1,2,3].map(i=>rowBand(card,i));
+ const known=(team(card.slot)?.players||[]).map(p=>ocrClean(typeof p==='string'?p:p?.name)).filter(Boolean);
+ let rows=await fastCardRead(img,card);
+ const weak=r=>!r?.name||r.name.length<2||playerIsGarbage(r.name)||(r.quality||0)<.60||(r.confidence||0)<48;
+ // Rescue only questionable rows. This keeps the legacy quality where it matters
+ // without forcing every player through the 15+ pass legacy loop.
+ for(let i=0;i<4;i++)if(weak(rows[i])){
+   const b=bands[i]||rowBand(card,i);
+   const extra=[['otsu','7','rescue-otsu',9],['contrast','7','rescue-contrast',9],['glyph','7','rescue-glyph',10]];
+   for(const [mode,psm,tag,scale] of extra){
+     try{rows[i].candidates.push(...await rowOCRPass(img,card,i,b,mode,psm,scale,tag));}
+     catch(e){}
+     const ranked=rankPlayerCandidates(rows[i].candidates);
+     const top=chooseBestRosterAware(card.slot,ranked);
+     if(top)Object.assign(rows[i],{name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,votes:top.votes,sources:top.sources,candidates:ranked.slice(0,20)});
+     if(!weak(rows[i]))break;
+   }
+ }
+ // Legacy card rescue: only if at least one row is still weak.
+ if(rows.some(weak)){
+   try{
+     const region={x:card.x,y:card.y,w:card.w,h:card.h};
+     for(const [mode,psm,tag,scale] of [['original','6','legacy-card-original',7],['contrast','6','legacy-card-contrast',7],['blackhat','11','legacy-card-blackhat',8],['whitehat','11','legacy-card-whitehat',8]]){
+       const d=await recognizeLobby(cropCanvas(img,region.x,region.y,region.w,region.h,scale),mode,psm),data=d?.data||d||{},lines=tsvLines(data,scale);
+       for(const ln of lines){
+         const raw=cleanPlayerCandidateText(ln.text,false);if(!raw)continue;
+         const cy=tsvCyToImageNorm(ln,region,scale,img);
+         let best=-1,dist=1e9;
+         for(let i=0;i<4;i++){const b=bands[i]||rowBand(card,i),dd=Math.abs(cy-(b.y+b.h/2));if(dd<dist){dist=dd;best=i;}}
+         if(best>=0&&dist<card.h*.09){
+           const n=best===0?normalizeFirstPlayer(raw):raw;
+           if(!playerIsGarbage(n))rows[best].candidates.push({text:n,confidence:ln.confidence,source:tag});
+         }
+       }
+       for(let i=0;i<4;i++){
+         const ranked=rankPlayerCandidates(rows[i].candidates||[]),top=chooseBestRosterAware(card.slot,ranked);
+         if(top)Object.assign(rows[i],{name:top.text,confidence:top.confidence,quality:top.quality,score:top.score,votes:top.votes,sources:top.sources,candidates:ranked.slice(0,20)});
+       }
+       if(!rows.some(weak))break;
+     }
+   }catch(e){}
+ }
+ // If a saved roster exists, use it only when the observed candidates genuinely match it.
+ if(known.length===4){
+   const a=bestAssignment(rows,known);
+   if(a.rows.length===4&&a.score>=2.75){
+     rows=a.rows.map(r=>({...r.obs,name:r.canonical,raw:r.obs.name,matched:true,verified:r.score>=.84,matchScore:r.score}));
+   }
+ }
+ rows=distinctPlayerRows(rows);
+ return rows.map((r,i)=>({...r,slot:card.slot,cy:r.cy||(bands[i]||rowBand(card,i)).y+(bands[i]||rowBand(card,i)).h/2}));
+}
+
+function commitRosterRows(rows,verified=false){
+ for(const r of rows||[]){
+   const t=team(r.slot);if(!t)continue;
+   const next=[0,1,2,3].map(j=>{
+     const incoming=cleanPlayerCandidateText(r.players?.[j]?.name||r.players?.[j]||'',j===0);
+     const existingRaw=ocrClean(t.players?.[j]?.name||'');
+     const existing=playerIsGarbage(existingRaw)?'':existingRaw;
+     const name=incoming||existing;
+     return {name,verified:!!verified||!!(incoming&&existing&&similarity(incoming,existing)>=.96),source:incoming?'lobby_calibrated_ocr':(existing?'preserved_valid_roster':'')};
+   });
+   t.players=next;t.rosterVerified=next.every(p=>p.name);t.rosterSource='lobby_calibrated_ocr';t.rosterUpdated=new Date().toISOString();
+ }
+ persist();
+}
 async function runRosterOCR(files){
  if(!files?.length||ocrBusy)return;if(files.length!==2)return toast('Please select the two lobby screenshots: Slots 03–11 and Slots 12–18');
  ocrBusy=true;$('rosterReview').innerHTML='<div class="empty">Preparing multi-pass OCR…</div>';setProgress('rosterProgress',2);
- try{await loadOCR();const results=[];let done=0;for(let fi=0;fi<files.length;fi++){const img=await imageFromFile(files[fi]);const rects=lobbyCardRects(fi);for(let j=0;j<rects.length;j++){const r=rects[j];setEngine('loading',`Reading Slot ${String(r.slot).padStart(2,'0')} · ${j+1}/${rects.length}`);const players=await readPlayers(img,r);results.push({slot:r.slot,players,file:files[fi].name,sourceImage:fi,card:j+1,row:r.row+1,column:r.col+1,evidence:cropCanvas(img,r.x,r.y,r.w,r.h,3).toDataURL('image/jpeg',.92)});done++;setProgress('rosterProgress',Math.round((done/16)*94)+4)}}
-  if(results.length!==16)throw Error(`Expected 16 lobby slots, detected ${results.length}`);ocrReview={type:'roster',rows:results};commitRosterRows(results,false);renderRosterReview();renderTeams();renderHome();setEngine('ready','OCR Engine · Multi-Pass Ready');setProgress('rosterProgress',100);$('rosterStatus').textContent='Multi-pass OCR complete. Strongest candidates were saved automatically; review only the rare difficult characters.';go('roster')
- }catch(e){console.error('Lobby OCR V56',e);setProgress('rosterProgress',0);setEngine('bad','OCR Engine · Error');$('rosterStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span><br><span class="muted">The engine did not overwrite existing roster data.</span>`;$('rosterReview').innerHTML='<div class="notice">No roster data was changed. Try again with the original PUBG MOBILE screenshots.</div>'}finally{ocrBusy=false}
+ try{await loadOCR();const results=[];let done=0;for(let fi=0;fi<files.length;fi++){const img=await imageFromFile(files[fi]);const rects=lobbyCardRects(fi,img);for(let j=0;j<rects.length;j++){const r=rects[j];setEngine('loading',`Reading Slot ${String(r.slot).padStart(2,'0')} · ${j+1}/${rects.length}`);const players=await readPlayers(img,r);results.push({slot:r.slot,players,file:files[fi].name,sourceImage:fi,card:j+1,row:r.row+1,column:r.col+1,evidence:cropCanvas(img,r.x,r.y,r.w,r.h,3).toDataURL('image/jpeg',.92)});done++;setProgress('rosterProgress',Math.round((done/16)*94)+4)}}
+  if(results.length!==16)throw Error(`Expected 16 lobby slots, detected ${results.length}`);ocrReview={type:'roster',rows:results};commitRosterRows(results,false);renderRosterReview();renderTeams();renderHome();setEngine('ready','OCR Engine · Multi-Pass Ready');setProgress('rosterProgress',100);$('rosterStatus').textContent='Calibrated OCR complete. Clear rows were read in the fast path; only difficult rows received rescue passes. Valid names were saved automatically.';go('roster')
+ }catch(e){console.error('Lobby OCR V59',e);setProgress('rosterProgress',0);setEngine('bad','OCR Engine · Error');$('rosterStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span><br><span class="muted">The engine did not overwrite existing roster data.</span>`;$('rosterReview').innerHTML='<div class="notice">No roster data was changed. Try again with the original PUBG MOBILE screenshots.</div>'}finally{ocrBusy=false}
 }
-function renderRosterReview(){const rows=ocrReview?.rows||[];$('rosterReview').innerHTML=`<div class="notice">Detected 16 slots. Team names are not OCR-read; each slot is bound to its saved Team List entry. Player names remain editable before saving.</div><div class="scroll" style="margin-top:10px"><table class="table"><tr><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th></tr>${rows.map((r,i)=>`<tr><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(team(r.slot)?.name||'Team not set')}</td>${r.players.map((p,j)=>{const n=typeof p==='string'?p:(p?.name||'');return `<td><input id="rr-${i}-${j}" value="${esc(n)}" placeholder="Player ${j+1}"></td>`}).join('')}</tr>`).join('')}</table></div>`}
+function renderRosterReview(){
+ const rows=ocrReview?.rows||[],issues=rows.reduce((n,r)=>n+r.players.filter(p=>{const x=typeof p==='string'?p:(p?.name||'');return !x||playerIsGarbage(x)}).length,0);
+ $('rosterReview').innerHTML=`<div class="notice">Detected <b>16 slots / 64 player positions</b>. Team names are never OCR-read. The reader is calibrated to the actual PUBG MOBILE 3×3 / 3×3 / 1 lobby layout. <b>${issues?issues+' positions need review':'All positions contain usable names'}</b>.</div><div class="scroll" style="margin-top:10px"><table class="table"><tr><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th></tr>${rows.map((r,i)=>`<tr><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(team(r.slot)?.name||'Team not set')}</td>${r.players.map((p,j)=>{const n=typeof p==='string'?p:(p?.name||'');const bad=!n||playerIsGarbage(n);return `<td><input class="${bad?'badInput':''}" id="rr-${i}-${j}" value="${esc(n)}" placeholder="Player ${j+1}"></td>`}).join('')}</tr>`).join('')}</table></div>`}
 function saveRosterReview(){if(!ocrReview?.rows)return toast('Run Slot OCR first');for(let i=0;i<ocrReview.rows.length;i++){const r=ocrReview.rows[i];const t=team(r.slot);if(!t)continue;t.players=[0,1,2,3].map(j=>({name:$("rr-"+i+"-"+j)?.value.trim()||'',verified:true,source:'manual_roster_review'}));}persist();renderTeams();renderHome();toast('Roster saved automatically for all 16 slots');}
 function fillMissingRoster(){if(!ocrReview?.rows)return;const map=new Map(state.teams.map(t=>[t.slot,t]));ocrReview.rows.forEach((r,i)=>{const t=map.get(r.slot);if(!t)return;for(let j=0;j<4;j++)if(!r.players[j])r.players[j]=t.players[j]?.name||''});renderRosterReview()}
 
