@@ -82,11 +82,53 @@ function normalizeState(x){const s=newState(x?.tournament||'');Object.assign(s,x
 function normalizeMatch(m){m=m||{};return {id:String(m.id||uid()),name:String(m.name||'Match'),gameId:String(m.gameId||''),createdAt:m.createdAt||Date.now(),approved:!!m.approved,results:Array.isArray(m.results)?m.results.map(r=>({slot:Number(r.slot),team:String(r.team||''),placement:Number(r.placement)||0,kills:Math.max(0,Number(r.kills)||0),players:Array.isArray(r.players)?r.players.map(p=>({name:String(p.name||''),kills:Math.max(0,Number(p.kills)||0),slot:Number(p.slot)||0})):[]})):[],review:Array.isArray(m.review)?m.review:[],rosterSnapshot:m.rosterSnapshot||{},mediaIds:Array.isArray(m.mediaIds)?m.mediaIds:[],mediaNames:Array.isArray(m.mediaNames)?m.mediaNames:[],resultOcrVersion:String(m.resultOcrVersion||'')}}
 function loadAll(){try{let map=JSON.parse(localStorage.getItem(APP.storage)||'{}');if(!Object.keys(map).length){for(const k of APP.legacy){try{const old=JSON.parse(localStorage.getItem(k)||'null');if(!old)continue;if(old.teams){const migrated=normalizeState(old);const id=uid();map[id]={id,name:migrated.tournament||'Imported Tournament',updatedAt:Date.now(),state:migrated};break}if(old.workspaces&&typeof old.workspaces==='object'){map=old.workspaces;break}const looksLikeWorkspaceMap=Object.values(old).some(v=>v&&typeof v==='object'&&v.state&&Array.isArray(v.state.teams));if(looksLikeWorkspaceMap){map=old;break}}catch{}}}workspaceId=localStorage.getItem(APP.current)||Object.keys(map)[0]||null;if(!workspaceId){workspaceId=uid();const migrated=newState('New Tournament');map[workspaceId]={id:workspaceId,name:'New Tournament',updatedAt:Date.now(),state:migrated};localStorage.setItem(APP.storage,JSON.stringify(map));localStorage.setItem(APP.current,workspaceId);state=migrated;return true}if(!map[workspaceId])workspaceId=Object.keys(map)[0];state=normalizeState(map[workspaceId]?.state);localStorage.setItem(APP.storage,JSON.stringify(map));localStorage.setItem(APP.current,workspaceId);return true}catch(e){workspaceId=uid();state=newState('New Tournament');return false}}
 function allWorkspaces(){try{return JSON.parse(localStorage.getItem(APP.storage)||'{}')}catch{return {}}}
-function persist(){state.updatedAt=Date.now();const map=allWorkspaces();map[workspaceId]={id:workspaceId,name:state.tournament||'Untitled',updatedAt:state.updatedAt,state};localStorage.setItem(APP.storage,JSON.stringify(map));localStorage.setItem(APP.current,workspaceId);saveStateDB(state)}
+function persist(){
+  state.updatedAt=Date.now();
+  const map=allWorkspaces();map[workspaceId]={id:workspaceId,name:state.tournament||'Untitled',updatedAt:state.updatedAt,state};
+  try{localStorage.setItem(APP.storage,JSON.stringify(map));localStorage.setItem(APP.current,workspaceId);}catch(e){console.warn('localStorage quota/permission issue',e);toast('Local storage is full or blocked — data is being kept in the backup database.');}
+  saveStateDB(state);
+}
 function toast(msg){const e=$('toast');e.textContent=msg;e.style.display='block';clearTimeout(window._toast);window._toast=setTimeout(()=>e.style.display='none',2400)}
+function setProgress(id,value){
+  const e=$(id); if(!e)return;
+  const v=Math.max(0,Math.min(100,Number(value)||0));
+  e.style.width=v+'%'; e.setAttribute('aria-valuenow',String(v));
+}
+function setIntegratedOCRBadge(type,text){
+  const e=$('integratedOCRBadge'); if(!e)return;
+  const cls=type==='ok'?'ok':type==='bad'?'bad':'warn'; e.className='pill '+cls; e.textContent=text;
+}
+function mediaDB(){return new Promise((resolve,reject)=>{
+  if(!('indexedDB' in window))return reject(Error('IndexedDB is unavailable in this browser'));
+  const req=indexedDB.open(APP.mediaDB,1);
+  req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(APP.mediaStore))db.createObjectStore(APP.mediaStore,{keyPath:'id'});};
+  req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error||Error('IndexedDB open failed'));
+})}
+async function mediaPut(file){
+  if(!file)throw Error('No media file supplied');
+  const id=uid(); const db=await mediaDB();
+  await new Promise((resolve,reject)=>{const tx=db.transaction(APP.mediaStore,'readwrite');tx.objectStore(APP.mediaStore).put({id,name:file.name||'screenshot',type:file.type||'image/jpeg',size:file.size||0,createdAt:Date.now(),blob:file});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('Media save failed'));});
+  db.close(); return id;
+}
+async function mediaGet(id){
+  if(!id)return null; const db=await mediaDB();
+  const rec=await new Promise((resolve,reject)=>{const tx=db.transaction(APP.mediaStore,'readonly');const r=tx.objectStore(APP.mediaStore).get(id);r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error);});
+  db.close(); if(!rec)return null;
+  try{return new File([rec.blob],rec.name||'screenshot',{type:rec.type||rec.blob?.type||'image/jpeg',lastModified:rec.createdAt||Date.now()});}catch{return rec.blob||null;}
+}
+async function loadMatchMedia(m){
+  const out=[]; for(const id of (m?.mediaIds||[])){try{const f=await mediaGet(id);if(f)out.push(f);}catch(e){console.warn('media read',id,e)}} return out;
+}
+function canonicalMatch(raw,m){
+  const hit=resultRosterMatch(raw,m); if(!hit)return null;
+  return {slot:hit.slot,team:hit.team,player:hit.name,playerIndex:hit.playerIndex,score:hit.score};
+}
+function download(name,data,type='text/plain'){
+  const blob=data instanceof Blob?data:new Blob([String(data)],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+}
 function runtimeHealthCheck(){
   const required=['loadOCR','runRosterOCR','runResultOCR','readResultImage','readResultCard','mergeResultRows','resultRosterSnapshot','resultCandidateText','resultPlayerScore','applyOCRToMatch','createMatch','attachMatchResultImages','mediaPut','mediaGet','points','validateMatch'];
-  const missing=required.filter(n=>typeof window[n]!=='function');
+  const missing=required.filter(n=>typeof window[n]!=='function' && typeof globalThis[n]!=='function');
   if(missing.length){console.error('Runtime health check failed:',missing);setEngine('bad','Program integrity · missing: '+missing.join(', '));return false}
   return true;
 }
@@ -151,7 +193,7 @@ function renderMatchEditor(){
 function manualPlacement(id,slot,v){const m=state.matches.find(x=>x.id===id);if(!m)return;const r=ensureResult(m,slot);r.placement=Math.max(0,Math.floor(Number(v)||0));m.approved=false;m.review=[];persist();renderMatchEditor();}
 function manualPlayerKill(id,slot,index,v){const m=state.matches.find(x=>x.id===id);if(!m)return;const r=ensureResult(m,slot);while(r.players.length<4)r.players.push({name:m.rosterSnapshot?.[slot]?.players?.[r.players.length]||team(slot)?.players?.[r.players.length]?.name||'',kills:0,slot,playerIndex:r.players.length});r.players[index].kills=Math.max(0,Math.floor(Number(v)||0));r.kills=r.players.reduce((s,p)=>s+Number(p.kills||0),0);r.total=points(r);m.approved=false;m.review=[];persist();renderMatchEditor();}
 function recalculateMatch(id){const m=state.matches.find(x=>x.id===id);if(!m)return;for(const r of m.results){r.kills=(r.players||[]).reduce((s,p)=>s+Number(p.kills||0),0);r.pp=state.rules.place[r.placement]||0;r.total=points(r);r.team=team(r.slot)?.name||r.team}m.approved=false;persist();renderMatchEditor();toast('Match scores recalculated');}
-async function attachMatchResultImages(id){const m=state.matches.find(x=>x.id===id),input=$('matchAttachFiles');if(!m||!input?.files?.length)return toast('Choose result screenshots first');const files=[...input.files];if(files.length>8)return toast('Maximum 8 result screenshots per match');try{for(const f of files){const mediaId=await mediaPut(f);m.mediaIds.push(mediaId);m.mediaNames.push(f.name)}m.approved=false;m.resultOcrVersion='65.0';persist();pendingResultFiles=files;renderFileList('resultFileList',files);renderMatches();go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}catch(e){toast('Could not save result screenshots: '+(e.message||e))}}
+async function attachMatchResultImages(id){const m=state.matches.find(x=>x.id===id),input=$('matchAttachFiles');if(!m||!input?.files?.length)return toast('Choose result screenshots first');const files=[...input.files];if(files.length>8)return toast('Maximum 8 result screenshots per match');try{const ids=new Set(m.mediaIds||[]),names=new Set(m.mediaNames||[]);for(const f of files){const mediaId=await mediaPut(f);ids.add(mediaId);names.add(f.name)}m.mediaIds=[...ids];m.mediaNames=[...names];m.approved=false;m.resultOcrVersion='66.0';persist();pendingResultFiles=files;renderFileList('resultFileList',files);renderMatches();go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}catch(e){toast('Could not save result screenshots: '+(e.message||e))}}
 
 function imageFromFile(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error('Could not open '+file.name))};im.src=u})}
 function crop(img,x,y,w,h,scale=4){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;const c=document.createElement('canvas');c.width=Math.max(2,Math.round(w*scale));c.height=Math.max(2,Math.round(h*scale));const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,x*W,y*H,w*W,h*H,0,0,c.width,c.height);return c}
@@ -252,7 +294,7 @@ async function recognizeLobby(canvas,mode='original',psm='6'){const w=await load
    Design: exact slot crop -> name-column consensus -> targeted row rescue
    -> roster-aware assignment -> immutable slot identity.
    ========================================================= */
-const OCR60={version:'65.0',slotCenters:[.085,.315,.545,.775],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
+const OCR60={version:'66.0',slotCenters:[.085,.315,.545,.775],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
 const RESULT_ROW_CENTERS=[.085,.315,.545,.775];
 function lobbyGeometry(img){
  const W=img?.naturalWidth||img?.width||852,H=img?.naturalHeight||img?.height||460;
@@ -537,6 +579,25 @@ async function runRosterOCR(files){
    if(ocrReview?.rows?.length)renderRosterReview();else $('rosterReview').innerHTML='<div class="notice">No roster data was changed.</div>';
  }finally{ocrBusy=false}
 }
+
+
+/* Core render lifecycle restored and hardened — v65.1 */
+
+/* Missing analytics/health renderers restored — v65.2 */
+function renderOverall(){const approved=state.matches.filter(m=>m.approved);const agg=new Map(state.teams.map(t=>[t.slot,{slot:t.slot,name:t.name,logo:t.logo,points:0,kills:0,matches:0,wins:0,avg:0}]));approved.forEach(m=>m.results.forEach(r=>{const a=agg.get(r.slot);if(!a)return;a.points+=points(r);a.kills+=Number(r.kills)||0;a.matches++;if(Number(r.placement)===1)a.wins++}));let rows=[...agg.values()].filter(x=>x.name).sort((a,b)=>b.points-a.points||b.kills-a.kills||a.slot-b.slot);const max=Math.max(1,...rows.map(x=>x.points));$('overallContent').innerHTML=`<div class="card"><div class="kpis"><div class="kpi"><b>${approved.length}</b><span>Approved matches</span></div><div class="kpi"><b>${rows[0]?.name||'—'}</b><span>Current leader</span></div><div class="kpi"><b>${rows[0]?.points||0}</b><span>Leader points</span></div><div class="kpi"><b>${rows.reduce((s,x)=>s+x.kills,0)}</b><span>Total kills</span></div></div></div><div class="card"><div class="chart">${rows.map((x,i)=>`<div class="barRow"><div><b>#${i+1}</b> ${esc(x.name)}</div><div class="barTrack"><div class="barFill" style="width:${Math.max(2,Math.round(x.points/max*100))}%"></div></div><b>${x.points}</b></div>`).join('')||'<div class="empty">No approved results yet.</div>'}</div></div><div class="card scroll"><table class="table"><tr><th>#</th><th>Team</th><th>Points</th><th>Kills</th><th>WWCD</th><th>Matches</th><th>Avg</th></tr>${rows.map((x,i)=>`<tr><td class="rank">${i+1}</td><td>${esc(x.name)}</td><td><b>${x.points}</b></td><td>${x.kills}</td><td>${x.wins}</td><td>${x.matches}</td><td>${x.matches?(x.points/x.matches).toFixed(1):'0.0'}</td></tr>`).join('')}</table></div>`}
+
+function renderAnalytics(){const approved=state.matches.filter(m=>m.approved);const opts=state.teams.filter(t=>t.name).map(t=>`<option value="${t.slot}">${String(t.slot).padStart(2,'0')} · ${esc(t.name)}</option>`).join('');$('analyticsA').innerHTML=opts||'<option value="">—</option>';$('analyticsB').innerHTML=opts||'<option value="">—</option>';if(state.teams.filter(t=>t.name).length>1){if(!$('analyticsA').value)$('analyticsA').value=state.teams.find(t=>t.name)?.slot;$('analyticsB').value=$('analyticsB').value||state.teams.find(t=>t.name&&t.slot!=Number($('analyticsA').value))?.slot||''}const a=Number($('analyticsA').value),b=Number($('analyticsB').value),win=$('analyticsWindow').value;const ms=win==='all'?approved:approved.slice(-Number(win));const calc=slot=>{let pts=0,k=0,avg=0,arr=[];for(const m of ms){const r=m.results.find(x=>x.slot===slot);if(r){pts+=points(r);k+=Number(r.kills)||0;avg+=Number(r.placement)||0;arr.push(points(r))}}return {pts,k,avg:arr.length?avg/arr.length:0,arr}};const A=calc(a),B=calc(b);$('analyticsContent').innerHTML=`<div class="compareGrid"><div class="card"><div class="title">${esc(team(a)?.name||'Team A')}</div><div class="kpis"><div class="kpi"><b>${A.pts}</b><span>Points</span></div><div class="kpi"><b>${A.k}</b><span>Kills</span></div><div class="kpi"><b>${A.avg?A.avg.toFixed(1):'—'}</b><span>Avg placement</span></div><div class="kpi"><b>${A.arr.length?Math.max(...A.arr):0}</b><span>Best match points</span></div></div></div><div class="card"><div class="title">${esc(team(b)?.name||'Team B')}</div><div class="kpis"><div class="kpi"><b>${B.pts}</b><span>Points</span></div><div class="kpi"><b>${B.k}</b><span>Kills</span></div><div class="kpi"><b>${B.avg?B.avg.toFixed(1):'—'}</b><span>Avg placement</span></div><div class="kpi"><b>${B.arr.length?Math.max(...B.arr):0}</b><span>Best match points</span></div></div></div></div><div class="card"><div class="title">Recent scoring</div>${A.arr.map((v,i)=>`<div class="healthRow"><span>Match ${i+1}</span><span><b>${v}</b> vs ${B.arr[i]??'—'}</span></div>`).join('')||'<div class="empty">No approved matches in the selected window.</div>'}</div>`}
+function renderStats(){const map=new Map();for(const m of state.matches.filter(m=>m.approved))for(const r of m.results)for(const p of r.players||[]){const key=norm(p.name)||`slot-${r.slot}`;let x=map.get(key);if(!x)x={name:p.name,slot:r.slot,team:team(r.slot)?.name||r.team,kills:0,matches:0};x.kills+=Number(p.kills)||0;x.matches++;map.set(key,x)}const rows=[...map.values()].sort((a,b)=>b.kills-a.kills);$('playerStats').innerHTML=rows.length?`<div class="scroll"><table class="table"><tr><th>#</th><th>Player</th><th>Team</th><th>Slot</th><th>Kills</th><th>Matches</th></tr>${rows.map((x,i)=>`<tr><td>${i+1}</td><td><b>${esc(x.name)}</b></td><td>${esc(x.team)}</td><td>${x.slot}</td><td><b>${x.kills}</b></td><td>${x.matches}</td></tr>`).join('')}</table></div>`:'<div class="empty">No approved player-level OCR/manual evidence yet.</div>'}
+function renderRules(){const a=state.rules.place;$('rulesGrid').innerHTML=SLOTS.slice(0,16).map((_,i)=>{const p=i+1;return `<div><label>${p}${p===1?'st':p===2?'nd':p===3?'rd':'th'}</label><input data-place="${p}" type="number" min="0" value="${a[p]||0}"></div>`}).join('');$('killPoint').value=state.rules.kill}
+function runHealth(){const required=['normalizeFirstPlayer','playerIsGarbage','playerShapeScore','teamPrefixHint','addRosterAwareCandidate','bestAssignment','cleanPlayerCandidateText','readPlayers','readResultImage','readResultCard','renderStats','renderRules','renderAll','setProgress','mediaPut','mediaGet','loadMatchMedia','canonicalMatch','download'];const missing=required.filter(k=>typeof window[k]!=='function');const issues=healthIssues().concat(missing.map(k=>'Missing runtime function: '+k));$('diagnostics').innerHTML=`<div class="healthRow"><span>Storage</span><span class="ok">Local + IndexedDB</span></div><div class="healthRow"><span>OCR</span><span class="${ocrWorker?'ok':'warn'}">${ocrWorker?'Ready':'Not initialized'}</span></div><div class="healthRow"><span>Teams</span><span>${state.teams.filter(t=>t.name).length}/16</span></div><div class="healthRow"><span>Full rosters</span><span>${state.teams.filter(t=>t.players.every(p=>p.name)).length}/16</span></div><div class="healthRow"><span>Approved matches</span><span>${state.matches.filter(m=>m.approved).length}/${state.matches.length}</span></div>${issues.map(x=>`<div class="healthRow"><span>${esc(x)}</span><span class="bad">Issue</span></div>`).join('')||'<div class="notice" style="margin-top:8px">No critical integrity issues.</div>'}`}
+
+function renderWorkflow(){const e=$('workflow');if(!e)return;const teams=state.teams.filter(t=>t.name.trim()).length,rosters=state.teams.filter(t=>t.players.every(p=>p.name.trim())).length,open=state.matches.filter(m=>!m.approved).length,approved=state.matches.filter(m=>m.approved).length;const steps=[['Teams',teams===16,()=>go('teams'),`${teams}/16 configured`],['Rosters',rosters===16,()=>go('roster'),`${rosters}/16 complete`],['Matches',state.matches.length>0,()=>go('matches'),`${state.matches.length} created`],['Results',approved>0,()=>go('ocr'),`${approved} approved`],['Leaderboard',approved>0,()=>go('overall'),'Ready for ranking']];e.innerHTML=`<div class="grid3">${steps.map((x,i)=>`<button class="ghost" onclick="(${x[2].toString()})()" style="text-align:left"><span class="pill ${x[1]?'ok':'warn'}">${x[1]?'READY':'NEXT'}</span><br><b>${i+1}. ${x[0]}</b><div class="muted">${x[3]}</div></button>`).join('')}</div>${open?`<div class="notice" style="margin-top:10px">You have <b>${open}</b> match(es) waiting for result review/approval.</div>`:''}`}
+function renderTournamentSelector(){const e=$('currentTournamentSelect');if(!e)return;const items=Object.values(allWorkspaces()).sort((a,b)=>b.updatedAt-a.updatedAt);e.innerHTML=items.map(w=>`<option value="${esc(w.id)}" ${w.id===workspaceId?'selected':''}>${esc(w.name||'Untitled')}</option>`).join('');e.title=state.tournament||'Current tournament'}
+function renderOpsReadiness(){const box=$('opsReadiness'),badge=$('readinessScore');if(!box||!badge)return;const teams=state.teams.filter(t=>t.name.trim()).length;const rosters=state.teams.filter(t=>t.players.every(p=>p.name.trim())).length;const matches=state.matches.length;const approved=state.matches.filter(m=>m.approved).length;const resultReady=state.matches.filter(m=>m.results?.length===16).length;const parts=[teams===16,rosters===16,matches>0,resultReady===matches&&matches>0,approved>0];const score=Math.round(parts.filter(Boolean).length/parts.length*100);badge.textContent=`${score}% Ready`;badge.className='pill '+(score===100?'ok':score>=60?'warn':'bad');const next=teams<16?['Teams',`Complete ${16-teams} missing team names`,()=>go('teams')]:rosters<16?['Rosters',`Complete ${16-rosters} missing rosters`,()=>go('roster')]:matches===0?['Match Center','Create your first match',()=>go('matches')]:resultReady<Math.max(1,matches)?['Results',`Analyze ${matches-resultReady} match result set(s)`,()=>go('ocr')]:approved<matches?['Approval',`Review and approve ${matches-approved} match(es)`,()=>go('ocr')]:['Leaderboard','Tournament is fully operational',()=>go('overall')];box.innerHTML=`<div class="stepGrid">${[['Teams',teams,16],['Rosters',rosters,16],['Matches',matches,''],['Results',resultReady,matches||''],['Approved',approved,matches||'']].map(x=>{const ok=x[2]===''?x[1]>0:x[1]===x[2];return `<div class="step"><b><span class="readyDot ${ok?'ok':''}"></span>${x[0]}</b><span class="muted">${x[1]}${x[2]!==''?'/'+x[2]:''} complete</span></div>`}).join('')}</div><div class="notice" style="margin-top:10px"><b>Next best action:</b> ${esc(next[0])} — ${esc(next[1])} <button class="blue small" style="float:right" onclick="(${next[2].toString()})()">Open</button></div>`}
+function renderAll(){renderTournamentSelector();renderHome();renderOpsReadiness();renderTeams();renderMatches();renderOCRSelectors();renderOverall();renderAnalytics();renderStats();renderRules();runHealth()}
+function renderFileList(id,files){const e=$(id);if(!e)return;e.innerHTML=(files||[]).map((f,i)=>`<span class="fileChip">${i+1}. ${esc(f.name||'image')}</span>`).join('')}
+function renderIntegratedReview(){const rows=ocrReview?.rows||[],root=$('teamLobbyReview');if(!root)return;if(!rows.length){root.innerHTML='<div class="empty">No lobby analysis yet.</div>';return}root.innerHTML='<div class="scroll"><table class="table"><tr><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Quality</th></tr>'+rows.map((r,i)=>{const t=team(r.slot);return '<tr><td class="rank">'+String(r.slot).padStart(2,'0')+'</td><td>'+esc(t?.name||'—')+'</td>'+r.players.map((p,j)=>{const weak=precisionWeak(p),cand=(p.candidates||[]).slice(0,4).map(c=>c.text).join(' / ');return '<td><input class="'+(weak?'badInput':'')+'" id="ir-'+i+'-'+j+'" value="'+esc(p.name||'')+'" title="Candidates: '+esc(cand)+'" placeholder="P'+(j+1)+'"></td>'}).join('')+'<td><span class="pill '+(r.players.every(p=>!precisionWeak(p))?'ok':'warn')+'">'+r.players.filter(p=>!precisionWeak(p)).length+'/4</span></td></tr>'}).join('')+'</table></div>'}
+
 function renderRosterReview(){
  const rows=ocrReview?.rows||[];
  const issues=rows.reduce((n,r)=>n+r.players.filter(p=>precisionWeak(p)).length,0);
@@ -569,8 +630,11 @@ function renderOCRSelectors(){const sel=$('ocrMatch');if(!sel)return;sel.innerHT
 
 function resultGridCards(img,imageIndex=0,totalImages=1){
   const g=lobbyGeometry(img); const out=[];
-  const count=totalImages>=2?(imageIndex===0?9:7):16;
-  for(let k=0;k<count;k++){const r=Math.floor(k/3),c=k%3;out.push({x:g.cols[c],y:g.ys[r],w:g.w,h:g.h,row:r,col:c});}
+  // PUBG's supplied result sheets are two layouts: 03–11 (9 cards) and 12–18 (7 cards).
+  // When only one screenshot is supplied, use the same aspect-ratio discriminator as the Lobby OCR.
+  const count=totalImages>=2?(imageIndex===0?9:7):(g && ((img?.naturalWidth||img?.width||0)/(img?.naturalHeight||img?.height||1)>1.825)?9:7);
+  const start=(totalImages>=2?(imageIndex===0?3:12):(count===9?3:12));
+  for(let k=0;k<count;k++){const r=Math.floor(k/3),c=k%3;out.push({slot:start+k,x:g.cols[c],y:g.ys[r],w:g.w,h:g.h,row:r,col:c});}
   return out;
 }
 function resultRowBand(card,i){
@@ -640,7 +704,7 @@ async function readResultCard(img,card,m){
         let bestI=-1,dist=99,local=line.cy/(whole.height||1);
         for(let i=0;i<4;i++){const dd=Math.abs(local-OCR60.slotCenters[i]);if(dd<dist){dist=dd;bestI=i}}
         if(bestI<0||dist>.115)continue;
-        const raw=normalizeOcrCandidate(line.text,bestI===0),hit=raw&&resultRosterMatch(raw,m);if(!hit)continue;
+        const raw=normalizeOcrCandidate(bestI===0?normalizeFirstPlayer(line.text):line.text,bestI===0),hit=raw&&resultRosterMatch(raw,m);if(!hit)continue;
         const row=rows[bestI];row.candidates.push({name:hit.name,slot:hit.slot,playerIndex:hit.playerIndex,score:hit.score,source:tag,confidence:line.confidence});
         if(hit.score>row.score||(hit.score===row.score&&line.confidence>row.confidence))Object.assign(row,{name:hit.name,canonical:hit.name,slot:hit.slot,playerIndex:hit.playerIndex,score:hit.score,confidence:line.confidence});
       }
@@ -755,14 +819,17 @@ async function runResultOCR(files,matchId=null,storedMediaIds=[]){
   $('ocrReview').innerHTML='<div class="empty">Reading each result card and linking its players to the saved Slot roster…</div>';
   try{
     await loadOCR();const savedIds=await ensureResultMedia(m,files,storedMediaIds.length?storedMediaIds:m.mediaIds||[]);const detected=[];
-    for(let i=0;i<files.length;i++){
-      const img=await imageFromFile(files[i]);assertImageReady(img);
-      const rows=await readResultImage(img,m,i,files.length);const explicitPlace=extractExplicitPlacements(await (async()=>{try{const rr=await recognizeLobby(cropCanvasNorm(img,0,0,1,1,4),'original','11');return parseTSV(rr?.data||rr,4)}catch(e){return []}})());if(explicitPlace&&rows.length===1)rows[0].placement=explicitPlace;detected.push(...rows);setProgress('resultProgress',Math.round((i+1)/files.length*88)+5);
+    const ordered=[];
+    for(const file of files){const img=await imageFromFile(file);assertImageReady(img);ordered.push({file,img,ratio:(img.naturalWidth||img.width||1)/(img.naturalHeight||img.height||1)});}
+    ordered.sort((a,b)=>b.ratio-a.ratio);
+    for(let i=0;i<ordered.length;i++){
+      const {file,img}=ordered[i];
+      const rows=await readResultImage(img,m,i,ordered.length);const explicitPlace=extractExplicitPlacements(await (async()=>{try{const rr=await recognizeLobby(cropCanvasNorm(img,0,0,1,1,4),'original','11');return parseTSV(rr?.data||rr,4)}catch(e){return []}})());if(explicitPlace&&rows.length===1)rows[0].placement=explicitPlace;detected.push(...rows);setProgress('resultProgress',Math.round((i+1)/files.length*88)+5);
     }
     const merged=mergeResultRows(detected,m),complete=buildCompleteResultRows(m,merged);
     // Placement is intentionally never guessed from the fixed Slot number. If the screenshot
     // does not contain a readable placement field, it remains blank for manual confirmation.
-    ocrReview={type:'result',matchId:id,rows:complete,detected:merged,files:[...files],mediaIds:savedIds.slice(),sourceFiles:files.map(f=>f.name),version:'65.0',placementNeedsManual:complete.filter(r=>!r.placement).length};
+    ocrReview={type:'result',matchId:id,rows:complete,detected:merged,files:[...files],mediaIds:savedIds.slice(),sourceFiles:files.map(f=>f.name),version:'66.0',placementNeedsManual:complete.filter(r=>!r.placement).length};
     renderOCRReview();setProgress('resultProgress',100);
     const linked=complete.filter(r=>r.detected).length,killReview=complete.reduce((n,r)=>n+r.players.filter(p=>p.needsKillReview).length,0);
     $('resultStatus').innerHTML=`Linked <b>${linked}/16</b> teams from the screenshots · <b>${killReview}</b> kill field(s) need review · enter/confirm placements, then Apply.`;
