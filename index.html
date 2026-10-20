@@ -338,7 +338,7 @@ async function recognizeLobby(canvas,mode='original',psm='6'){const w=await load
    Design: exact slot crop -> name-column consensus -> targeted row rescue
    -> roster-aware assignment -> immutable slot identity.
    ========================================================= */
-const OCR60={version:'71',slotCenters:[.085,.315,.545,.775],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
+const OCR60={version:'72',slotCenters:[.085,.315,.545,.775],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
 const RESULT_ROW_CENTERS=[.085,.315,.545,.775];
 function lobbyGeometry(img){
  const W=img?.naturalWidth||img?.width||852,H=img?.naturalHeight||img?.height||460;
@@ -805,18 +805,89 @@ async function readResultRank(img,card,ocrData=null){
 function resultRosterCandidates(raw,m){
   const text=resultCandidateText(raw);if(!text)return [];
   const variants=[text,text.replace(/^\d{1,2}\s+/,'')].filter(Boolean);
-  const map=new Map();for(const variant of variants)for(const x of resultRoster(m)){const score=resultPlayerScore(variant,x.name);const key=x.slot+':'+x.playerIndex;const old=map.get(key);if(!old||score>old.score)map.set(key,{...x,score})}
-  return [...map.values()].filter(x=>x.score>=.42).sort((a,b)=>b.score-a.score).slice(0,10);
+  const map=new Map();
+  for(const variant of variants){
+    for(const x of resultRoster(m)){
+      const score=resultPlayerScore(variant,x.name);
+      const key=x.slot+':'+x.playerIndex;
+      const old=map.get(key);
+      if(!old||score>old.score)map.set(key,{...x,score});
+    }
+  }
+  return [...map.values()].filter(x=>x.score>=.40).sort((a,b)=>b.score-a.score).slice(0,16);
 }
 function assignResultCardRoster(rows,m){
-  const lists=rows.map(r=>resultRosterCandidates(r.rawName||r.name,m));let best={score:-Infinity,assign:[]};
-  function dfs(i,used,total,chosen){if(i>=rows.length){if(total>best.score)best={score:total,assign:chosen.slice()};return}const opts=lists[i]||[];
-    if(!opts.length){dfs(i+1,used,total,chosen.concat(null));return}
-    for(const o of opts){const key=o.slot+':'+o.playerIndex;if(used.has(key))continue;const u=new Set(used);u.add(key);dfs(i+1,u,total+o.score,chosen.concat(o))}
+  /*
+   * TEAM-FIRST assignment.
+   *
+   * The previous global search compared all four OCR names against every player in
+   * the whole lobby. With stylized names this could split one result card across
+   * several teams, after which mergeResultRows discarded most of the card.
+   *
+   * A PUBG result card always contains exactly one team. We therefore:
+   *   1) score every roster team against all four OCR rows;
+   *   2) choose the single best team using the aggregate of the best UNIQUE players;
+   *   3) assign the four rows only inside that team;
+   *   4) keep a raw OCR name when no canonical player can be proven.
+   */
+  const roster=resultRoster(m);
+  const teams=new Map();
+  for(const x of roster){if(!teams.has(x.slot))teams.set(x.slot,[]);teams.get(x.slot).push(x)}
+  const rowLists=rows.map(r=>resultRosterCandidates(r.rawName||r.name,m));
+  let bestTeam=null,bestScore=-Infinity;
+  for(const [slot,players] of teams){
+    const perRow=rows.map((r,i)=>{
+      const list=rowLists[i]||[];
+      const hits=list.filter(x=>x.slot===slot).sort((a,b)=>b.score-a.score);
+      return hits[0]||null;
+    });
+    // Assignment score rewards independent matches and strongly rewards 3/4 or 4/4 rows.
+    let total=0,matched=0;
+    for(const h of perRow){if(h){total+=h.score;matched++}}
+    const uniqueNames=new Set(perRow.filter(Boolean).map(x=>x.playerIndex));
+    if(uniqueNames.size!==matched)continue;
+    const aggregate=total + matched*0.22 + (matched===4?0.75:matched===3?0.30:0);
+    if(aggregate>bestScore){bestScore=aggregate;bestTeam={slot,players,perRow,matched}}
+  }
+  if(!bestTeam){
+    rows.forEach((r,i)=>{r.name=r.name||'';r.canonical='';r.slot=0;r.playerIndex=i;r.score=0;r.matchScore=0});
+    return rows;
+  }
+
+  // Exhaustive unique assignment within the selected team. This is tiny (4! max).
+  const opts=rows.map((r,i)=>{
+    const direct=(rowLists[i]||[]).filter(x=>x.slot===bestTeam.slot).sort((a,b)=>b.score-a.score);
+    return direct.length?direct:bestTeam.players.map(x=>({...x,score:resultPlayerScore(r.rawName||r.name,x.name)})).sort((a,b)=>b.score-a.score).slice(0,4);
+  });
+  let best={score:-Infinity,assign:[]};
+  function dfs(i,used,total,chosen){
+    if(i>=rows.length){
+      if(total>best.score)best={score:total,assign:chosen.slice()};
+      return;
+    }
+    const candidates=(opts[i]||[]).slice(0,4);
+    for(const o of candidates){
+      const key=o.playerIndex;
+      if(used.has(key))continue;
+      const u=new Set(used);u.add(key);
+      dfs(i+1,u,total+Math.max(0,Number(o.score)||0),chosen.concat(o));
+    }
+    // Allow an unresolved row without forcing a wrong player.
     dfs(i+1,used,total,chosen.concat(null));
   }
   dfs(0,new Set(),0,[]);
-  rows.forEach((r,i)=>{const hit=best.assign[i];if(hit&&hit.score>=.62){r.name=hit.name;r.canonical=hit.name;r.slot=hit.slot;r.playerIndex=hit.playerIndex;r.score=hit.score;r.matchScore=hit.score}else{r.name='';r.canonical='';r.slot=0;r.playerIndex=i;r.score=0}});return rows;
+
+  rows.forEach((r,i)=>{
+    const hit=best.assign[i];
+    if(hit&&hit.score>=.48){
+      r.name=hit.name;r.canonical=hit.name;r.slot=hit.slot;r.playerIndex=hit.playerIndex;
+      r.score=hit.score;r.matchScore=hit.score;
+    }else{
+      // Keep the OCR text visible for review. Do NOT turn it into a fake canonical name.
+      r.canonical='';r.slot=bestTeam.slot;r.playerIndex=i;r.score=0;r.matchScore=0;
+    }
+  });
+  return rows;
 }
 async function readResultCard(img,card,m,totalImages=1){
   // STABLE RESULT ENGINE 71
@@ -952,10 +1023,10 @@ function resolveResultImageRanges(groups,total){
   });
 }
 async function readResultRecapCard(img,card,m,rank){
-  const centers=[.22,.40,.60,.80],rows=[0,1,2,3].map(i=>({index:i,name:'',canonical:'',rawName:'',slot:0,playerIndex:i,kills:null,score:0,confidence:0,candidates:[],rank}));
+  const centers=rank===1?[.08,.35,.59,.83]:[.22,.40,.60,.80],rows=[0,1,2,3].map(i=>({index:i,name:'',canonical:'',rawName:'',slot:0,playerIndex:i,kills:null,score:0,confidence:0,candidates:[],rank}));
   const whole=cropCanvasNorm(img,card.x,card.y,card.w,card.h,4);let lines=[];
-  for(const [mode,psm] of [['original','6'],['contrast','6']]){try{const rr=await recognizeLobby(whole,mode,psm),d=rr?.data||rr||{};const u=lineGroupsFromTSV(d,4).filter(x=>/eliminations?/i.test(x.text));if(u.length>lines.length)lines=u;if(lines.length>=4)break}catch(e){}}
-  for(const line of lines){let best=0,dist=Infinity;for(let i=0;i<4;i++){const d=Math.abs(line.cy/(whole.height||1)-centers[i]);if(d<dist){dist=d;best=i}}if(dist>.20)continue;let text=line.text;let name=normalizeOcrCandidate(text,best===0);rows[best].rawName=name;rows[best].kills=extractResultKill(text);rows[best].confidence=line.confidence;rows[best].candidates=[{text:name,confidence:line.confidence,source:'top-recap'}]}
+  for(const [mode,psm] of [['original','6'],['contrast','6']]){try{const rr=await recognizeLobby(whole,mode,psm),d=rr?.data||rr||{};const all=lineGroupsFromTSV(d,4);const u=all.filter(x=>/eliminat/i.test(x.text));const use=u.length>=2?u:all.filter(x=>x.text&&x.text.length>2);if(use.length>lines.length)lines=use;if(lines.length>=4)break}catch(e){}}
+  for(const line of lines){let best=0,dist=Infinity;for(let i=0;i<4;i++){const d=Math.abs(line.cy/(whole.height||1)-centers[i]);if(d<dist){dist=d;best=i}}if(dist>.20)continue;let text=String(line.text||'');let name=normalizeOcrCandidate(text,best===0);rows[best].rawName=name;rows[best].kills=extractResultKill(text);rows[best].confidence=line.confidence;rows[best].candidates=[{text:name,confidence:line.confidence,source:'top-recap'}]}
   assignResultCardRoster(rows,m);return {rank,rows,quality:{players:rows.filter(r=>r.name).length,kills:rows.filter(r=>r.kills!=null).length},imageIndex:0,recap:true};
 }
 async function readResultImage(img,m,imageIndex=0,totalImages=1){
@@ -963,7 +1034,7 @@ async function readResultImage(img,m,imageIndex=0,totalImages=1){
   let recap=[];
   // The left side of the first PUBG result screenshot is the permanent Top-1 / Top-2 recap.
   // Those two teams are real placements and must be included in the final match board.
-  if(imageIndex===0){
+  {
     const recapCards=[{x:.100,y:.158,w:.415,h:.315},{x:.100,y:.473,w:.415,h:.325}];
     for(let i=0;i<recapCards.length;i++){try{const r=await readResultRecapCard(img,recapCards[i],m,i+1);if(r.rows?.some(p=>p.name))recap.push({...r,imageIndex,cardIndex:i,recap:true})}catch(e){console.warn('Result recap',i,e)}}
   }
@@ -972,7 +1043,7 @@ async function readResultImage(img,m,imageIndex=0,totalImages=1){
 }
 function mergeResultRows(cardResults,m){
   const byRank=new Map();
-  for(const group of cardResults||[]){const rank=Number(group.rank)||0;if(rank<3||rank>16)continue;const players=(group.rows||[]).filter(p=>p.name&&p.slot>=3);if(!players.length)continue;
+  for(const group of cardResults||[]){const rank=Number(group.rank)||0;if(rank<1||rank>16)continue;const players=(group.rows||[]).filter(p=>p.name&&p.slot>=3&&Number(p.score||0)>=.48&&Number.isInteger(Number(p.playerIndex))&&Number(p.playerIndex)>=0&&Number(p.playerIndex)<4);if(!players.length)continue;
     const bySlot=new Map();for(const p of players){const a=bySlot.get(p.slot)||[];a.push(p);bySlot.set(p.slot,a)}let chosen=null,best=-1;
     for(const [slot,ps] of bySlot){const unique=new Set(ps.map(p=>p.playerIndex));const score=unique.size*10+ps.reduce((s,p)=>s+(Number(p.score)||0),0)+ps.filter(p=>p.kills!=null).length*2;if(score>best){best=score;chosen={slot,ps}}}
     if(!chosen)continue;const slot=chosen.slot,t=team(slot),snap=m.rosterSnapshot?.[slot],current=byRank.get(rank);const quality=(group.quality?.players||0)*10+(group.quality?.kills||0)*3+best;
@@ -1025,12 +1096,12 @@ async function runResultOCR(files,matchId=null,storedMediaIds=[]){
     const foundRanks=[...new Set([...recapGroups,...groups].map(x=>Number(x.rank)).filter(x=>x>=1&&x<=16))].sort((a,b)=>a-b);
     const missingRanks=Array.from({length:16},(_,i)=>i+1).filter(r=>!foundRanks.includes(r));
     const linked=complete.filter(r=>r.detected).length;
-    ocrReview={type:'result',matchId:id,rows:complete,detected:merged,files:[...files],mediaIds:savedIds.slice(),sourceFiles:files.map(f=>f.name),version:'71',foundRanks,missingRanks,placementNeedsManual:complete.filter(r=>!r.placement).length,sequence:ordered.map(g=>({imageIndex:g.imageIndex,start:g.rangeStart,source:files[g.imageIndex]?.name||''}))};
+    ocrReview={type:'result',matchId:id,rows:complete,detected:merged,files:[...files],mediaIds:savedIds.slice(),sourceFiles:files.map(f=>f.name),version:'72',foundRanks,missingRanks,placementNeedsManual:complete.filter(r=>!r.placement).length,sequence:ordered.map(g=>({imageIndex:g.imageIndex,start:g.rangeStart,source:files[g.imageIndex]?.name||''}))};
     renderOCRReview();setProgress('resultProgress',100);
     const killReview=complete.reduce((n,r)=>n+r.players.filter(p=>p.needsKillReview).length,0);
     $('resultStatus').innerHTML=`Detected <b>${foundRanks.length}/16</b> placements · linked <b>${linked}/16</b> teams · <b>${killReview}</b> kill field(s) need review. ${missingRanks.length?`Missing placements: <b>${missingRanks.join(', ')}</b>.`:'All placements 1–16 detected.'}`;
-    setEngine('ready','Result OCR 71 · Stable Whole-Card Engine · Rank + Kill Precision');
-  }catch(e){console.error('Result OCR 71 · Stable Whole-Card Engine',e);setProgress('resultProgress',0);$('resultStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span>`;$('ocrReview').innerHTML='<div class="notice">No match data was changed. Check the screenshots and try again.</div>';setEngine('bad','Result OCR · Error')}
+    setEngine('ready','Result OCR 72 · Stable Whole-Card + Team Assignment Engine · Rank + Kill Precision');
+  }catch(e){console.error('Result OCR 72 · Stable Whole-Card Engine',e);setProgress('resultProgress',0);$('resultStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span>`;$('ocrReview').innerHTML='<div class="notice">No match data was changed. Check the screenshots and try again.</div>';setEngine('bad','Result OCR · Error')}
   finally{ocrBusy=false}
 }
 function resultRowUpdate(i,field,value){if(!ocrReview?.rows?.[i])return;const r=ocrReview.rows[i];if(field==='placement')r.placement=Math.max(0,Math.floor(Number(value)||0));if(field==='kill'){const [pi]=String(value).split(':').map(Number);return}r.kills=r.players.reduce((s,p)=>s+Math.max(0,Number(p.kills)||0),0);renderOCRReview()}
@@ -1041,7 +1112,7 @@ async function openResultEvidence(matchId,index){const m=state.matches.find(x=>x
 function renderOCRReview(){
   if(!ocrReview)return;const rows=ocrReview.rows||[],linked=rows.filter(r=>r.detected).length,needs=rows.reduce((n,r)=>n+(!r.placement?1:0)+r.players.filter(p=>p.needsKillReview).length,0),total=rows.reduce((s,r)=>s+((state.rules.place[Number(r.placement)]||0)+Number(r.kills||0)*Number(state.rules.kill||0)),0);
   const ev=(ocrReview.mediaIds||[]).map((id,i)=>`<button class="ghost small" onclick="openResultEvidence('${ocrReview.matchId}',${i})">Image ${i+1}</button>`).join('');const seq=(ocrReview.sequence||[]).map(x=>`<span class="pill">${esc(x.source||('Image '+(x.imageIndex+1)))} → ${x.start?`Ranks ${x.start}–${Math.min(16,x.start+2)}`:'Rank unresolved'}</span>`).join(' ');
-  $('ocrReview').innerHTML=`<div class="notice"><b>Result OCR 71 · Stable Whole-Card Engine</b> · ${linked}/16 teams linked to the Lobby roster · ${needs?`<span class="warn">${needs} field(s) need review.</span>`:'<span class="ok">All OCR fields are filled.</span>'}<br><span class="muted">Placement 1–2 come from the left recap on the first screenshot; placements 3–16 come from the three ranked cards on the right. Player kills are read from the text beside each player and linked to the saved Lobby roster. Names are canonical Lobby names. 1 Kill = ${state.rules.kill} point.</span></div><div class="row" style="margin:8px 0;gap:6px;flex-wrap:wrap">${ev||'<span class="muted">No stored evidence.</span>'}</div><div class="notice" style="margin-bottom:8px"><b>Detected screenshot sequence:</b> ${seq||'Not resolved — placement review required.'}</div><div class="scroll"><table class="table"><tr><th>Place</th><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Kills</th><th>PP</th><th>Total</th></tr>${rows.map((r,i)=>{const pp=state.rules.place[Number(r.placement)]||0,totalRow=pp+Number(r.kills||0)*Number(state.rules.kill||0);return `<tr><td><input class="center ${!r.placement?'badInput':''}" style="width:60px" type="number" min="1" max="16" value="${r.placement||''}" onchange="setReviewPlacement(${i},this.value)"></td><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(r.team)}</td>${r.players.map((p,j)=>`<td><div><b>${esc(p.name||'—')}</b><input class="center ${p.needsKillReview?'badInput':''}" style="width:58px;margin-top:4px" type="number" min="0" value="${Number(p.kills)||0}" onchange="setReviewKill(${i},${j},this.value)"></div></td>`).join('')}<td><b>${r.kills||0}</b></td><td>${pp}</td><td><b>${totalRow}</b></td></tr>`}).join('')}</table></div><div class="row" style="margin-top:10px"><div class="notice"><b>Current Match Score:</b> ${total} points · Kill ${state.rules.kill} point · ${rows.filter(r=>r.placement).length}/16 placements entered.</div><button class="primary" onclick="applyOCRToMatch()">✓ Apply Results</button><button class="ghost" onclick="go('matches')">Manual Match Entry</button></div>`;
+  $('ocrReview').innerHTML=`<div class="notice"><b>Result OCR 72 · Stable Whole-Card Engine</b> · ${linked}/16 teams linked to the Lobby roster · ${needs?`<span class="warn">${needs} field(s) need review.</span>`:'<span class="ok">All OCR fields are filled.</span>'}<br><span class="muted">Placement 1–2 come from the left recap on the first screenshot; placements 3–16 come from the three ranked cards on the right. Player kills are read from the text beside each player and linked to the saved Lobby roster. Names are canonical Lobby names. 1 Kill = ${state.rules.kill} point.</span></div><div class="row" style="margin:8px 0;gap:6px;flex-wrap:wrap">${ev||'<span class="muted">No stored evidence.</span>'}</div><div class="notice" style="margin-bottom:8px"><b>Detected screenshot sequence:</b> ${seq||'Not resolved — placement review required.'}</div><div class="scroll"><table class="table"><tr><th>Place</th><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Kills</th><th>PP</th><th>Total</th></tr>${rows.map((r,i)=>{const pp=state.rules.place[Number(r.placement)]||0,totalRow=pp+Number(r.kills||0)*Number(state.rules.kill||0);return `<tr><td><input class="center ${!r.placement?'badInput':''}" style="width:60px" type="number" min="1" max="16" value="${r.placement||''}" onchange="setReviewPlacement(${i},this.value)"></td><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(r.team)}</td>${r.players.map((p,j)=>`<td><div><b>${esc(p.name||'—')}</b><input class="center ${p.needsKillReview?'badInput':''}" style="width:58px;margin-top:4px" type="number" min="0" value="${Number(p.kills)||0}" onchange="setReviewKill(${i},${j},this.value)"></div></td>`).join('')}<td><b>${r.kills||0}</b></td><td>${pp}</td><td><b>${totalRow}</b></td></tr>`}).join('')}</table></div><div class="row" style="margin-top:10px"><div class="notice"><b>Current Match Score:</b> ${total} points · Kill ${state.rules.kill} point · ${rows.filter(r=>r.placement).length}/16 placements entered.</div><button class="primary" onclick="applyOCRToMatch()">✓ Apply Results</button><button class="ghost" onclick="go('matches')">Manual Match Entry</button></div>`;
 }
 async function applyOCRToMatch(){
   if(!ocrReview||ocrReview.type!=='result')return;const m=state.matches.find(x=>x.id===ocrReview.matchId);if(!m)return;
