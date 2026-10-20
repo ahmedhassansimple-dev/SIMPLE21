@@ -40,6 +40,10 @@
 <section class="section" id="teams">
 <div class="card hero"><div class="titleline"><div><div class="title">01 · Teams & Lobby Roster</div><div class="hint">Professional workflow: <b>1. Add the 16 team names → 2. Upload the two Lobby screenshots → 3. Read 16 Slots → 4. Review only weak names → 5. Save.</b> Slot is the permanent team identity.</div></div><span class="pill" id="teamHealth">0/16 Teams</span></div></div>
 <div class="card"><div class="title">Tournament Team Setup</div><div class="row"><div><label>Paste Slot + Team list</label><textarea id="bulkTeams" placeholder="3 AlUla Club\n4 Xx Team\n5 BATTLE HERO X\n...\n18 CASTLE KEY"></textarea></div><div style="max-width:260px"><label>Smart import</label><button class="primary" onclick="importTeams()">Import into Slots</button><div class="hint" style="margin-top:8px">Accepted: <b>03 | Team</b>, <b>03 Team</b>, or tab-separated text.</div><button class="ghost" onclick="exportTeamsCSV()" style="margin-top:8px">Export Teams CSV</button></div></div></div>
+<div class="card" id="teamListCard">
+  <div class="titleline"><div><div class="title">Team List · Slots & Players</div><div class="hint">Teams are created first. After Lobby OCR, the four detected players are written here automatically. You can always correct a player manually.</div></div><span class="pill warn" id="teamGridStatus">0/16 Rosters</span></div>
+  <div id="teamGrid" class="teamGrid"></div>
+</div>
 <div class="card hero" id="teamLobbyReader">
   <div class="titleline"><div><div class="title">02 · Upload Lobby Screenshots</div><div class="hint">Use the original PUBG MOBILE Lobby screenshots: <b>A = Slots 03–11</b> and <b>B = Slots 12–18</b>. The reader isolates every Slot card and writes P1–P4 into the Team List.</div></div><span class="pill warn" id="integratedOcrBadge">Select 2 screenshots</span></div>
   <div class="teamWorkflowGrid">
@@ -87,7 +91,7 @@
 </section>
 </div>
 <script>
-const APP={version:'68.0-professional-integrated-ocr',storage:'PUBG_TM_WORLD_CLASS_V58',mediaDB:'PUBG_TM_MEDIA_V50',mediaStore:'images',current:'PUBG_TM_CURRENT_V58',legacy:['PUBG_TM_WORLD_CLASS_V56','PUBG_TM_WORLD_CLASS_V54','PUBG_TM_WORLD_CLASS_V51','PUBG_TM_CLEAN_PRO_V50','pubg_tm_v21_pro','PUBG_TM_V21_PRO']};
+const APP={version:'68.1-professional-integrated-ocr',storage:'PUBG_TM_WORLD_CLASS_V58',mediaDB:'PUBG_TM_MEDIA_V50',mediaStore:'images',current:'PUBG_TM_CURRENT_V58',legacy:['PUBG_TM_WORLD_CLASS_V56','PUBG_TM_WORLD_CLASS_V54','PUBG_TM_WORLD_CLASS_V51','PUBG_TM_CLEAN_PRO_V50','pubg_tm_v21_pro','PUBG_TM_V21_PRO']};
 const DEFAULT_RULES={place:[0,10,6,5,4,3,2,1,1,0,0,0,0,0,0,0,0],kill:1};
 const SLOTS=Array.from({length:16},(_,i)=>i+3);
 let state=null,workspaceId=null,ocrReview=null,ocrBusy=false,enginePromise=null,ocrWorker=null,pendingLobbyFiles=[],pendingResultFiles=[];
@@ -165,7 +169,28 @@ function setTeamLogo(slot,file){if(!file)return;const r=new FileReader();r.onloa
 function renderHome(){if(!$('homeKpis'))return;$('tournamentName').value=state.tournament||'';const teams=state.teams.filter(t=>t.name.trim()).length,rosters=state.teams.filter(t=>t.players.every(p=>p.name.trim())).length,approved=state.matches.filter(m=>m.approved).length,total=state.matches.length;$('homeKpis').innerHTML=`<div class="kpi"><b>${teams}/16</b><span>Teams configured</span></div><div class="kpi"><b>${rosters}/16</b><span>Full rosters</span></div><div class="kpi"><b>${total}</b><span>Matches</span></div><div class="kpi"><b>${approved}</b><span>Approved</span></div>`;const issues=healthIssues();$('homeHealth').innerHTML=issues.length?issues.slice(0,5).map(x=>`<div class="healthRow"><span>${esc(x)}</span><span class="bad">Attention</span></div>`).join(''):'<div class="notice">No critical data issues detected.</div>';const label=$('currentTournamentLabel');if(label)label.textContent=state.tournament||'Untitled';renderWorkflow()}
 function healthIssues(){const a=[];if(!state.tournament.trim())a.push('Tournament name is empty');if(state.teams.filter(t=>t.name.trim()).length<16)a.push('Team List is not complete');state.teams.filter(t=>t.name.trim()).forEach(t=>{const n=t.players.filter(p=>p.name.trim()).length;if(n!==4)a.push(`Slot ${t.slot} has ${n}/4 players`)});const ids=new Set();state.matches.forEach(m=>{if(m.gameId&&ids.has(m.gameId))a.push(`Duplicate Game ID: ${m.gameId}`);if(m.gameId)ids.add(m.gameId);if(m.approved&&m.results.length!==16)a.push(`${m.name} is approved without 16 results`)});return a}
 function renderTeamsHealth(){const n=state.teams.filter(t=>t.name.trim()).length;$('teamHealth').textContent=`${n}/16 Teams`;$('teamHealth').className='pill '+(n===16?'ok':'warn')}
-function renderTeams(){renderTeamsHealth();$('teamGrid').innerHTML=state.teams.map(t=>`<div class="slotCard"><div class="slotHead"><span class="slotNo">${String(t.slot).padStart(2,'0')}</span><span class="pill ${t.name&&t.players.every(p=>p.name)?'ok':'warn'}">${t.players.filter(p=>p.name.trim()).length}/4</span></div><div class="teamCell"><img class="logo" src="${esc(t.logo||'')}" onerror="this.style.visibility='hidden'"><input value="${esc(t.name)}" placeholder="Team ${t.slot}" onchange="setTeamName(${t.slot},this.value)"></div><label style="margin-top:7px">Team logo</label><input type="file" accept="image/*" onchange="setTeamLogo(${t.slot},this.files[0])">${[0,1,2,3].map(i=>`<div class="playerRow"><span class="playerNum">P${i+1}</span><input value="${esc(t.players[i].name)}" placeholder="In-game player ${i+1}" onchange="setPlayer(${t.slot},${i},this.value)"><span class="pill ${t.players[i].name?'ok':'warn'}">${t.players[i].name?'✓':'—'}</span></div>`).join('')}</div>`).join('')}
+function renderTeams(){
+  renderTeamsHealth();
+  const root=$('teamGrid');
+  if(!root)return;
+  const teams=Array.isArray(state?.teams)?state.teams:[];
+  const ready=teams.filter(t=>t&&t.name&&Array.isArray(t.players)&&t.players.filter(p=>String(p?.name||'').trim()).length===4).length;
+  const status=$('teamGridStatus');
+  if(status){status.textContent=`${ready}/16 Rosters`;status.className='pill '+(ready===16?'ok':'warn')}
+  root.innerHTML=teams.map(t=>{
+    const players=Array.isArray(t.players)?t.players:[0,1,2,3].map(()=>({name:''}));
+    while(players.length<4)players.push({name:''});
+    const count=players.filter(p=>String(p?.name||'').trim()).length;
+    const safeLogo=String(t.logo||'');
+    return `<div class="slotCard">
+      <div class="slotHead"><span class="slotNo">${String(t.slot).padStart(2,'0')}</span><span class="pill ${t.name&&count===4?'ok':'warn'}">${count}/4</span></div>
+      <div class="teamCell"><img class="logo" src="${esc(safeLogo)}" onerror="this.style.visibility='hidden'"><input value="${esc(t.name||'')}" placeholder="Team ${t.slot}" onchange="setTeamName(${t.slot},this.value)"></div>
+      <label style="margin-top:7px">Team logo</label><input type="file" accept="image/*" onchange="setTeamLogo(${t.slot},this.files[0])">
+      ${[0,1,2,3].map(i=>{const name=String(players[i]?.name||'');return `<div class="playerRow"><span class="playerNum">P${i+1}</span><input value="${esc(name)}" placeholder="In-game player ${i+1}" onchange="setPlayer(${t.slot},${i},this.value)"><span class="pill ${name?'ok':'warn'}">${name?'✓':'—'}</span></div>`}).join('')}
+    </div>`;
+  }).join('');
+}
+
 function importTeams(){const raw=$('bulkTeams').value.trim();if(!raw)return toast('Paste the Slot + Team list first');let count=0;for(const line of raw.split(/\r?\n/)){let s=line.trim();if(!s)continue;let m=s.match(/^0?(\d{1,2})\s*(?:\||\t|[-:])\s*(.+)$/)||s.match(/^0?(\d{1,2})\s+(.+)$/);if(!m)continue;let slot=Number(m[1]),name=m[2].trim();if(slot>=3&&slot<=18&&name){team(slot).name=name;count++}}persist();renderTeams();renderHome();$('bulkTeams').value='';toast(`${count} team records imported`)}
 function exportTeamsCSV(){const rows=[['Slot','Team','Player 1','Player 2','Player 3','Player 4'],...state.teams.map(t=>[t.slot,t.name,...t.players.map(p=>p.name)])];download('teams.csv',rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n'),'text/csv')}
 
@@ -641,7 +666,7 @@ async function testOCREngine(){if(ocrBusy)return toast('OCR is busy');try{setEng
 async function processLobbyIntegrated(){if(ocrBusy)return toast('Finish the current OCR process first');if(pendingLobbyFiles.length!==2)return toast('Select exactly 2 Lobby screenshots first');if(state.teams.some(t=>!t.name.trim()))return toast('Add the team names for Slots 03–18 first');const b=$('teamProcessLobbyBtn');if(b){b.disabled=true;b.textContent='⏳ Reading 16 Slots…'}if($('teamLobbyStatus'))$('teamLobbyStatus').textContent='Reading each Slot independently. Please keep this page open.';try{await runRosterOCR(pendingLobbyFiles);renderIntegratedReview()}finally{if(b){b.disabled=pendingLobbyFiles.length!==2;b.textContent='▶ Read 16 Slots'}}}
 function clearIntegratedLobbySelection(){clearLobbySelection()}
 function saveIntegratedReview(){if(!ocrReview?.rows?.length)return toast('Run Lobby OCR first');for(let i=0;i<ocrReview.rows.length;i++){const r=ocrReview.rows[i],t=team(r.slot);if(!t)continue;t.players=[0,1,2,3].map(j=>({name:cleanPlayerCandidateText($('ir-'+i+'-'+j)?.value||'',j===0),verified:true,source:'integrated_lobby_review'}))}persist();renderTeams();renderHome();renderIntegratedReview();toast('All Slot rosters saved to Team List')}
-function renderAll(){renderTournamentSelector();renderHome();renderOpsReadiness();renderTeams();renderMatches();renderOCRSelectors();renderOverall();renderAnalytics();renderStats();renderRules();runHealth();wireFileInputs()}
+function renderAll(){renderTournamentSelector();renderHome();renderOpsReadiness();renderTeams();renderMatches();renderOCRSelectors();renderOverall();renderAnalytics();renderStats();renderRules();runHealth()}
 function renderFileList(id,files){const e=$(id);if(!e)return;e.innerHTML=(files||[]).map((f,i)=>`<span class="fileChip">${i+1}. ${esc(f.name||'image')}</span>`).join('')}
 function renderIntegratedReview(){const rows=ocrReview?.rows||[],root=$('teamLobbyReview');if(!root)return;if(!rows.length){root.innerHTML='<div class="empty">No lobby analysis yet.</div>';return}root.innerHTML='<div class="scroll"><table class="table"><tr><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Quality</th></tr>'+rows.map((r,i)=>{const t=team(r.slot);return '<tr><td class="rank">'+String(r.slot).padStart(2,'0')+'</td><td>'+esc(t?.name||'—')+'</td>'+r.players.map((p,j)=>{const weak=precisionWeak(p),cand=(p.candidates||[]).slice(0,4).map(c=>c.text).join(' / ');return '<td><input class="'+(weak?'badInput':'')+'" id="ir-'+i+'-'+j+'" value="'+esc(p.name||'')+'" title="Candidates: '+esc(cand)+'" placeholder="P'+(j+1)+'"></td>'}).join('')+'<td><span class="pill '+(r.players.every(p=>!precisionWeak(p))?'ok':'warn')+'">'+r.players.filter(p=>!precisionWeak(p)).length+'/4</span></td></tr>'}).join('')+'</table></div>'}
 
@@ -984,7 +1009,22 @@ function wireFileInputs(){
   const zone=$('teamLobbyUploadZone'); if(zone){zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('ready')});zone.addEventListener('dragleave',()=>{if(pendingLobbyFiles.length!==2)zone.classList.remove('ready')});zone.addEventListener('drop',e=>{e.preventDefault();const fs=[...e.dataTransfer.files].filter(f=>/^image\//.test(f.type));prepareLobbyFiles(fs.slice(0,2));});}
 }
 
-try{loadAll();renderAll();wireFileInputs();runtimeHealthCheck();setEngine('loading','OCR Engine · ready when you press Process');}catch(e){console.error('Startup failure',e);document.body.insertAdjacentHTML('afterbegin',`<div style="position:fixed;z-index:999;top:0;left:0;right:0;background:#4a171d;color:#fff;padding:12px;font:13px sans-serif">Startup warning: ${String(e.message||e)}</div>`)}
+function bootApp(){
+  try{
+    loadAll();
+    renderAll();
+    wireFileInputs();
+    runtimeHealthCheck();
+    setEngine('loading','OCR Engine · ready when you press Process');
+  }catch(e){
+    console.error('Startup failure',e);
+    const msg=document.createElement('div');
+    msg.style.cssText='position:fixed;z-index:9999;top:0;left:0;right:0;background:#4a171d;color:#fff;padding:12px 14px;font:13px/1.45 sans-serif';
+    msg.textContent='Startup warning: '+String(e?.message||e);
+    document.body.prepend(msg);
+  }
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootApp,{once:true});else bootApp();
 </script>
 </body>
 </html>
