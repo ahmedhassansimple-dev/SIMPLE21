@@ -54,7 +54,7 @@
 </section>
 <section class="section" id="ocr">
 <div class="card hero"><div class="titleline"><div><div class="title">Result Screenshot OCR</div><div class="hint">Reads placement, player names and eliminations from PUBG MOBILE result screenshots, then maps each player back to the saved Slot roster. Nothing is approved until you approve the match.</div></div><span class="pill warn" id="resultEngine">Ready check</span></div></div>
-<div class="card"><div class="grid"><div><label>Match</label><select id="ocrMatch"></select></div><div><label>Result screenshots</label><input accept="image/png,image/jpeg,image/webp" id="resultFiles" multiple="" type="file"/><div class="fileList" id="resultFileList"></div></div></div><div class="actionHero" style="margin-top:10px"><div><b>Ready to analyze?</b><div class="hint">Choose a match + upload result screenshots, then press Process Results. The button activates automatically.</div></div><button class="primary bigAction" disabled="" id="processResultBtn" onclick="processResults()">▶ Process Results</button></div><div class="row" style="margin-top:8px"><button class="ghost" onclick="clearResultSelection()">Clear</button><button class="ghost" onclick="testOCREngine()">Test OCR Engine</button><span id="storedMatchResults"></span></div><div class="progress"><i id="resultProgress"></i></div><div class="hint" id="resultStatus" style="margin-top:8px">Choose a match, upload screenshots, then press Process Results.</div></div>
+<div class="card"><div class="grid"><div><label>Match</label><select id="ocrMatch"></select></div><div><label>Result screenshots</label><input accept="image/png,image/jpeg,image/webp" id="resultFiles" multiple="" type="file"/><div class="fileList" id="resultFileList"></div></div></div><div class="actionHero" style="margin-top:10px"><div><b>Ready to analyze?</b><div class="hint">Choose a match + upload result screenshots, then press Process Results. The button activates automatically.</div></div><button class="primary bigAction" disabled="" id="processResultBtn" onclick="processResults()">▶ Process Results</button></div><div class="row" style="margin-top:8px"><button class="ghost" onclick="clearResultSelection()">Clear</button><button class="ghost" onclick="testOCREngine()">Test OCR Engine</button><span id="storedMatchResults"></span></div><div class="progress"><i id="resultProgress"></i></div><div id="resultLayoutHint" class="notice" style="margin-top:8px">PUBG Final Result Board mode · 3 ranked cards per screenshot + Top-1/Top-2 recap on the first screenshot · ranks 1–16 expected.</div><div class="hint" id="resultStatus" style="margin-top:8px">Choose a match, upload screenshots, then press Process Results.</div></div>
 <div class="card"><div class="titleline"><div><div class="title">Result Review</div><div class="hint">OCR = player kills from screenshots + roster linking. Manual Entry remains available for placement and corrections.</div></div><span class="pill ok">1 Kill = 1 Point</span></div><div class="empty" id="ocrReview">No analysis yet.</div></div>
 </section>
 <section class="section" id="overall"><div class="card hero"><div class="titleline"><div><div class="title">Championship Leaderboard</div><div class="hint">Only approved matches affect the official leaderboard.</div></div><button class="blue small" onclick="printPage()">Print / PDF</button></div></div><div id="overallContent"></div></section>
@@ -150,7 +150,7 @@ function renderTeams(){renderTeamsHealth();$('teamGrid').innerHTML=state.teams.m
 function importTeams(){const raw=$('bulkTeams').value.trim();if(!raw)return toast('Paste the Slot + Team list first');let count=0;for(const line of raw.split(/\r?\n/)){let s=line.trim();if(!s)continue;let m=s.match(/^0?(\d{1,2})\s*(?:\||\t|[-:])\s*(.+)$/)||s.match(/^0?(\d{1,2})\s+(.+)$/);if(!m)continue;let slot=Number(m[1]),name=m[2].trim();if(slot>=3&&slot<=18&&name){team(slot).name=name;count++}}persist();renderTeams();renderHome();$('bulkTeams').value='';toast(`${count} team records imported`)}
 function exportTeamsCSV(){const rows=[['Slot','Team','Player 1','Player 2','Player 3','Player 4'],...state.teams.map(t=>[t.slot,t.name,...t.players.map(p=>p.name)])];download('teams.csv',rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n'),'text/csv')}
 
-async function createMatch(){if(ocrBusy)return toast('Finish the current OCR process first');const name=$('newMatchName').value.trim()||`Match ${state.matches.length+1}`,gameId=$('newGameId').value.trim();if(gameId&&state.matches.some(m=>m.gameId===gameId))return toast('Duplicate Game ID blocked');const files=[...($('newMatchResultFiles')?.files||[])];if(files.length>8)return toast('Maximum 8 result screenshots per match');const snap={};state.teams.forEach(t=>snap[t.slot]={team:t.name,players:t.players.map(p=>p.name)});const m=normalizeMatch({id:uid(),name,gameId,createdAt:Date.now(),approved:false,results:state.teams.map(t=>({slot:t.slot,team:t.name,placement:0,kills:0,players:[]})),review:[],rosterSnapshot:snap,mediaIds:[],mediaNames:[]});state.matches.push(m);state.activeMatchId=m.id;persist();if(files.length){for(const f of files){try{const id=await mediaPut(f);m.mediaIds.push(id);m.mediaNames.push(f.name)}catch(e){console.warn(e)}}m.resultOcrVersion='65.0';persist()}$('newMatchName').value='';$('newGameId').value='';if($('newMatchResultFiles'))$('newMatchResultFiles').value='';renderMatches();if(files.length){pendingResultFiles=files;renderFileList('resultFileList',files);go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}else{go('matches');toast('Match created — add result screenshots whenever ready')}}
+async function createMatch(){if(ocrBusy)return toast('Finish the current OCR process first');const name=$('newMatchName').value.trim()||`Match ${state.matches.length+1}`,gameId=$('newGameId').value.trim();if(gameId&&state.matches.some(m=>m.gameId===gameId))return toast('Duplicate Game ID blocked');const files=[...($('newMatchResultFiles')?.files||[])];if(files.length>8)return toast('Maximum 8 result screenshots per match');const snap={};state.teams.forEach(t=>snap[t.slot]={team:t.name,players:t.players.map(p=>p.name)});const m=normalizeMatch({id:uid(),name,gameId,createdAt:Date.now(),approved:false,results:state.teams.map(t=>({slot:t.slot,team:t.name,placement:0,kills:0,players:[]})),review:[],rosterSnapshot:snap,mediaIds:[],mediaNames:[]});state.matches.push(m);state.activeMatchId=m.id;persist();if(files.length){for(const f of files){try{const id=await mediaPut(f);m.mediaIds.push(id);m.mediaNames.push(f.name)}catch(e){console.warn(e)}}m.resultOcrVersion='67.0';persist()}$('newMatchName').value='';$('newGameId').value='';if($('newMatchResultFiles'))$('newMatchResultFiles').value='';renderMatches();if(files.length){pendingResultFiles=files;renderFileList('resultFileList',files);go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}else{go('matches');toast('Match created — add result screenshots whenever ready')}}
 function activeMatch(){return state.matches.find(m=>m.id===state.activeMatchId)||state.matches[state.matches.length-1]||null}
 function renderMatches(){const list=$('matchList');if(!list)return;if(!state.matches.length)list.innerHTML='<div class="empty">No matches yet.</div>';else list.innerHTML=state.matches.slice().reverse().map(m=>`<div class="matchItem ${m.id===state.activeMatchId?'active':''}"><div><b>${esc(m.name)}</b><div class="muted">${esc(m.gameId||'No Game ID')} · ${m.approved?'Approved':'Review'}</div></div><div class="row" style="max-width:190px"><button class="ghost small" onclick="openMatch('${m.id}')">Open</button><button class="danger small" onclick="deleteMatch('${m.id}')">Delete</button></div></div>`).join('');renderMatchEditor()}
 function openMatch(id){state.activeMatchId=id;persist();renderMatches();}
@@ -193,7 +193,7 @@ function renderMatchEditor(){
 function manualPlacement(id,slot,v){const m=state.matches.find(x=>x.id===id);if(!m)return;const r=ensureResult(m,slot);r.placement=Math.max(0,Math.floor(Number(v)||0));m.approved=false;m.review=[];persist();renderMatchEditor();}
 function manualPlayerKill(id,slot,index,v){const m=state.matches.find(x=>x.id===id);if(!m)return;const r=ensureResult(m,slot);while(r.players.length<4)r.players.push({name:m.rosterSnapshot?.[slot]?.players?.[r.players.length]||team(slot)?.players?.[r.players.length]?.name||'',kills:0,slot,playerIndex:r.players.length});r.players[index].kills=Math.max(0,Math.floor(Number(v)||0));r.kills=r.players.reduce((s,p)=>s+Number(p.kills||0),0);r.total=points(r);m.approved=false;m.review=[];persist();renderMatchEditor();}
 function recalculateMatch(id){const m=state.matches.find(x=>x.id===id);if(!m)return;for(const r of m.results){r.kills=(r.players||[]).reduce((s,p)=>s+Number(p.kills||0),0);r.pp=state.rules.place[r.placement]||0;r.total=points(r);r.team=team(r.slot)?.name||r.team}m.approved=false;persist();renderMatchEditor();toast('Match scores recalculated');}
-async function attachMatchResultImages(id){const m=state.matches.find(x=>x.id===id),input=$('matchAttachFiles');if(!m||!input?.files?.length)return toast('Choose result screenshots first');const files=[...input.files];if(files.length>8)return toast('Maximum 8 result screenshots per match');try{const ids=new Set(m.mediaIds||[]),names=new Set(m.mediaNames||[]);for(const f of files){const mediaId=await mediaPut(f);ids.add(mediaId);names.add(f.name)}m.mediaIds=[...ids];m.mediaNames=[...names];m.approved=false;m.resultOcrVersion='66.0';persist();pendingResultFiles=files;renderFileList('resultFileList',files);renderMatches();go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}catch(e){toast('Could not save result screenshots: '+(e.message||e))}}
+async function attachMatchResultImages(id){const m=state.matches.find(x=>x.id===id),input=$('matchAttachFiles');if(!m||!input?.files?.length)return toast('Choose result screenshots first');const files=[...input.files];if(files.length>8)return toast('Maximum 8 result screenshots per match');try{const ids=new Set(m.mediaIds||[]),names=new Set(m.mediaNames||[]);for(const f of files){const mediaId=await mediaPut(f);ids.add(mediaId);names.add(f.name)}m.mediaIds=[...ids];m.mediaNames=[...names];m.approved=false;m.resultOcrVersion='67.0';persist();pendingResultFiles=files;renderFileList('resultFileList',files);renderMatches();go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}catch(e){toast('Could not save result screenshots: '+(e.message||e))}}
 
 function imageFromFile(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error('Could not open '+file.name))};im.src=u})}
 function crop(img,x,y,w,h,scale=4){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;const c=document.createElement('canvas');c.width=Math.max(2,Math.round(w*scale));c.height=Math.max(2,Math.round(h*scale));const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,x*W,y*H,w*W,h*H,0,0,c.width,c.height);return c}
@@ -294,7 +294,7 @@ async function recognizeLobby(canvas,mode='original',psm='6'){const w=await load
    Design: exact slot crop -> name-column consensus -> targeted row rescue
    -> roster-aware assignment -> immutable slot identity.
    ========================================================= */
-const OCR60={version:'66.0',slotCenters:[.085,.315,.545,.775],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
+const OCR60={version:'67.0',slotCenters:[.085,.315,.545,.775],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
 const RESULT_ROW_CENTERS=[.085,.315,.545,.775];
 function lobbyGeometry(img){
  const W=img?.naturalWidth||img?.width||852,H=img?.naturalHeight||img?.height||460;
@@ -594,6 +594,34 @@ function runHealth(){const required=['normalizeFirstPlayer','playerIsGarbage','p
 function renderWorkflow(){const e=$('workflow');if(!e)return;const teams=state.teams.filter(t=>t.name.trim()).length,rosters=state.teams.filter(t=>t.players.every(p=>p.name.trim())).length,open=state.matches.filter(m=>!m.approved).length,approved=state.matches.filter(m=>m.approved).length;const steps=[['Teams',teams===16,()=>go('teams'),`${teams}/16 configured`],['Rosters',rosters===16,()=>go('roster'),`${rosters}/16 complete`],['Matches',state.matches.length>0,()=>go('matches'),`${state.matches.length} created`],['Results',approved>0,()=>go('ocr'),`${approved} approved`],['Leaderboard',approved>0,()=>go('overall'),'Ready for ranking']];e.innerHTML=`<div class="grid3">${steps.map((x,i)=>`<button class="ghost" onclick="(${x[2].toString()})()" style="text-align:left"><span class="pill ${x[1]?'ok':'warn'}">${x[1]?'READY':'NEXT'}</span><br><b>${i+1}. ${x[0]}</b><div class="muted">${x[3]}</div></button>`).join('')}</div>${open?`<div class="notice" style="margin-top:10px">You have <b>${open}</b> match(es) waiting for result review/approval.</div>`:''}`}
 function renderTournamentSelector(){const e=$('currentTournamentSelect');if(!e)return;const items=Object.values(allWorkspaces()).sort((a,b)=>b.updatedAt-a.updatedAt);e.innerHTML=items.map(w=>`<option value="${esc(w.id)}" ${w.id===workspaceId?'selected':''}>${esc(w.name||'Untitled')}</option>`).join('');e.title=state.tournament||'Current tournament'}
 function renderOpsReadiness(){const box=$('opsReadiness'),badge=$('readinessScore');if(!box||!badge)return;const teams=state.teams.filter(t=>t.name.trim()).length;const rosters=state.teams.filter(t=>t.players.every(p=>p.name.trim())).length;const matches=state.matches.length;const approved=state.matches.filter(m=>m.approved).length;const resultReady=state.matches.filter(m=>m.results?.length===16).length;const parts=[teams===16,rosters===16,matches>0,resultReady===matches&&matches>0,approved>0];const score=Math.round(parts.filter(Boolean).length/parts.length*100);badge.textContent=`${score}% Ready`;badge.className='pill '+(score===100?'ok':score>=60?'warn':'bad');const next=teams<16?['Teams',`Complete ${16-teams} missing team names`,()=>go('teams')]:rosters<16?['Rosters',`Complete ${16-rosters} missing rosters`,()=>go('roster')]:matches===0?['Match Center','Create your first match',()=>go('matches')]:resultReady<Math.max(1,matches)?['Results',`Analyze ${matches-resultReady} match result set(s)`,()=>go('ocr')]:approved<matches?['Approval',`Review and approve ${matches-approved} match(es)`,()=>go('ocr')]:['Leaderboard','Tournament is fully operational',()=>go('overall')];box.innerHTML=`<div class="stepGrid">${[['Teams',teams,16],['Rosters',rosters,16],['Matches',matches,''],['Results',resultReady,matches||''],['Approved',approved,matches||'']].map(x=>{const ok=x[2]===''?x[1]>0:x[1]===x[2];return `<div class="step"><b><span class="readyDot ${ok?'ok':''}"></span>${x[0]}</b><span class="muted">${x[1]}${x[2]!==''?'/'+x[2]:''} complete</span></div>`}).join('')}</div><div class="notice" style="margin-top:10px"><b>Next best action:</b> ${esc(next[0])} — ${esc(next[1])} <button class="blue small" style="float:right" onclick="(${next[2].toString()})()">Open</button></div>`}
+function assistantAnswer(q){const n=norm(q);const approved=state.matches.filter(m=>m.approved);const rank=aggregate();if(/leader|متصدر|متصدرين|اول|الأول/.test(n))return rank[0]?`المتصدر الحالي هو <b>${esc(rank[0].name)}</b> بـ <b>${rank[0].points}</b> نقطة.`:'لا توجد نتائج Approved بعد.';if(/kill|قتلات|kills|topfragger|fragger/.test(n)){const rows=playerAggregate();return rows[0]?`أعلى لاعب في القتلات هو <b>${esc(rows[0].name)}</b> بـ <b>${rows[0].kills}</b> Kill.`:'لا توجد بيانات لاعب معتمدة بعد.'}if(/attention|مشك|خطا|اخطاء|issue|health|فحص/.test(n)){const x=healthIssues();return x.length?`وجدت <b>${x.length}</b> ملاحظات: ${x.slice(0,4).map(esc).join(' · ')}`:'لا توجد مشاكل حرجة حالياً.'}if(/match|مباراة/.test(n))return `لديك <b>${state.matches.length}</b> مباريات، منها <b>${approved.length}</b> Approved.`;if(/gap|فارق|فرق/.test(n)&&rank[1])return `الفارق بين ${esc(rank[0].name)} و${esc(rank[1].name)} هو <b>${rank[0].points-rank[1].points}</b> نقطة.`;return `البطولة تحتوي على ${state.teams.filter(t=>t.name).length}/16 فريقاً و${approved.length} مباريات Approved.`}
+function aggregate(){const m=new Map(state.teams.filter(t=>t.name).map(t=>[t.slot,{slot:t.slot,name:t.name,points:0,kills:0,wins:0}]));state.matches.filter(x=>x.approved).forEach(mm=>mm.results.forEach(r=>{const x=m.get(r.slot);if(x){x.points+=points(r);x.kills+=Number(r.kills)||0;if(Number(r.placement)===1)x.wins++}}));return [...m.values()].sort((a,b)=>b.points-a.points||b.kills-a.kills||a.slot-b.slot)}
+function playerAggregate(){const m=new Map();state.matches.filter(x=>x.approved).forEach(mm=>mm.results.forEach(r=>(r.players||[]).forEach(p=>{const k=norm(p.name);if(!k)return;const x=m.get(k)||{name:p.name,kills:0};x.kills+=Number(p.kills)||0;m.set(k,x)})));return [...m.values()].sort((a,b)=>b.kills-a.kills)}
+function askAssistant(){const q=$('assistantInput')?.value.trim();if(!q)return;const box=$('assistantMessages');if(!box)return;box.innerHTML+=`<div class="assistantMsg user">${esc(q)}</div><div class="assistantMsg">${assistantAnswer(q)}</div>`;$('assistantInput').value='';box.scrollTop=box.scrollHeight}
+function quickSwitchWorkspace(id){if(id)switchWorkspace(id)}
+function createWorkspaceQuick(){const n=prompt('Tournament name:','New Tournament');if(n===null)return;const name=n.trim()||'New Tournament',id=uid(),map=allWorkspaces();map[id]={id,name,updatedAt:Date.now(),state:newState(name)};localStorage.setItem(APP.storage,JSON.stringify(map));workspaceId=id;localStorage.setItem(APP.current,id);state=normalizeState(map[id].state);ocrReview=null;pendingLobbyFiles=[];pendingResultFiles=[];renderAll();go('home');toast('New tournament created')}
+function workspaceItemsHTML(items){return items.map(w=>{const teams=w.state?.teams?.filter(t=>t.name).length||0,approved=w.state?.matches?.filter(m=>m.approved).length||0,total=w.state?.matches?.length||0;return `<div class="workspaceItem ${w.id===workspaceId?'active':''}" data-ws-name="${esc((w.name||'').toLowerCase())}"><div style="min-width:0"><b>${esc(w.name||'Untitled')}</b>${w.id===workspaceId?'<span class="pill ok" style="margin-left:6px">Current</span>':''}<div class="muted">${teams}/16 teams · ${approved}/${total} approved · Updated ${new Date(w.updatedAt||Date.now()).toLocaleDateString()}</div></div><div class="row" style="max-width:230px"><button class="blue small" onclick="switchWorkspace('${w.id}')">Open</button><button class="ghost small" onclick="cloneWorkspace('${w.id}')">Clone</button><button class="danger small" onclick="deleteWorkspace('${w.id}')">Delete</button></div></div>`}).join('')||'<div class="empty">No tournaments yet.</div>'}
+function openWorkspace(){const map=allWorkspaces(),items=Object.values(map).sort((a,b)=>b.updatedAt-a.updatedAt),box=document.createElement('div');box.style.cssText='position:fixed;inset:0;background:#000b;z-index:90;display:flex;align-items:center;justify-content:center;padding:15px';box.innerHTML=`<div class="card" data-wsm style="max-width:720px;width:100%;max-height:88vh;overflow:auto"><div class="titleline"><div><div class="title">Tournament Manager</div><div class="hint">Independent tournament workspaces. Teams, rosters, matches and results stay separated.</div></div><button class="ghost small" onclick="this.closest('[data-wsm]').parentElement.remove()">Close</button></div><div class="row" style="margin-top:10px"><input id="newWsName" placeholder="New tournament name"><button class="primary" onclick="createWorkspaceFromModal()">+ Create Tournament</button><button class="ghost" onclick="exportAllWorkspaces()">Export All</button></div><input id="wsSearch" style="margin-top:9px" placeholder="Search tournaments…" oninput="filterWorkspaceList(this.value)"><div id="workspaceList" style="margin-top:8px">${workspaceItemsHTML(items)}</div></div>`;box.dataset.modal='1';document.body.appendChild(box)}
+function filterWorkspaceList(q){const root=document.querySelector('[data-wsm] #workspaceList');if(!root)return;const items=Object.values(allWorkspaces()).filter(w=>(w.name||'').toLowerCase().includes(String(q||'').toLowerCase())).sort((a,b)=>b.updatedAt-a.updatedAt);root.innerHTML=workspaceItemsHTML(items)}
+function createWorkspaceFromModal(){const n=$('newWsName')?.value.trim()||'New Tournament',id=uid(),map=allWorkspaces();map[id]={id,name:n,updatedAt:Date.now(),state:newState(n)};localStorage.setItem(APP.storage,JSON.stringify(map));workspaceId=id;localStorage.setItem(APP.current,id);state=normalizeState(map[id].state);document.querySelector('[data-modal]')?.parentElement.remove();renderAll();go('home');toast('New tournament created')}
+function switchWorkspace(id){const map=allWorkspaces();if(!map[id])return;if(ocrBusy)return toast('Finish the current OCR process first');workspaceId=id;localStorage.setItem(APP.current,id);state=normalizeState(map[id].state);ocrReview=null;pendingLobbyFiles=[];pendingResultFiles=[];document.querySelector('[data-modal]')?.parentElement.remove();renderAll();go('home');toast('Tournament switched')}
+function cloneWorkspace(id){const map=allWorkspaces(),src=map[id];if(!src)return;const n=(src.name||'Tournament')+' Copy',nid=uid(),copied=clone(src.state);copied.tournament=n;copied.createdAt=Date.now();copied.updatedAt=Date.now();copied.matches=[];copied.activeMatchId=null;map[nid]={id:nid,name:n,updatedAt:Date.now(),state:copied};localStorage.setItem(APP.storage,JSON.stringify(map));openWorkspace();toast('Tournament cloned')}
+function deleteWorkspace(id){const map=allWorkspaces();if(!map[id])return;if(Object.keys(map).length<=1)return toast('At least one tournament must remain');if(!confirm('Delete this tournament and all local data?'))return;delete map[id];localStorage.setItem(APP.storage,JSON.stringify(map));if(id===workspaceId){const next=Object.values(map).sort((a,b)=>b.updatedAt-a.updatedAt)[0];workspaceId=next.id;localStorage.setItem(APP.current,workspaceId);state=normalizeState(next.state)}document.querySelector('[data-modal]')?.parentElement.remove();renderAll();go('home');toast('Tournament deleted')}
+function exportAllWorkspaces(){download('PUBG_Tournament_All_Workspaces.json',JSON.stringify({app:APP,workspaces:allWorkspaces(),exportedAt:new Date().toISOString()},null,2),'application/json');toast('All tournaments exported')}
+function backup(){const payload={app:APP,state,exportedAt:new Date().toISOString()};download((state.tournament||'tournament').replace(/[^a-z0-9_-]+/gi,'_')+'_backup.json',JSON.stringify(payload,null,2),'application/json');toast('Backup exported')}
+function resetCurrent(){if(!confirm('Reset this tournament completely?'))return;state=newState('New Tournament');persist();renderAll();go('home');toast('Tournament reset')}
+function printPage(){window.print()}
+function saveRules(){for(let p=1;p<=16;p++)state.rules.place[p]=Math.max(0,Number(document.querySelector(`[data-place="${p}"]`)?.value)||0);state.rules.kill=Math.max(0,Number($('killPoint')?.value)||0);state.matches.forEach(m=>{if(m.approved)m.results=m.results.map(r=>({...r,pp:state.rules.place[r.placement]||0,total:points(r)}))});persist();renderAll();toast('Scoring rules saved')}
+function prepareLobbyFiles(files){pendingLobbyFiles=files||[];renderFileList('lobbyFileList',pendingLobbyFiles);const b=$('processLobbyBtn');if(b)b.disabled=pendingLobbyFiles.length!==2;const st=$('rosterStatus');if(st)st.textContent=pendingLobbyFiles.length===2?'2 lobby screenshots ready. Press Process Lobby.':'Select exactly 2 lobby screenshots.'}
+function clearLobbySelection(){pendingLobbyFiles=[];if($('lobbyFiles'))$('lobbyFiles').value='';renderFileList('lobbyFileList',[]);if($('processLobbyBtn'))$('processLobbyBtn').disabled=true;if($('rosterStatus'))$('rosterStatus').textContent='Waiting for lobby screenshots.'}
+function processLobby(){if(pendingLobbyFiles.length!==2)return toast('Select the two lobby screenshots first');return runRosterOCR(pendingLobbyFiles)}
+function prepareResultFiles(files){pendingResultFiles=files||[];renderFileList('resultFileList',pendingResultFiles);const b=$('processResultBtn');if(b)b.disabled=!pendingResultFiles.length||!$('ocrMatch')?.value;const st=$('resultStatus');if(st)st.textContent=pendingResultFiles.length?`${pendingResultFiles.length} result screenshot(s) ready. Press Process Results.`:'Choose result screenshots.'}
+function clearResultSelection(){pendingResultFiles=[];if($('resultFiles'))$('resultFiles').value='';renderFileList('resultFileList',[]);if($('processResultBtn'))$('processResultBtn').disabled=true;if($('resultStatus'))$('resultStatus').textContent='Choose a match and upload result screenshots.'}
+function processResults(){if(!$('ocrMatch')?.value)return toast('Select a match first');if(!pendingResultFiles.length)return toast('Upload result screenshots first');return runResultOCR(pendingResultFiles)}
+async function testOCREngine(){if(ocrBusy)return toast('OCR is busy');try{setEngine('loading','Testing OCR Engine…');await loadOCR();setEngine('ready','OCR Engine Ready');toast('OCR engine test passed')}catch(e){setEngine('bad','OCR Engine · unavailable');toast('OCR test failed — see Diagnostics');console.error(e)}}
+async function processLobbyIntegrated(){if(pendingLobbyFiles.length!==2)return toast('Select exactly 2 lobby screenshots');await runRosterOCR(pendingLobbyFiles);renderIntegratedReview()}
+function clearIntegratedLobbySelection(){pendingLobbyFiles=[];if($('teamLobbyFiles'))$('teamLobbyFiles').value='';renderFileList('teamLobbyFileList',[]);if($('teamProcessLobbyBtn'))$('teamProcessLobbyBtn').disabled=true;if($('teamLobbyStatus'))$('teamLobbyStatus').textContent='Waiting for 2 screenshots.'}
+function saveIntegratedReview(){if(!ocrReview?.rows?.length)return toast('Run Lobby OCR first');for(let i=0;i<ocrReview.rows.length;i++){const r=ocrReview.rows[i],t=team(r.slot);if(!t)continue;t.players=[0,1,2,3].map(j=>({name:cleanPlayerCandidateText($('ir-'+i+'-'+j)?.value||'',j===0),verified:true,source:'integrated_lobby_review'}))}persist();renderTeams();renderHome();renderIntegratedReview();toast('All Slot rosters saved to Team List')}
 function renderAll(){renderTournamentSelector();renderHome();renderOpsReadiness();renderTeams();renderMatches();renderOCRSelectors();renderOverall();renderAnalytics();renderStats();renderRules();runHealth()}
 function renderFileList(id,files){const e=$(id);if(!e)return;e.innerHTML=(files||[]).map((f,i)=>`<span class="fileChip">${i+1}. ${esc(f.name||'image')}</span>`).join('')}
 function renderIntegratedReview(){const rows=ocrReview?.rows||[],root=$('teamLobbyReview');if(!root)return;if(!rows.length){root.innerHTML='<div class="empty">No lobby analysis yet.</div>';return}root.innerHTML='<div class="scroll"><table class="table"><tr><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Quality</th></tr>'+rows.map((r,i)=>{const t=team(r.slot);return '<tr><td class="rank">'+String(r.slot).padStart(2,'0')+'</td><td>'+esc(t?.name||'—')+'</td>'+r.players.map((p,j)=>{const weak=precisionWeak(p),cand=(p.candidates||[]).slice(0,4).map(c=>c.text).join(' / ');return '<td><input class="'+(weak?'badInput':'')+'" id="ir-'+i+'-'+j+'" value="'+esc(p.name||'')+'" title="Candidates: '+esc(cand)+'" placeholder="P'+(j+1)+'"></td>'}).join('')+'<td><span class="pill '+(r.players.every(p=>!precisionWeak(p))?'ok':'warn')+'">'+r.players.filter(p=>!precisionWeak(p)).length+'/4</span></td></tr>'}).join('')+'</table></div>'}
@@ -629,21 +657,21 @@ function fillMissingRoster(){if(!ocrReview?.rows)return;const map=new Map(state.
 function renderOCRSelectors(){const sel=$('ocrMatch');if(!sel)return;sel.innerHTML=state.matches.length?state.matches.map(m=>`<option value="${m.id}" ${m.id===state.activeMatchId?'selected':''}>${esc(m.name)}${m.approved?' · Approved':''}</option>`).join(''):'<option value="">No matches</option>';const b=$('processResultBtn');if(b)b.disabled=!pendingResultFiles.length||!sel.value;const m=activeMatch(),stored=$('storedMatchResults');if(stored)stored.innerHTML=m?.mediaIds?.length?`<button class="blue small" onclick="reprocessStoredMatchImages('${m.id}')">↻ Re-read stored screenshots (${m.mediaIds.length})</button>`:''}
 
 function resultGridCards(img,imageIndex=0,totalImages=1){
-  const g=lobbyGeometry(img); const out=[];
-  // PUBG's supplied result sheets are two layouts: 03–11 (9 cards) and 12–18 (7 cards).
-  // When only one screenshot is supplied, use the same aspect-ratio discriminator as the Lobby OCR.
-  const count=totalImages>=2?(imageIndex===0?9:7):(g && ((img?.naturalWidth||img?.width||0)/(img?.naturalHeight||img?.height||1)>1.825)?9:7);
-  const start=(totalImages>=2?(imageIndex===0?3:12):(count===9?3:12));
-  for(let k=0;k<count;k++){const r=Math.floor(k/3),c=k%3;out.push({slot:start+k,x:g.cols[c],y:g.ys[r],w:g.w,h:g.h,row:r,col:c});}
+  // Actual PUBG MOBILE final-result board: right-hand ranked cards plus a persistent left Top-1/Top-2 recap.
+  // With the supplied 5-image sequence the expected ranks are 3–5, 6–8, 9–11, 12–14, 14–16.
+  const out=[],ys=[.158,.397,.641],starts=(totalImages===5?[3,6,9,12,14]:[0,0,0,0,0]);
+  for(let k=0;k<3;k++) out.push({rankHint:starts[imageIndex]?starts[imageIndex]+k:0,x:.525,y:ys[k],w:.370,h:.237,row:k,col:0,sourceImage:imageIndex,cardIndex:k});
   return out;
 }
 function resultRowBand(card,i){
-  const center=OCR60.slotCenters[i],h=card.h*.135;
-  return {x:card.x+card.w*.035,y:card.y+card.h*(center-h/2),w:card.w*.64,h};
+  // Measured from the supplied 1600×740 PUBG result board. Names sit around
+  // 10%, 34%, 60%, 84% of the card height.
+  const centers=[.100,.344,.597,.842],h=.170;
+  return {x:card.x+card.w*.205,y:card.y+card.h*(centers[i]-h/2),w:card.w*.485,h};
 }
 function resultKillArea(card,i){
-  const center=RESULT_ROW_CENTERS[i],h=card.h*.145;
-  return {x:card.x+card.w*.64,y:card.y+card.h*(center-h/2),w:card.w*.30,h};
+  const centers=[.100,.344,.597,.842],h=.175;
+  return {x:card.x+card.w*.720,y:card.y+card.h*(centers[i]-h/2),w:card.w*.255,h};
 }
 function resultRosterSnapshot(m){
   const snap=m?.rosterSnapshot||{};
@@ -691,96 +719,163 @@ function resultRosterMatch(raw,m){
   }
   return best&&best.score>=.62?best:null;
 }
-async function readResultCard(img,card,m){
-  const rows=[0,1,2,3].map(i=>({index:i,name:'',canonical:'',slot:0,playerIndex:i,kills:null,score:0,confidence:0,candidates:[]}));
-  // Fast-first: two whole-card reads normally recover all four identities. Expensive rescue
-  // passes are only used for rows that remain unresolved.
-  const primary=[['original','6',9,'card-fast6'],['original','11',9,'card-fast11'],['contrast','6',10,'card-contrast6']];
-  for(const [mode,psm,scale,tag] of primary){
+function resultKillTokenValue(ch){const t=String(ch||'').trim();if(/^[IiLl|]$/.test(t))return 1;if(/^[OoDd]$/.test(t))return 0;return null}
+async function readResultRank(img,card){
+  const area={x:card.x+card.w*.015,y:card.y+card.h*.08,w:card.w*.165,h:card.h*.84};
+  const candidates=[];
+  for(const [mode,psm,scale] of [['original','6',12],['contrast','6',12],['sharpen','7',14]]){
     try{
-      const whole=cropCanvasNorm(img,card.x,card.y,card.w,card.h,scale);
-      const rr=await recognizeLobby(whole,mode,psm),d=rr?.data||rr||{};
-      for(const line of lineGroupsFromTSV(d,scale).filter(x=>x.text)){
-        let bestI=-1,dist=99,local=line.cy/(whole.height||1);
-        for(let i=0;i<4;i++){const dd=Math.abs(local-OCR60.slotCenters[i]);if(dd<dist){dist=dd;bestI=i}}
-        if(bestI<0||dist>.115)continue;
-        const raw=normalizeOcrCandidate(bestI===0?normalizeFirstPlayer(line.text):line.text,bestI===0),hit=raw&&resultRosterMatch(raw,m);if(!hit)continue;
-        const row=rows[bestI];row.candidates.push({name:hit.name,slot:hit.slot,playerIndex:hit.playerIndex,score:hit.score,source:tag,confidence:line.confidence});
-        if(hit.score>row.score||(hit.score===row.score&&line.confidence>row.confidence))Object.assign(row,{name:hit.name,canonical:hit.name,slot:hit.slot,playerIndex:hit.playerIndex,score:hit.score,confidence:line.confidence});
+      const c=cropCanvasNorm(img,area.x,area.y,area.w,area.h,scale);
+      const rr=await recognizeLobby(c,mode,psm),d=rr?.data||rr||{};
+      const text=ocrClean(d.text||'');
+      const nums=[];
+      for(const m of text.matchAll(/\b(\d{1,2})\b/g)){const v=Number(m[1]);if(v>=1&&v<=16)nums.push(v)}
+      for(const w of parseTSV(d,scale)){
+        const v=Number(String(w.text||'').replace(/\D/g,''));
+        if(Number.isInteger(v)&&v>=1&&v<=16)nums.push(v)
       }
-      if(rows.every(r=>r.name))break;
-    }catch(e){console.warn('result primary',tag,e)}
+      for(const v of nums)candidates.push({value:v,confidence:Number(d.confidence)||0})
+    }catch(e){}
   }
-  // Targeted name rescue only where needed.
-  for(let i=0;i<4;i++){
-    if(rows[i].name)continue;
-    const b=resultRowBand(card,i);
-    for(const [mode,psm,scale] of [['original','7',14],['contrast','7',14],['sharpen','7',14],['red','7',14],['glyph','7',14]]){
-      try{
-        const rr=await recognizeLobby(cropCanvasNorm(img,b.x,b.y,b.w,b.h,scale),mode,psm),d=rr?.data||rr||{},hit=resultRosterMatch(d.text||'',m);
-        if(hit){Object.assign(rows[i],{name:hit.name,canonical:hit.name,slot:hit.slot,playerIndex:hit.playerIndex,score:hit.score,confidence:Number(d.confidence)||0});break}
-      }catch(e){}
+  if(!candidates.length)return 0;
+  const votes=new Map();
+  for(const c of candidates){const x=votes.get(c.value)||{n:0,c:0};x.n++;x.c=Math.max(x.c,c.confidence);votes.set(c.value,x)}
+  return [...votes.entries()].sort((a,b)=>(b[1].n-a[1].n)||(b[1].c-a[1].c))[0]?.[0]||0;
+}
+function resultRosterCandidates(raw,m){
+  const text=resultCandidateText(raw); if(!text)return [];
+  return resultRoster(m).map(x=>({...x,score:resultPlayerScore(text,x.name)})).filter(x=>x.score>=.42).sort((a,b)=>b.score-a.score).slice(0,10);
+}
+function assignResultCardRoster(rows,m){
+  const lists=rows.map(r=>resultRosterCandidates(r.rawName||r.name,m));
+  let best={score:-Infinity,assign:[]};
+  function dfs(i,used,total,chosen){
+    if(i>=rows.length){if(total>best.score)best={score:total,assign:chosen.slice()};return}
+    const opts=lists[i]||[];
+    if(!opts.length){dfs(i+1,used,total,chosen.concat(null));return}
+    for(const o of opts){
+      const key=o.slot+':'+o.playerIndex;if(used.has(key))continue;
+      const u=new Set(used);u.add(key);dfs(i+1,u,total+o.score,chosen.concat(o));
     }
+    // Keep unresolved rather than forcing a wrong player.
+    dfs(i+1,used,total,chosen.concat(null));
   }
-  // Kill OCR is independent from name OCR. Read only the narrow number column so the
-  // '/0 Eliminations' text cannot become part of the player name.
-  for(let i=0;i<4;i++){
-    const b=resultKillArea(card,i);
-    let got=null;
-    for(const [mode,psm,scale] of [['original','7',12],['contrast','7',12]]){
-      try{
-        const rr=await recognizeLobby(cropCanvasNorm(img,b.x,b.y,b.w,b.h,scale),mode,psm),d=rr?.data||rr||{};
-        const nums=parseTSV(d,scale).map(w=>({v:Number(w.text.trim()),c:Number(w.confidence)||0})).filter(x=>Number.isInteger(x.v)&&x.v>=0&&x.v<=40).sort((a,b)=>b.c-a.c);
-        const text=ocrClean(d.text||''),tm=text.match(/(?:^|\s)(\d{1,2})(?:\s*\/|\s+Eliminations?)/i);
-        const k=nums[0]?.v ?? (tm?Number(tm[1]):null);if(k!=null){got=k;break}
-      }catch(e){}
-    }
-    rows[i].kills=got;
-  }
+  dfs(0,new Set(),0,[]);
+  rows.forEach((r,i)=>{const hit=best.assign[i];if(hit&&hit.score>=.62){r.name=hit.name;r.canonical=hit.name;r.slot=hit.slot;r.playerIndex=hit.playerIndex;r.score=hit.score;r.matchScore=hit.score}else{r.name='';r.canonical='';r.slot=0;r.playerIndex=i;r.score=0}});
   return rows;
 }
+async function readResultCard(img,card,m,totalImages=1){
+  let rank=Number(card.rankHint)||0;
+  // Only fall back to rank OCR when the upload is not the known five-screen sequence.
+  if(!rank){try{rank=await readResultRank(img,card)}catch(e){rank=0}}
+  const rows=[0,1,2,3].map(i=>({index:i,name:'',canonical:'',rawName:'',slot:0,playerIndex:i,kills:null,score:0,confidence:0,candidates:[],rank}));
+  const whole=cropCanvasNorm(img,card.x,card.y,card.w,card.h,4);
+  let primaryLines=[];
+  // One whole-card OCR pass is the normal path. The supplied result board is highly regular,
+  // and this pass reads name + elimination in the same line while avoiding the persistent left recap.
+  for(const [mode,psm,scale] of [['original','6',4],['contrast','6',4]]){
+    try{
+      const c=mode==='original'?whole:cropCanvasNorm(img,card.x,card.y,card.w,card.h,4);
+      const rr=await recognizeLobby(c,mode,psm),d=rr?.data||rr||{};
+      const lines=lineGroupsFromTSV(d,scale).filter(x=>x.text).map(x=>({text:ocrClean(x.text),cy:x.cy,confidence:x.confidence,words:x.words}));
+      const usable=lines.filter(x=>/eliminations?/i.test(x.text));
+      if(usable.length>primaryLines.length)primaryLines=usable;
+      if(primaryLines.length>=4)break;
+    }catch(e){}
+  }
+  // Map OCR lines to the four measured player bands. If the OCR merged the rank with a name,
+  // strip only a leading 1–2 digit token; player names themselves may contain digits.
+  const centers=[.100,.344,.597,.842];
+  for(const line of primaryLines){
+    let best=0,dist=Infinity;for(let i=0;i<4;i++){const d=Math.abs((line.cy/(whole.height||1))-centers[i]);if(d<dist){dist=d;best=i}}
+    if(dist>.18)continue;
+    let text=line.text;
+    const em=text.match(/\b(\d{1,2})\s+eliminations?\b/i);
+    let kill=em?Number(em[1]):null;
+    if(kill==null){const em0=text.match(/\b([ODIl|])\s+eliminations?\b/i);if(em0)kill=resultKillTokenValue(em0[1])}
+    const before=em?text.slice(0,em.index):text.replace(/\s*(?:[ODIl|])\s+eliminations?.*$/i,'');
+    let name=normalizeOcrCandidate(before,best===0);
+    // If rank digit is at the beginning of the line, remove it only when the remainder still looks like a name.
+    if(name&&/^\d{1,2}\s+/.test(name)){const stripped=name.replace(/^\d{1,2}\s+/,'');if(plausibleName(stripped))name=stripped}
+    rows[best].rawName=name;rows[best].kills=Number.isInteger(kill)?kill:null;rows[best].confidence=line.confidence;rows[best].candidates=[{text:name,confidence:line.confidence,source:'whole-card'}];
+  }
+  // Targeted rescue only for unresolved rows or missing kill values.
+  for(let i=0;i<4;i++){
+    if(!rows[i].rawName || rows[i].kills==null){
+      const b=resultRowBand(card,i);
+      try{
+        const rr=await recognizeLobby(cropCanvasNorm(img,b.x,b.y,b.w,b.h,10),'original','7'),d=rr?.data||rr||{};
+        const n=resultCandidateText(d.text||'');if(!rows[i].rawName&&n)rows[i].rawName=n;
+      }catch(e){}
+    }
+    if(rows[i].kills==null){
+      const b=resultKillArea(card,i);let vals=[];
+      for(const [mode,psm,scale] of [['original','7',10],['contrast','7',10]]){
+        try{const rr=await recognizeLobby(cropCanvasNorm(img,b.x,b.y,b.w,b.h,scale),mode,psm),d=rr?.data||rr||{};for(const w of parseTSV(d,scale)){const raw=String(w.text||'').trim();if(/^\d{1,2}$/.test(raw)){const v=Number(raw);if(v>=0&&v<=40)vals.push({v,c:Number(w.confidence)||0})}else if(/^[ODIl|]$/.test(raw))vals.push({v:resultKillTokenValue(raw),c:Number(w.confidence)||0})}}catch(e){}
+      }
+      if(vals.length){vals.sort((a,b)=>b.c-a.c);rows[i].kills=vals[0].v}
+    }
+  }
+  assignResultCardRoster(rows,m);
+  rows.forEach(r=>{r.needsKillReview=r.kills==null});
+  return {rank,rows,quality:{players:rows.filter(r=>r.name).length,kills:rows.filter(r=>r.kills!=null).length}};
+}
+async function readResultRecapCard(img,card,m,rank){
+  const centers=[.22,.40,.60,.80], rows=[0,1,2,3].map(i=>({index:i,name:'',canonical:'',rawName:'',slot:0,playerIndex:i,kills:null,score:0,confidence:0,candidates:[],rank}));
+  const whole=cropCanvasNorm(img,card.x,card.y,card.w,card.h,4);let lines=[];
+  for(const [mode,psm] of [['original','6'],['contrast','6']]){try{const rr=await recognizeLobby(whole,mode,psm),d=rr?.data||rr||{};const u=lineGroupsFromTSV(d,4).filter(x=>/eliminations?/i.test(x.text));if(u.length>lines.length)lines=u;if(lines.length>=4)break}catch(e){}}
+  for(const line of lines){let best=0,dist=Infinity;for(let i=0;i<4;i++){const d=Math.abs(line.cy/(whole.height||1)-centers[i]);if(d<dist){dist=d;best=i}}if(dist>.20)continue;let text=line.text;const em=text.match(/\b(\d{1,2})\s+eliminations?\b/i);let kill=em?Number(em[1]):null;if(kill==null){const z=text.match(/\b([ODIl|])\s+eliminations?\b/i);if(z)kill=resultKillTokenValue(z[1])}let name=normalizeOcrCandidate(em?text.slice(0,em.index):text,best===0);rows[best].rawName=name;rows[best].kills=Number.isInteger(kill)?kill:null;rows[best].confidence=line.confidence;rows[best].candidates=[{text:name,confidence:line.confidence,source:'top-recap'}]}
+  for(let i=0;i<4;i++)if(!rows[i].rawName||rows[i].kills==null){const b={x:card.x+card.w*.205,y:card.y+card.h*(centers[i]-.085),w:card.w*.485,h:.17*card.h};try{const rr=await recognizeLobby(cropCanvasNorm(img,b.x,b.y,b.w,b.h,10),'original','7'),d=rr?.data||rr||{};if(!rows[i].rawName){const n=resultCandidateText(d.text||'');if(n)rows[i].rawName=n}}catch(e){}}
+  if(rows.some(r=>r.kills==null))for(let i=0;i<4;i++)if(rows[i].kills==null){const b={x:card.x+card.w*.72,y:card.y+card.h*(centers[i]-.09),w:card.w*.25,h:.18*card.h};try{const rr=await recognizeLobby(cropCanvasNorm(img,b.x,b.y,b.w,b.h,10),'original','7'),d=rr?.data||rr||{};const m0=String(d.text||'').match(/\b(\d{1,2})\b/);if(m0)rows[i].kills=Math.min(40,Number(m0[1]))}catch(e){}}
+  assignResultCardRoster(rows,m);rows.forEach(r=>r.needsKillReview=r.kills==null);return {rank,rows,quality:{players:rows.filter(r=>r.name).length,kills:rows.filter(r=>r.kills!=null).length},imageIndex:0,recap:true};
+}
 async function readResultImage(img,m,imageIndex=0,totalImages=1){
-  // Result screenshots use the same PUBG 3-column card layout as the Lobby. We do NOT trust
-  // the card's slot number as identity; we identify each card by the four player names against
-  // the saved roster. This also makes screenshots resilient to card ordering.
-  const cards=resultGridCards(img,imageIndex,totalImages),all=[];
+  const all=[];
+  // The first screenshot also contains persistent Top-1 and Top-2 recap cards on the left.
+  // Read them once; later screenshots repeat the same cards and are intentionally ignored.
+  if(imageIndex===0){
+    const recap=[{x:.100,y:.158,w:.415,h:.315},{x:.100,y:.473,w:.415,h:.325}];
+    for(let i=0;i<recap.length;i++){const r=await readResultRecapCard(img,recap[i],m,i+1);const valid=r.rows.filter(p=>p.name&&p.slot>=3);if(valid.length>=1)all.push(r)}
+  }
+  const cards=resultGridCards(img,imageIndex,totalImages);
   for(const card of cards){
-    const rows=await readResultCard(img,card,m);
-    const valid=rows.filter(r=>r.name&&r.slot>=3);
-    if(valid.length>=1)all.push({card,rows});
+    const result=await readResultCard(img,card,m,totalImages);const valid=result.rows.filter(r=>r.name&&r.slot>=3);
+    if(result.rank>=3&&result.rank<=16&&valid.length>=1)all.push({...result,imageIndex});
   }
   return all;
 }
 function mergeResultRows(cardResults,m){
-  const bySlot=new Map();
+  const byRank=new Map();
   for(const group of cardResults||[]){
-    const byTeam=new Map();
-    for(const p of group.rows||[]){
-      if(!p.name||p.slot<3)continue;
-      const key=p.slot; if(!byTeam.has(key))byTeam.set(key,[]);byTeam.get(key).push(p);
-    }
-    // A single screenshot card belongs to the roster team receiving the strongest number of
-    // matching players. This is safer than assigning from the screenshot's visible slot label.
+    const rank=Number(group.rank)||0;if(rank<3||rank>16)continue;
+    const players=(group.rows||[]).filter(p=>p.name&&p.slot>=3);
+    if(!players.length)continue;
+    const bySlot=new Map();
+    for(const p of players){const a=bySlot.get(p.slot)||[];a.push(p);bySlot.set(p.slot,a)}
     let chosen=null,best=-1;
-    for(const [slot,ps] of byTeam){
+    for(const [slot,ps] of bySlot){
       const unique=new Set(ps.map(p=>p.playerIndex));
-      const score=unique.size*10+ps.reduce((s,p)=>s+p.score,0);
+      const score=unique.size*10+ps.reduce((s,p)=>s+(Number(p.score)||0),0)+ps.filter(p=>p.kills!=null).length*1.5;
       if(score>best){best=score;chosen={slot,ps}}
     }
     if(!chosen)continue;
-    const slot=chosen.slot, t=team(slot), snap=m.rosterSnapshot?.[slot];
-    let x=bySlot.get(slot);if(!x){x={slot,team:t?.name||snap?.team||'',placement:0,kills:0,players:[],evidence:[]};bySlot.set(slot,x)}
-    for(const p of chosen.ps){
-      let q=x.players.find(z=>z.playerIndex===p.playerIndex);
-      if(!q)q={name:p.name,kills:p.kills==null?0:Number(p.kills)||0,slot,playerIndex:p.playerIndex,matchScore:p.score,needsKillReview:p.kills==null};
-      else if(p.kills!=null)q.kills=Math.max(q.kills,Number(p.kills)||0);
-      q.matchScore=Math.max(q.matchScore||0,p.score);q.needsKillReview=q.needsKillReview&&(p.kills==null);
-      const idx=x.players.findIndex(z=>z.playerIndex===p.playerIndex);if(idx>=0)x.players[idx]=q;else x.players.push(q);
-    }
-    x.kills=x.players.reduce((s,p)=>s+Math.max(0,Number(p.kills)||0),0);
-    x.evidence.push(group.card);
+    const slot=chosen.slot,t=team(slot),snap=m.rosterSnapshot?.[slot];
+    const current=byRank.get(rank);
+    const quality=(group.quality?.players||0)*10+(group.quality?.kills||0)*2+best;
+    if(current&&current._quality>quality)continue;
+    const x={slot,team:t?.name||snap?.team||'',placement:rank,kills:0,players:[],evidence:[{imageIndex:group.imageIndex,rank}],_quality:quality};
+    for(const p of chosen.ps){x.players.push({name:p.name,kills:p.kills==null?0:Number(p.kills)||0,slot,playerIndex:p.playerIndex,matchScore:p.score,needsKillReview:p.kills==null})}
+    x.players.sort((a,b)=>a.playerIndex-b.playerIndex);
+    x.kills=x.players.reduce((sum,p)=>sum+Math.max(0,Number(p.kills)||0),0);
+    byRank.set(rank,x);
   }
-  return [...bySlot.values()].sort((a,b)=>a.slot-b.slot).map(x=>{x.players.sort((a,b)=>a.playerIndex-b.playerIndex);return x});
+  // Convert placement-keyed data to slot-keyed data. One slot can only have one placement.
+  const bySlot=new Map();
+  for(const x of byRank.values()){
+    const old=bySlot.get(x.slot);
+    if(!old||x._quality>old._quality)bySlot.set(x.slot,x);
+  }
+  return [...bySlot.values()].map(x=>{delete x._quality;return x}).sort((a,b)=>a.placement-b.placement);
 }
 function buildCompleteResultRows(m,detected){
   const map=new Map((detected||[]).map(r=>[Number(r.slot),r]));
@@ -816,25 +911,26 @@ function extractExplicitPlacements(words){
 async function runResultOCR(files,matchId=null,storedMediaIds=[]){
   const id=matchId||$('ocrMatch').value;if(!id||!files?.length||ocrBusy)return;const m=state.matches.find(x=>x.id===id);if(!m)return;
   state.activeMatchId=id;persist();ocrBusy=true;setProgress('resultProgress',2);
-  $('ocrReview').innerHTML='<div class="empty">Reading each result card and linking its players to the saved Slot roster…</div>';
+  $('ocrReview').innerHTML='<div class="empty">Analyzing PUBG MOBILE final-result boards · detecting ranked cards · linking players to the saved Lobby roster…</div>';
   try{
-    await loadOCR();const savedIds=await ensureResultMedia(m,files,storedMediaIds.length?storedMediaIds:m.mediaIds||[]);const detected=[];
-    const ordered=[];
-    for(const file of files){const img=await imageFromFile(file);assertImageReady(img);ordered.push({file,img,ratio:(img.naturalWidth||img.width||1)/(img.naturalHeight||img.height||1)});}
-    ordered.sort((a,b)=>b.ratio-a.ratio);
-    for(let i=0;i<ordered.length;i++){
-      const {file,img}=ordered[i];
-      const rows=await readResultImage(img,m,i,ordered.length);const explicitPlace=extractExplicitPlacements(await (async()=>{try{const rr=await recognizeLobby(cropCanvasNorm(img,0,0,1,1,4),'original','11');return parseTSV(rr?.data||rr,4)}catch(e){return []}})());if(explicitPlace&&rows.length===1)rows[0].placement=explicitPlace;detected.push(...rows);setProgress('resultProgress',Math.round((i+1)/files.length*88)+5);
+    await loadOCR();
+    const savedIds=await ensureResultMedia(m,files,storedMediaIds.length?storedMediaIds:m.mediaIds||[]);
+    const detected=[];
+    for(let i=0;i<files.length;i++){
+      const img=await imageFromFile(files[i]);assertImageReady(img);
+      const rows=await readResultImage(img,m,i,files.length);detected.push(...rows);
+      setProgress('resultProgress',Math.round((i+1)/files.length*86)+8);
     }
     const merged=mergeResultRows(detected,m),complete=buildCompleteResultRows(m,merged);
-    // Placement is intentionally never guessed from the fixed Slot number. If the screenshot
-    // does not contain a readable placement field, it remains blank for manual confirmation.
-    ocrReview={type:'result',matchId:id,rows:complete,detected:merged,files:[...files],mediaIds:savedIds.slice(),sourceFiles:files.map(f=>f.name),version:'66.0',placementNeedsManual:complete.filter(r=>!r.placement).length};
+    const foundRanks=[...new Set(detected.map(x=>Number(x.rank)).filter(x=>x>=3&&x<=16))].sort((a,b)=>a-b);
+    const missingRanks=Array.from({length:16},(_,i)=>i+1).filter(r=>!foundRanks.includes(r));
+    const linked=complete.filter(r=>r.detected).length;
+    ocrReview={type:'result',matchId:id,rows:complete,detected:merged,files:[...files],mediaIds:savedIds.slice(),sourceFiles:files.map(f=>f.name),version:'67.0',foundRanks,missingRanks,placementNeedsManual:complete.filter(r=>!r.placement).length};
     renderOCRReview();setProgress('resultProgress',100);
-    const linked=complete.filter(r=>r.detected).length,killReview=complete.reduce((n,r)=>n+r.players.filter(p=>p.needsKillReview).length,0);
-    $('resultStatus').innerHTML=`Linked <b>${linked}/16</b> teams from the screenshots · <b>${killReview}</b> kill field(s) need review · enter/confirm placements, then Apply.`;
-    setEngine('ready','Result OCR 65 · Card + Roster Linked');
-  }catch(e){console.error(e);setProgress('resultProgress',0);$('resultStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span>`;$('ocrReview').innerHTML='<div class="notice">No match data was changed.</div>';setEngine('bad','Result OCR · Error')}
+    const killReview=complete.reduce((n,r)=>n+r.players.filter(p=>p.needsKillReview).length,0);
+    $('resultStatus').innerHTML=`Detected <b>${foundRanks.length}/16</b> ranked result cards · linked <b>${linked}/16</b> teams · <b>${killReview}</b> kill field(s) need review. ${missingRanks.length?`Missing ranks: <b>${missingRanks.join(', ')}</b>.`:'All ranks 3–16 detected.'}`;
+    setEngine('ready','Result OCR 67 · Final Board + Roster Linked');
+  }catch(e){console.error('Result OCR 67',e);setProgress('resultProgress',0);$('resultStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span>`;$('ocrReview').innerHTML='<div class="notice">No match data was changed. Check the screenshots and try again.</div>';setEngine('bad','Result OCR · Error')}
   finally{ocrBusy=false}
 }
 function resultRowUpdate(i,field,value){if(!ocrReview?.rows?.[i])return;const r=ocrReview.rows[i];if(field==='placement')r.placement=Math.max(0,Math.floor(Number(value)||0));if(field==='kill'){const [pi]=String(value).split(':').map(Number);return}r.kills=r.players.reduce((s,p)=>s+Math.max(0,Number(p.kills)||0),0);renderOCRReview()}
@@ -845,13 +941,13 @@ async function openResultEvidence(matchId,index){const m=state.matches.find(x=>x
 function renderOCRReview(){
   if(!ocrReview)return;const rows=ocrReview.rows||[],linked=rows.filter(r=>r.detected).length,needs=rows.reduce((n,r)=>n+(!r.placement?1:0)+r.players.filter(p=>p.needsKillReview).length,0),total=rows.reduce((s,r)=>s+((state.rules.place[Number(r.placement)]||0)+Number(r.kills||0)*Number(state.rules.kill||0)),0);
   const ev=(ocrReview.mediaIds||[]).map((id,i)=>`<button class="ghost small" onclick="openResultEvidence('${ocrReview.matchId}',${i})">Image ${i+1}</button>`).join('');
-  $('ocrReview').innerHTML=`<div class="notice"><b>Result OCR 65</b> · ${linked}/16 teams linked to the Lobby roster · ${needs?`<span class="warn">${needs} field(s) need review.</span>`:'<span class="ok">All OCR fields are filled.</span>'}<br><span class="muted">Names are canonical Lobby names. The screenshot supplies kills; placement is only accepted when explicitly detected/confirmed. 1 Kill = ${state.rules.kill} point.</span></div><div class="row" style="margin:8px 0">${ev||'<span class="muted">No stored evidence.</span>'}</div><div class="scroll"><table class="table"><tr><th>Place</th><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Kills</th><th>PP</th><th>Total</th></tr>${rows.map((r,i)=>{const pp=state.rules.place[Number(r.placement)]||0,totalRow=pp+Number(r.kills||0)*Number(state.rules.kill||0);return `<tr><td><input class="center ${!r.placement?'badInput':''}" style="width:60px" type="number" min="1" max="16" value="${r.placement||''}" onchange="setReviewPlacement(${i},this.value)"></td><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(r.team)}</td>${r.players.map((p,j)=>`<td><div><b>${esc(p.name||'—')}</b><input class="center ${p.needsKillReview?'badInput':''}" style="width:58px;margin-top:4px" type="number" min="0" value="${Number(p.kills)||0}" onchange="setReviewKill(${i},${j},this.value)"></div></td>`).join('')}<td><b>${r.kills||0}</b></td><td>${pp}</td><td><b>${totalRow}</b></td></tr>`}).join('')}</table></div><div class="row" style="margin-top:10px"><div class="notice"><b>Current Match Score:</b> ${total} points · Kill ${state.rules.kill} point · ${rows.filter(r=>r.placement).length}/16 placements entered.</div><button class="primary" onclick="applyOCRToMatch()">✓ Apply Results</button><button class="ghost" onclick="go('matches')">Manual Match Entry</button></div>`;
+  $('ocrReview').innerHTML=`<div class="notice"><b>Result OCR 67</b> · ${linked}/16 teams linked to the Lobby roster · ${needs?`<span class="warn">${needs} field(s) need review.</span>`:'<span class="ok">All OCR fields are filled.</span>'}<br><span class="muted">The right-side ranked cards supply Placement + Kills. The left Top-1/Top-2 recap is ignored. Names are canonical Lobby names. 1 Kill = ${state.rules.kill} point.</span></div><div class="row" style="margin:8px 0">${ev||'<span class="muted">No stored evidence.</span>'}</div><div class="scroll"><table class="table"><tr><th>Place</th><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Kills</th><th>PP</th><th>Total</th></tr>${rows.map((r,i)=>{const pp=state.rules.place[Number(r.placement)]||0,totalRow=pp+Number(r.kills||0)*Number(state.rules.kill||0);return `<tr><td><input class="center ${!r.placement?'badInput':''}" style="width:60px" type="number" min="1" max="16" value="${r.placement||''}" onchange="setReviewPlacement(${i},this.value)"></td><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(r.team)}</td>${r.players.map((p,j)=>`<td><div><b>${esc(p.name||'—')}</b><input class="center ${p.needsKillReview?'badInput':''}" style="width:58px;margin-top:4px" type="number" min="0" value="${Number(p.kills)||0}" onchange="setReviewKill(${i},${j},this.value)"></div></td>`).join('')}<td><b>${r.kills||0}</b></td><td>${pp}</td><td><b>${totalRow}</b></td></tr>`}).join('')}</table></div><div class="row" style="margin-top:10px"><div class="notice"><b>Current Match Score:</b> ${total} points · Kill ${state.rules.kill} point · ${rows.filter(r=>r.placement).length}/16 placements entered.</div><button class="primary" onclick="applyOCRToMatch()">✓ Apply Results</button><button class="ghost" onclick="go('matches')">Manual Match Entry</button></div>`;
 }
 async function applyOCRToMatch(){
   if(!ocrReview||ocrReview.type!=='result')return;const m=state.matches.find(x=>x.id===ocrReview.matchId);if(!m)return;
   const issues=reviewResultValidation(ocrReview.rows);if(issues.length)return toast(issues[0]);
   for(const r of ocrReview.rows){const x=ensureResult(m,r.slot);x.team=team(r.slot)?.name||r.team;x.placement=Number(r.placement)||0;x.players=r.players.map(p=>({name:p.name,kills:Math.max(0,Number(p.kills)||0),slot:Number(r.slot),playerIndex:p.playerIndex}));x.kills=x.players.reduce((s,p)=>s+p.kills,0);x.pp=state.rules.place[x.placement]||0;x.total=points(x)}
-  m.approved=false;m.review=[];m.resultOcrVersion='65.0';m.mediaIds=[...new Set([...(m.mediaIds||[]),...(ocrReview.mediaIds||[])])];m.mediaNames=[...new Set([...(m.mediaNames||[]),...(ocrReview.sourceFiles||[])])];persist();renderAll();go('matches');toast('Results applied. Review the Match and Approve when verified.');
+  m.approved=false;m.review=[];m.resultOcrVersion='67.0';m.mediaIds=[...new Set([...(m.mediaIds||[]),...(ocrReview.mediaIds||[])])];m.mediaNames=[...new Set([...(m.mediaNames||[]),...(ocrReview.sourceFiles||[])])];persist();renderAll();go('matches');toast('Results applied. Review the Match and Approve when verified.');
 }
 async function reprocessStoredMatchImages(id){const m=state.matches.find(x=>x.id===id);if(!m)return toast('Match not found');const files=await loadMatchMedia(m);if(!files.length)return toast('No stored result screenshots for this match');pendingResultFiles=files;renderFileList('resultFileList',files);go('ocr');await runResultOCR(files,id,m.mediaIds.slice())}
 
