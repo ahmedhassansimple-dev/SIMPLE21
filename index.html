@@ -194,7 +194,7 @@ function renderTeams(){
 function importTeams(){const raw=$('bulkTeams').value.trim();if(!raw)return toast('Paste the Slot + Team list first');let count=0;for(const line of raw.split(/\r?\n/)){let s=line.trim();if(!s)continue;let m=s.match(/^0?(\d{1,2})\s*(?:\||\t|[-:])\s*(.+)$/)||s.match(/^0?(\d{1,2})\s+(.+)$/);if(!m)continue;let slot=Number(m[1]),name=m[2].trim();if(slot>=3&&slot<=18&&name){team(slot).name=name;count++}}persist();renderTeams();renderHome();$('bulkTeams').value='';toast(`${count} team records imported`)}
 function exportTeamsCSV(){const rows=[['Slot','Team','Player 1','Player 2','Player 3','Player 4'],...state.teams.map(t=>[t.slot,t.name,...t.players.map(p=>p.name)])];download('teams.csv',rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n'),'text/csv')}
 
-async function createMatch(){if(ocrBusy)return toast('Finish the current OCR process first');const name=$('newMatchName').value.trim()||`Match ${state.matches.length+1}`,gameId=$('newGameId').value.trim();if(gameId&&state.matches.some(m=>m.gameId===gameId))return toast('Duplicate Game ID blocked');const files=[...($('newMatchResultFiles')?.files||[])];if(files.length>8)return toast('Maximum 8 result screenshots per match');const snap={};state.teams.forEach(t=>snap[t.slot]={team:t.name,players:t.players.map(p=>p.name)});const m=normalizeMatch({id:uid(),name,gameId,createdAt:Date.now(),approved:false,results:state.teams.map(t=>({slot:t.slot,team:t.name,placement:0,kills:0,players:[]})),review:[],rosterSnapshot:snap,mediaIds:[],mediaNames:[]});state.matches.push(m);state.activeMatchId=m.id;persist();if(files.length){for(const f of files){try{const id=await mediaPut(f);m.mediaIds.push(id);m.mediaNames.push(f.name)}catch(e){console.warn(e)}}m.resultOcrVersion='69.1';persist()}$('newMatchName').value='';$('newGameId').value='';if($('newMatchResultFiles'))$('newMatchResultFiles').value='';renderMatches();if(files.length){pendingResultFiles=files;renderFileList('resultFileList',files);go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}else{go('matches');toast('Match created — add result screenshots whenever ready')}}
+async function createMatch(){if(ocrBusy)return toast('Finish the current OCR process first');const name=$('newMatchName').value.trim()||`Match ${state.matches.length+1}`,gameId=$('newGameId').value.trim();if(gameId&&state.matches.some(m=>m.gameId===gameId))return toast('Duplicate Game ID blocked');const files=[...($('newMatchResultFiles')?.files||[])];if(files.length>8)return toast('Maximum 8 result screenshots per match');const snap={};state.teams.forEach(t=>snap[t.slot]={team:t.name,players:t.players.map(p=>p.name)});const m=normalizeMatch({id:uid(),name,gameId,createdAt:Date.now(),approved:false,results:state.teams.map(t=>({slot:t.slot,team:t.name,placement:0,kills:0,players:[]})),review:[],rosterSnapshot:snap,mediaIds:[],mediaNames:[]});state.matches.push(m);state.activeMatchId=m.id;persist();if(files.length){for(const f of files){try{const id=await mediaPut(f);m.mediaIds.push(id);m.mediaNames.push(f.name)}catch(e){console.warn(e)}}m.resultOcrVersion='70.0';persist()}$('newMatchName').value='';$('newGameId').value='';if($('newMatchResultFiles'))$('newMatchResultFiles').value='';renderMatches();if(files.length){pendingResultFiles=files;renderFileList('resultFileList',files);go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}else{go('matches');toast('Match created — add result screenshots whenever ready')}}
 function activeMatch(){return state.matches.find(m=>m.id===state.activeMatchId)||state.matches[state.matches.length-1]||null}
 function renderMatches(){const list=$('matchList');if(!list)return;if(!state.matches.length)list.innerHTML='<div class="empty">No matches yet.</div>';else list.innerHTML=state.matches.slice().reverse().map(m=>`<div class="matchItem ${m.id===state.activeMatchId?'active':''}"><div><b>${esc(m.name)}</b><div class="muted">${esc(m.gameId||'No Game ID')} · ${m.approved?'Approved':'Review'}</div></div><div class="row" style="max-width:190px"><button class="ghost small" onclick="openMatch('${m.id}')">Open</button><button class="danger small" onclick="deleteMatch('${m.id}')">Delete</button></div></div>`).join('');renderMatchEditor()}
 function openMatch(id){state.activeMatchId=id;persist();renderMatches();}
@@ -237,7 +237,7 @@ function renderMatchEditor(){
 function manualPlacement(id,slot,v){const m=state.matches.find(x=>x.id===id);if(!m)return;const r=ensureResult(m,slot);r.placement=Math.max(0,Math.floor(Number(v)||0));m.approved=false;m.review=[];persist();renderMatchEditor();}
 function manualPlayerKill(id,slot,index,v){const m=state.matches.find(x=>x.id===id);if(!m)return;const r=ensureResult(m,slot);while(r.players.length<4)r.players.push({name:m.rosterSnapshot?.[slot]?.players?.[r.players.length]||team(slot)?.players?.[r.players.length]?.name||'',kills:0,slot,playerIndex:r.players.length});r.players[index].kills=Math.max(0,Math.floor(Number(v)||0));r.kills=r.players.reduce((s,p)=>s+Number(p.kills||0),0);r.total=points(r);m.approved=false;m.review=[];persist();renderMatchEditor();}
 function recalculateMatch(id){const m=state.matches.find(x=>x.id===id);if(!m)return;for(const r of m.results){r.kills=(r.players||[]).reduce((s,p)=>s+Number(p.kills||0),0);r.pp=state.rules.place[r.placement]||0;r.total=points(r);r.team=team(r.slot)?.name||r.team}m.approved=false;persist();renderMatchEditor();toast('Match scores recalculated');}
-async function attachMatchResultImages(id){const m=state.matches.find(x=>x.id===id),input=$('matchAttachFiles');if(!m||!input?.files?.length)return toast('Choose result screenshots first');const files=[...input.files];if(files.length>8)return toast('Maximum 8 result screenshots per match');try{const ids=new Set(m.mediaIds||[]),names=new Set(m.mediaNames||[]);for(const f of files){const mediaId=await mediaPut(f);ids.add(mediaId);names.add(f.name)}m.mediaIds=[...ids];m.mediaNames=[...names];m.approved=false;m.resultOcrVersion='69.1';persist();pendingResultFiles=files;renderFileList('resultFileList',files);renderMatches();go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}catch(e){toast('Could not save result screenshots: '+(e.message||e))}}
+async function attachMatchResultImages(id){const m=state.matches.find(x=>x.id===id),input=$('matchAttachFiles');if(!m||!input?.files?.length)return toast('Choose result screenshots first');const files=[...input.files];if(files.length>8)return toast('Maximum 8 result screenshots per match');try{const ids=new Set(m.mediaIds||[]),names=new Set(m.mediaNames||[]);for(const f of files){const mediaId=await mediaPut(f);ids.add(mediaId);names.add(f.name)}m.mediaIds=[...ids];m.mediaNames=[...names];m.approved=false;m.resultOcrVersion='70.0';persist();pendingResultFiles=files;renderFileList('resultFileList',files);renderMatches();go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}catch(e){toast('Could not save result screenshots: '+(e.message||e))}}
 
 function imageFromFile(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error('Could not open '+file.name))};im.src=u})}
 function crop(img,x,y,w,h,scale=4){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;const c=document.createElement('canvas');c.width=Math.max(2,Math.round(w*scale));c.height=Math.max(2,Math.round(h*scale));const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,x*W,y*H,w*W,h*H,0,0,c.width,c.height);return c}
@@ -338,7 +338,7 @@ async function recognizeLobby(canvas,mode='original',psm='6'){const w=await load
    Design: exact slot crop -> name-column consensus -> targeted row rescue
    -> roster-aware assignment -> immutable slot identity.
    ========================================================= */
-const OCR60={version:'69.1',slotCenters:[.085,.315,.545,.775],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
+const OCR60={version:'70.0',slotCenters:[.085,.315,.545,.775],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
 const RESULT_ROW_CENTERS=[.085,.315,.545,.775];
 function lobbyGeometry(img){
  const W=img?.naturalWidth||img?.width||852,H=img?.naturalHeight||img?.height||460;
@@ -712,7 +712,7 @@ function resultRowBand(card,i){
   const centers=[.120,.370,.620,.850],h=.180;
   return {x:card.x+card.w*.195,y:card.y+card.h*(centers[i]-h/2),w:card.w*.775,h:h*card.h};
 }
-function resultKillArea(card,i){
+function legacyResultKillArea(card,i){
   const centers=[.120,.370,.620,.850],h=.180;
   return {x:card.x+card.w*.735,y:card.y+card.h*(centers[i]-.075),w:card.w*.245,h:h*card.h};
 }
@@ -764,13 +764,21 @@ function resultKillTokenValue(ch){
   const n=Number(t);return Number.isInteger(n)&&n>=0&&n<=40?n:null;
 }
 function extractResultKill(text){
-  const s=ocrClean(text).replace(/\s+/g,' ');
-  const num=s.match(/(?:^|\s)(\d{1,2})\s*(?:[a-z]?liminat(?:ions?|ion|inne|nne|tions?))/i);if(num){const v=Number(num[1]);if(v>=0&&v<=40)return v}
-  const tok=s.match(/(?:^|\s)([ODUIl|!TflfiQZz)ASs©EGgqB])\s*(?:[a-z]?liminat(?:ions?|ion|inne|nne|tions?))/i);if(tok){const v=resultKillTokenValue(tok[1]);if(v!==null)return v}
-  // PUBG uses the singular form only for exactly one kill. OCR may distort the word,
-  // but the singular/plural grammar remains a useful second signal.
-  if(/\b(?:elimination|slimination|climination|eliminat(?:ion|inne|nne))\b/i.test(s)&&!/\b(?:eliminations|sliminations|climinations)\b/i.test(s))return 1;
-  if(/(?:eliminations|sliminations|climinations|sliminat(?:ions|inne|nne))/i.test(s))return 0;
+  const s=ocrClean(text).replace(/\s+/g,' ').trim();
+  // First use a normal numeric value immediately before any OCR variant of "eliminations".
+  const num=s.match(/(?:^|\s)(\d{1,2})\s*(?:[a-z]*liminat[a-z]*)/i);
+  if(num){const v=Number(num[1]);if(v>=0&&v<=40)return v}
+  // Then use the common single-glyph OCR confusions. The marker is deliberately broad because
+  // Tesseract frequently returns forms such as "oliminatinne" / "sliminatone" on this UI font.
+  const tok=s.match(/(?:^|\s)([0-9ODUIl|!TflfiQZz)ASs©EGgqB])\s*(?:[a-z]*liminat[a-z]*)/i);
+  if(tok){const v=resultKillTokenValue(tok[1]);if(v!==null)return v}
+  // Sometimes the glyph and the elimination word are fused. Search the short prefix directly.
+  const fused=s.match(/([0-9ODUIl|!TflfiQZz)ASs©EGgqB])[^0-9A-Za-z]{0,2}[a-z]*liminat[a-z]*/i);
+  if(fused){const v=resultKillTokenValue(fused[1]);if(v!==null)return v}
+  // PUBG uses singular grammar only for exactly one kill. This is the final fallback for a clean
+  // "elimination" read where the digit itself disappeared.
+  if(/\b(?:elimination|slimination|climination|olimination|eliminat[a-z]*)\b/i.test(s)&&!/[0-9]/.test(s))return 1;
+  if(/(?:eliminat|sliminat|climinat|oliminat)/i.test(s))return 0;
   return null;
 }
 function rankCandidatesFromOCR(data,scale,card,img){
@@ -818,48 +826,99 @@ function assignResultCardRoster(rows,m){
   dfs(0,new Set(),0,[]);
   rows.forEach((r,i)=>{const hit=best.assign[i];if(hit&&hit.score>=.62){r.name=hit.name;r.canonical=hit.name;r.slot=hit.slot;r.playerIndex=hit.playerIndex;r.score=hit.score;r.matchScore=hit.score}else{r.name='';r.canonical='';r.slot=0;r.playerIndex=i;r.score=0}});return rows;
 }
-async function readResultCard(img,card,m,totalImages=1){
-  const rows=[0,1,2,3].map(i=>({index:i,name:'',canonical:'',rawName:'',slot:0,playerIndex:i,kills:null,score:0,confidence:0,candidates:[],rank:0,killCandidates:[]}));
-  const whole=cropCanvasNorm(img,card.x,card.y,card.w,card.h,4);let primaryLines=[],rankVotes=[];
-  for(const [mode,psm,scale] of [['original','6',4],['contrast','6',4]]){
+async function resultOCRSingle(canvas,mode='original',psm='7',whitelist=''){
+  const w=await loadOCR();
+  try{await w.setParameters({tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1',user_defined_dpi:'360',tessedit_char_whitelist:whitelist||'',load_system_dawg:'0',load_freq_dawg:'0',load_unambig_dawg:'0',load_punc_dawg:'0',load_number_dawg:'0'})}catch(e){}
+  return await w.recognize(preprocessLobby(canvas,mode),{}, {tsv:true,text:true});
+}
+function resultNameArea(card,i){
+  const rb=resultRowBand(card,i);
+  return {x:card.x+card.w*.105,y:rb.y,w:card.w*.625,h:rb.h};
+}
+function resultRankArea(card,i){
+  // The placement number is a single large numeral/number on the left-middle of each result card,
+  // not a per-player row field. Keep this crop deliberately separate from player OCR.
+  return {x:card.x+card.w*.015,y:card.y+card.h*.305,w:card.w*.205,h:card.h*.405};
+}
+function resultKillArea(card,i){
+  const rb=resultRowBand(card,i);
+  return {x:card.x+card.w*.735,y:rb.y,w:card.w*.255,h:rb.h};
+}
+function resultKillFromOCRText(text){
+  const s=ocrClean(text).replace(/\s+/g,' ').trim();
+  const direct=extractResultKill(s); if(direct!==null)return direct;
+  const m=s.match(/(?:^|\s)(\d{1,2}|[ODUIl|!TflfiQZz)ASs©EGgqB])(?:\s+|$)/i);
+  if(m){const v=resultKillTokenValue(m[1]);if(v!==null)return v}
+  return null;
+}
+async function readResultKillPrecise(img,card,i){
+  const area=resultKillArea(card,i),vals=[];
+  const passes=[['original','10',12,'0123456789'],['contrast','10',12,'0123456789'],['sharpen','10',14,'0123456789'],['whitehat','10',14,'0123456789'],['original','7',12,'']];
+  for(const [mode,psm,scale,wl] of passes){
     try{
-      const c=mode==='original'?whole:cropCanvasNorm(img,card.x,card.y,card.w,card.h,4),rr=await recognizeLobby(c,mode,psm),d=rr?.data||rr||{};
-      rankVotes.push(...rankCandidatesFromOCR(d,scale,card,img));
-      const lines=lineGroupsFromTSV(d,scale).filter(x=>x.text);
-      const usable=lines.filter(x=>/elimin|elim/i.test(x.text));if(usable.length>primaryLines.length)primaryLines=usable;
+      const rr=await resultOCRSingle(cropCanvasNorm(img,area.x,area.y,area.w,area.h,scale),mode,psm,wl),d=rr?.data||rr||{};
+      const v=resultKillFromOCRText(d.text||'');
+      if(v!==null)vals.push({v,c:Number(d.confidence)||0,source:`kill-${mode}-${psm}`});
+      for(const w of parseTSV(d,scale)){const x=resultKillTokenValue(w.text);if(x!==null)vals.push({v:x,c:Number(w.confidence)||0,source:`kill-tsv-${mode}`})}
     }catch(e){}
   }
-  const centers=[.120,.370,.620,.850];
-  for(const line of primaryLines){
-    let best=0,dist=Infinity;for(let i=0;i<4;i++){const d=Math.abs((line.cy/(whole.height||1))-centers[i]);if(d<dist){dist=d;best=i}}
-    if(dist>.15)continue;
-    let text=line.text;const before=text.replace(/\s*(?:\d{1,2}|[ODUIl|!Tflfi])?\s*(?:eliminations?|elim(?:ination|s)?).*$/i,'').trim();
-    let name=normalizeOcrCandidate(before,best===0);if(name&&/^\d{1,2}\s+/.test(name)){const stripped=name.replace(/^\d{1,2}\s+/,'');if(plausibleName(stripped))name=stripped}
-    const kill=extractResultKill(text);
-    rows[best].rawName=name;rows[best].kills=kill;rows[best].confidence=line.confidence;rows[best].candidates=[{text:name,confidence:line.confidence,source:'whole-card'}];rows[best].killCandidates.push({v:kill,c:line.confidence,source:'line'});
+  // Consensus first; then the strongest single-digit read. This prevents a single bad pass
+  // from turning a real 0/1/2 into a missing field.
+  if(!vals.length)return null;
+  const by=new Map();for(const x of vals){const q=by.get(x.v)||{n:0,c:0};q.n++;q.c=Math.max(q.c,x.c);by.set(x.v,q)}
+  return [...by.entries()].sort((a,b)=>(b[1].n-a[1].n)||(b[1].c-a[1].c))[0][0];
+}
+async function readResultNamePrecise(img,card,i,m){
+  const area=resultNameArea(card,i),obs=[];
+  const passes=[['original','7',10],['contrast','7',10],['sharpen','7',12],['original','6',8],['contrast','11',10]];
+  for(const [mode,psm,scale] of passes){
+    try{
+      const rr=await resultOCRSingle(cropCanvasNorm(img,area.x,area.y,area.w,area.h,scale),mode,psm,''),d=rr?.data||rr||{};
+      const txt=ocrClean(d.text||'').replace(/\s+/g,' ').trim();
+      const cleaned=normalizeOcrCandidate(txt,i===0);
+      if(cleaned&&plausibleName(cleaned))obs.push({text:cleaned,confidence:Number(d.confidence)||0,source:`name-${mode}-${psm}`});
+      for(const line of lineGroupsFromTSV(d,scale)){const n=normalizeOcrCandidate(line.text,i===0);if(n&&plausibleName(n))obs.push({text:n,confidence:Number(line.confidence)||0,source:`name-tsv-${mode}`})}
+    }catch(e){}
   }
-  for(let i=0;i<4;i++){
-    const b=resultRowBand(card,i);
-    // Name + kill on one calibrated line. This is the high-value pass for this exact PUBG board.
-    for(const [mode,psm,scale] of [['original','7',10],['contrast','7',10],['sharpen','7',10]]){
-      try{
-        const rr=await recognizeLobby(cropCanvasNorm(img,b.x,b.y,b.w,b.h,scale),mode,psm),d=rr?.data||rr||{},txt=ocrClean(d.text||'');
-        const n=resultCandidateText(txt);if(n){const nn=normalizeOcrCandidate(n,i===0);if(nn){rows[i].candidates.push({text:nn,confidence:Number(d.confidence)||0,source:'row-'+mode});if(!rows[i].rawName||resultPlayerScore(nn,rows[i].rawName)>0.72)rows[i].rawName=nn}}
-        const kv=extractResultKill(txt);if(kv!==null)rows[i].killCandidates.push({v:kv,c:Number(d.confidence)||0,source:'row-'+mode});
-      }catch(e){}
-    }
-    if(rows[i].kills==null){const vals=rows[i].killCandidates;const chosen=chooseKillFromValues(vals);if(chosen!==null)rows[i].kills=chosen}
-    if(rows[i].kills==null){
-      const kb=resultKillArea(card,i);
-      for(const [mode,psm,scale] of [['original','7',12],['contrast','7',12],['whitehat','7',12]]){
-        try{const rr=await recognizeLobby(cropCanvasNorm(img,kb.x,kb.y,kb.w,kb.h,scale),mode,psm),d=rr?.data||rr||{},kv=extractResultKill(d.text||'');if(kv!==null)rows[i].killCandidates.push({v:kv,c:Number(d.confidence)||0,source:'kill-'+mode})}catch(e){}
+  // Prefer the OCR candidate that is closest to the immutable Lobby roster for this row.
+  const known=resultRoster(m), scored=obs.map(o=>{let best=null;for(const k of known){const sim=resultPlayerScore(o.text,k.name);if(!best||sim>best.sim)best={...k,sim}}return {...o,best}}).filter(x=>x.best);
+  scored.sort((a,b)=>(b.best.sim-a.best.sim)||((b.confidence||0)-(a.confidence||0)));
+  const hit=scored[0];
+  return {raw:hit?.text||obs[0]?.text||'',hit:hit&&hit.best.sim>=.42?hit.best:null,confidence:hit?.confidence||0,candidates:obs};
+}
+async function readResultRankPrecise(img,card,m){
+  const candidates=[];
+  const area=resultRankArea(card,0);
+  const passes=[['original','6',8,''],['contrast','6',8,''],['original','10',12,'0123456789'],['contrast','10',12,'0123456789'],['sharpen','10',14,'0123456789']];
+  for(const pass of passes){
+    const mode=pass[0],psm=pass[1],scale=pass[2],wl=pass[3];
+    try{
+      const rr=await resultOCRSingle(cropCanvasNorm(img,area.x,area.y,area.w,area.h,scale),mode,psm,wl),d=rr?.data||rr||{};
+      const text=ocrClean(d.text||'').trim();
+      const numeric=text.match(/(?:^|\s)(\d{1,2})(?:\s|$)/);
+      if(numeric){const v=Number(numeric[1]);if(v>=1&&v<=16)candidates.push({value:v,confidence:Number(d.confidence)||0,source:'rank-text-'+mode})}
+      for(const w of parseTSV(d,scale)){
+        const t=String(w.text||'').trim();
+        if(/^\d{1,2}$/.test(t)){const v=Number(t);if(v>=1&&v<=16)candidates.push({value:v,confidence:Number(w.confidence)||0,source:'rank-tsv-'+mode})}
       }
-      const chosen=chooseKillFromValues(rows[i].killCandidates);if(chosen!==null)rows[i].kills=chosen;
-    }
+    }catch(e){}
   }
+  const by=new Map();for(const c of candidates){const q=by.get(c.value)||{n:0,c:0};q.n++;q.c=Math.max(q.c,c.confidence);by.set(c.value,q)}
+  const sorted=[...by.entries()].sort((a,b)=>(b[1].n-a[1].n)||(b[1].c-a[1].c));
+  return {value:sorted[0]?.[0]||0,candidates};
+}
+async function readResultCard(img,card,m,totalImages=1){
+  const rows=[0,1,2,3].map(i=>({index:i,name:'',canonical:'',rawName:'',slot:0,playerIndex:i,kills:null,score:0,confidence:0,candidates:[],rank:0,killCandidates:[]}));
+  const rank=await readResultRankPrecise(img,card,m);
+  for(let i=0;i<4;i++){
+    const n=await readResultNamePrecise(img,card,i,m);
+    if(n.rawName){rows[i].rawName=n.rawName;rows[i].name=n.rawName;rows[i].confidence=n.confidence;rows[i].candidates=n.candidates||[]}
+    const k=await readResultKillPrecise(img,card,i);if(k!==null){rows[i].kills=k;rows[i].killCandidates=[{v:k,c:100,source:'precision-consensus'}]}
+  }
+  // Canonical global assignment remains the final identity gate. It prevents duplicate players
+  // and keeps historical results tied to the Lobby snapshot instead of OCR spelling drift.
   assignResultCardRoster(rows,m);
-  const rankCandidates=rankVotes.slice();
-  return {rank:0,rankCandidates,rows,quality:{players:rows.filter(r=>r.rawName||r.name).length,kills:rows.filter(r=>r.kills!=null).length}};
+  return {rank:0,rankCandidates:rank.candidates,rankEvidence:rank.candidates,rankStrong:rank.value,rows,quality:{players:rows.filter(r=>r.name).length,kills:rows.filter(r=>r.kills!=null).length}};
 }
 function scoreRangeStart(group,start){
   let score=0;
@@ -877,24 +936,26 @@ function inferImageRange(group,index,total){
 }
 function resolveResultImageRanges(groups,total){
   const expected=total===5?[3,6,9,12,14]:[];
-  // First trust strong visual rank evidence independently. This makes upload order irrelevant.
-  groups.forEach(g=>{
-    const scores=Array.from({length:14},(_,i)=>i+1).map(start=>({start,score:scoreRangeStart(g,start)}));
-    scores.sort((a,b)=>b.score-a.score);g.rangeStart=(scores[0]?.score||0)>=2?scores[0].start:0;
-  });
-  // For a complete five-screen board, any image without strong rank evidence receives the
-  // only remaining standard range. Strong duplicate evidence is never forcibly relabeled.
-  if(expected.length===groups.length){
-    const usedStrong=new Set(groups.filter(g=>g.rangeStart).map(g=>g.rangeStart));
-    const remaining=expected.filter(x=>!usedStrong.has(x));
-    groups.filter(g=>!g.rangeStart).forEach(g=>{g.rangeStart=remaining.shift()||0});
+  if(expected.length!==groups.length){
+    groups.forEach(g=>{const scores=Array.from({length:14},(_,i)=>i+1).map(start=>({start,score:scoreRangeStart(g,start)})).sort((a,b)=>b.score-a.score);g.rangeStart=(scores[0]?.score||0)>0?scores[0].start:0});
+  }else{
+    // Global assignment: every screenshot gets exactly one of the five real ranges. This is
+    // independent of upload order and is much safer than assigning the first unresolved image
+    // to the next range. Rank 14 is intentionally duplicated across the 12–14 and 14–16 boards.
+    const matrix=groups.map(g=>expected.map(start=>{
+      let score=scoreRangeStart(g,start);
+      const strong=(g.cards||[]).reduce((n,c)=>n+(Number(c.rankStrong||0)>=start&&Number(c.rankStrong||0)<=start+2?1:0),0);
+      return score+strong*4;
+    }));
+    let best={score:-Infinity,perm:null};
+    function dfs(i,used,total,perm){
+      if(i>=groups.length){if(total>best.score)best={score:total,perm:perm.slice()};return}
+      for(let j=0;j<expected.length;j++){if(used.has(j))continue;const u=new Set(used);u.add(j);dfs(i+1,u,total+matrix[i][j],perm.concat(expected[j]))}
+    }
+    dfs(0,new Set(),0,[]);
+    groups.forEach((g,i)=>g.rangeStart=best.perm?.[i]||expected[i]);
   }
-  // If two images share a range, keep both; mergeResultRows will deduplicate the repeated card
-  // by rank + roster quality instead of silently changing the placement.
-  return groups.slice().sort((a,b)=>{
-    if(a.rangeStart&&b.rangeStart)return a.rangeStart-b.rangeStart;
-    if(a.rangeStart)return -1;if(b.rangeStart)return 1;return a.imageIndex-b.imageIndex;
-  });
+  return groups.slice().sort((a,b)=>{if(a.rangeStart!==b.rangeStart)return (a.rangeStart||99)-(b.rangeStart||99);return a.imageIndex-b.imageIndex});
 }
 async function readResultRecapCard(img,card,m,rank){
   const centers=[.22,.40,.60,.80],rows=[0,1,2,3].map(i=>({index:i,name:'',canonical:'',rawName:'',slot:0,playerIndex:i,kills:null,score:0,confidence:0,candidates:[],rank}));
@@ -970,12 +1031,12 @@ async function runResultOCR(files,matchId=null,storedMediaIds=[]){
     const foundRanks=[...new Set([...recapGroups,...groups].map(x=>Number(x.rank)).filter(x=>x>=1&&x<=16))].sort((a,b)=>a-b);
     const missingRanks=Array.from({length:16},(_,i)=>i+1).filter(r=>!foundRanks.includes(r));
     const linked=complete.filter(r=>r.detected).length;
-    ocrReview={type:'result',matchId:id,rows:complete,detected:merged,files:[...files],mediaIds:savedIds.slice(),sourceFiles:files.map(f=>f.name),version:'69.1',foundRanks,missingRanks,placementNeedsManual:complete.filter(r=>!r.placement).length,sequence:ordered.map(g=>({imageIndex:g.imageIndex,start:g.rangeStart,source:files[g.imageIndex]?.name||''}))};
+    ocrReview={type:'result',matchId:id,rows:complete,detected:merged,files:[...files],mediaIds:savedIds.slice(),sourceFiles:files.map(f=>f.name),version:'70.0',foundRanks,missingRanks,placementNeedsManual:complete.filter(r=>!r.placement).length,sequence:ordered.map(g=>({imageIndex:g.imageIndex,start:g.rangeStart,source:files[g.imageIndex]?.name||''}))};
     renderOCRReview();setProgress('resultProgress',100);
     const killReview=complete.reduce((n,r)=>n+r.players.filter(p=>p.needsKillReview).length,0);
     $('resultStatus').innerHTML=`Detected <b>${foundRanks.length}/16</b> placements · linked <b>${linked}/16</b> teams · <b>${killReview}</b> kill field(s) need review. ${missingRanks.length?`Missing placements: <b>${missingRanks.join(', ')}</b>.`:'All placements 1–16 detected.'}`;
-    setEngine('ready','Result OCR 69.1 · Rank + Kill Precision');
-  }catch(e){console.error('Result OCR 69.1',e);setProgress('resultProgress',0);$('resultStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span>`;$('ocrReview').innerHTML='<div class="notice">No match data was changed. Check the screenshots and try again.</div>';setEngine('bad','Result OCR · Error')}
+    setEngine('ready','Result OCR 70 · Precision Row Engine');
+  }catch(e){console.error('Result OCR 70',e);setProgress('resultProgress',0);$('resultStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span>`;$('ocrReview').innerHTML='<div class="notice">No match data was changed. Check the screenshots and try again.</div>';setEngine('bad','Result OCR · Error')}
   finally{ocrBusy=false}
 }
 function resultRowUpdate(i,field,value){if(!ocrReview?.rows?.[i])return;const r=ocrReview.rows[i];if(field==='placement')r.placement=Math.max(0,Math.floor(Number(value)||0));if(field==='kill'){const [pi]=String(value).split(':').map(Number);return}r.kills=r.players.reduce((s,p)=>s+Math.max(0,Number(p.kills)||0),0);renderOCRReview()}
@@ -986,13 +1047,13 @@ async function openResultEvidence(matchId,index){const m=state.matches.find(x=>x
 function renderOCRReview(){
   if(!ocrReview)return;const rows=ocrReview.rows||[],linked=rows.filter(r=>r.detected).length,needs=rows.reduce((n,r)=>n+(!r.placement?1:0)+r.players.filter(p=>p.needsKillReview).length,0),total=rows.reduce((s,r)=>s+((state.rules.place[Number(r.placement)]||0)+Number(r.kills||0)*Number(state.rules.kill||0)),0);
   const ev=(ocrReview.mediaIds||[]).map((id,i)=>`<button class="ghost small" onclick="openResultEvidence('${ocrReview.matchId}',${i})">Image ${i+1}</button>`).join('');const seq=(ocrReview.sequence||[]).map(x=>`<span class="pill">${esc(x.source||('Image '+(x.imageIndex+1)))} → ${x.start?`Ranks ${x.start}–${Math.min(16,x.start+2)}`:'Rank unresolved'}</span>`).join(' ');
-  $('ocrReview').innerHTML=`<div class="notice"><b>Result OCR 69.1</b> · ${linked}/16 teams linked to the Lobby roster · ${needs?`<span class="warn">${needs} field(s) need review.</span>`:'<span class="ok">All OCR fields are filled.</span>'}<br><span class="muted">Placement 1–2 come from the left recap on the first screenshot; placements 3–16 come from the three ranked cards on the right. Player kills are read from the text beside each player and linked to the saved Lobby roster. Names are canonical Lobby names. 1 Kill = ${state.rules.kill} point.</span></div><div class="row" style="margin:8px 0;gap:6px;flex-wrap:wrap">${ev||'<span class="muted">No stored evidence.</span>'}</div><div class="notice" style="margin-bottom:8px"><b>Detected screenshot sequence:</b> ${seq||'Not resolved — placement review required.'}</div><div class="scroll"><table class="table"><tr><th>Place</th><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Kills</th><th>PP</th><th>Total</th></tr>${rows.map((r,i)=>{const pp=state.rules.place[Number(r.placement)]||0,totalRow=pp+Number(r.kills||0)*Number(state.rules.kill||0);return `<tr><td><input class="center ${!r.placement?'badInput':''}" style="width:60px" type="number" min="1" max="16" value="${r.placement||''}" onchange="setReviewPlacement(${i},this.value)"></td><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(r.team)}</td>${r.players.map((p,j)=>`<td><div><b>${esc(p.name||'—')}</b><input class="center ${p.needsKillReview?'badInput':''}" style="width:58px;margin-top:4px" type="number" min="0" value="${Number(p.kills)||0}" onchange="setReviewKill(${i},${j},this.value)"></div></td>`).join('')}<td><b>${r.kills||0}</b></td><td>${pp}</td><td><b>${totalRow}</b></td></tr>`}).join('')}</table></div><div class="row" style="margin-top:10px"><div class="notice"><b>Current Match Score:</b> ${total} points · Kill ${state.rules.kill} point · ${rows.filter(r=>r.placement).length}/16 placements entered.</div><button class="primary" onclick="applyOCRToMatch()">✓ Apply Results</button><button class="ghost" onclick="go('matches')">Manual Match Entry</button></div>`;
+  $('ocrReview').innerHTML=`<div class="notice"><b>Result OCR 70</b> · ${linked}/16 teams linked to the Lobby roster · ${needs?`<span class="warn">${needs} field(s) need review.</span>`:'<span class="ok">All OCR fields are filled.</span>'}<br><span class="muted">Placement 1–2 come from the left recap on the first screenshot; placements 3–16 come from the three ranked cards on the right. Player kills are read from the text beside each player and linked to the saved Lobby roster. Names are canonical Lobby names. 1 Kill = ${state.rules.kill} point.</span></div><div class="row" style="margin:8px 0;gap:6px;flex-wrap:wrap">${ev||'<span class="muted">No stored evidence.</span>'}</div><div class="notice" style="margin-bottom:8px"><b>Detected screenshot sequence:</b> ${seq||'Not resolved — placement review required.'}</div><div class="scroll"><table class="table"><tr><th>Place</th><th>Slot</th><th>Team</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Kills</th><th>PP</th><th>Total</th></tr>${rows.map((r,i)=>{const pp=state.rules.place[Number(r.placement)]||0,totalRow=pp+Number(r.kills||0)*Number(state.rules.kill||0);return `<tr><td><input class="center ${!r.placement?'badInput':''}" style="width:60px" type="number" min="1" max="16" value="${r.placement||''}" onchange="setReviewPlacement(${i},this.value)"></td><td class="rank">${String(r.slot).padStart(2,'0')}</td><td>${esc(r.team)}</td>${r.players.map((p,j)=>`<td><div><b>${esc(p.name||'—')}</b><input class="center ${p.needsKillReview?'badInput':''}" style="width:58px;margin-top:4px" type="number" min="0" value="${Number(p.kills)||0}" onchange="setReviewKill(${i},${j},this.value)"></div></td>`).join('')}<td><b>${r.kills||0}</b></td><td>${pp}</td><td><b>${totalRow}</b></td></tr>`}).join('')}</table></div><div class="row" style="margin-top:10px"><div class="notice"><b>Current Match Score:</b> ${total} points · Kill ${state.rules.kill} point · ${rows.filter(r=>r.placement).length}/16 placements entered.</div><button class="primary" onclick="applyOCRToMatch()">✓ Apply Results</button><button class="ghost" onclick="go('matches')">Manual Match Entry</button></div>`;
 }
 async function applyOCRToMatch(){
   if(!ocrReview||ocrReview.type!=='result')return;const m=state.matches.find(x=>x.id===ocrReview.matchId);if(!m)return;
   const issues=reviewResultValidation(ocrReview.rows);if(issues.length)return toast(issues[0]);
   for(const r of ocrReview.rows){const x=ensureResult(m,r.slot);x.team=team(r.slot)?.name||r.team;x.placement=Number(r.placement)||0;x.players=r.players.map(p=>({name:p.name,kills:Math.max(0,Number(p.kills)||0),slot:Number(r.slot),playerIndex:p.playerIndex}));x.kills=x.players.reduce((s,p)=>s+p.kills,0);x.pp=state.rules.place[x.placement]||0;x.total=points(x)}
-  m.approved=false;m.review=[];m.resultOcrVersion='69.1';m.mediaIds=[...new Set([...(m.mediaIds||[]),...(ocrReview.mediaIds||[])])];m.mediaNames=[...new Set([...(m.mediaNames||[]),...(ocrReview.sourceFiles||[])])];persist();renderAll();go('matches');toast('Results applied. Review the Match and Approve when verified.');
+  m.approved=false;m.review=[];m.resultOcrVersion='70.0';m.mediaIds=[...new Set([...(m.mediaIds||[]),...(ocrReview.mediaIds||[])])];m.mediaNames=[...new Set([...(m.mediaNames||[]),...(ocrReview.sourceFiles||[])])];persist();renderAll();go('matches');toast('Results applied. Review the Match and Approve when verified.');
 }
 async function reprocessStoredMatchImages(id){const m=state.matches.find(x=>x.id===id);if(!m)return toast('Match not found');const files=await loadMatchMedia(m);if(!files.length)return toast('No stored result screenshots for this match');pendingResultFiles=files;renderFileList('resultFileList',files);go('ocr');await runResultOCR(files,id,m.mediaIds.slice())}
 
