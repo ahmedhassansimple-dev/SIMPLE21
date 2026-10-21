@@ -220,7 +220,7 @@ function renderTeams(){
 function importTeams(){const raw=$('bulkTeams').value.trim();if(!raw)return toast('Paste the Slot + Team list first');let count=0;for(const line of raw.split(/\r?\n/)){let s=line.trim();if(!s)continue;let m=s.match(/^0?(\d{1,2})\s*(?:\||\t|[-:])\s*(.+)$/)||s.match(/^0?(\d{1,2})\s+(.+)$/);if(!m)continue;let slot=Number(m[1]),name=m[2].trim();if(slot>=3&&slot<=18&&name){team(slot).name=name;count++}}persist();renderTeams();renderHome();$('bulkTeams').value='';toast(`${count} team records imported`)}
 function exportTeamsCSV(){const rows=[['Slot','Team','Player 1','Player 2','Player 3','Player 4'],...state.teams.map(t=>[t.slot,t.name,...t.players.map(p=>p.name)])];download('teams.csv',rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n'),'text/csv')}
 
-async function createMatch(){if(ocrBusy)return toast('Finish the current OCR process first');const name=$('newMatchName').value.trim()||`Match ${state.matches.length+1}`,gameId=$('newGameId').value.trim();if(gameId&&state.matches.some(m=>m.gameId===gameId))return toast('Duplicate Game ID blocked');const files=[...($('newMatchResultFiles')?.files||[])];if(files.length>8)return toast('Maximum 8 result screenshots per match');const snap={};state.teams.forEach(t=>snap[t.slot]={team:t.name,players:t.players.map(p=>p.name)});const m=normalizeMatch({id:uid(),name,gameId,createdAt:Date.now(),approved:false,scoringRules:clone(state.rules),results:state.teams.map(t=>({slot:t.slot,team:t.name,placement:0,kills:0,pp:0,total:0,compensation:0,players:[]})),review:[],rosterSnapshot:snap,mediaIds:[],mediaNames:[]});state.matches.push(m);state.activeMatchId=m.id;persist();if(files.length){for(const f of files){try{const id=await mediaPut(f);m.mediaIds.push(id);m.mediaNames.push(f.name)}catch(e){console.warn(e)}}m.resultOcrVersion='80';persist();pendingMediaDBDelete(workspaceId+':result:'+m.id)}$('newMatchName').value='';$('newGameId').value='';if($('newMatchResultFiles'))$('newMatchResultFiles').value='';renderMatches();if(files.length){pendingResultFiles=files;renderFileList('resultFileList',files);go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}else{go('matches');toast('Match created — add result screenshots whenever ready')}}
+async function createMatch(){if(ocrBusy)return toast('Finish the current OCR process first');const name=$('newMatchName').value.trim()||`Match ${state.matches.length+1}`,gameId=$('newGameId').value.trim();if(gameId&&state.matches.some(m=>m.gameId===gameId))return toast('Duplicate Game ID blocked');const files=[...($('newMatchResultFiles')?.files||[])];if(files.length>8)return toast('Maximum 8 result screenshots per match');const snap={};state.teams.forEach(t=>snap[t.slot]={team:t.name,players:t.players.map(p=>p.name)});const m=normalizeMatch({id:uid(),name,gameId,createdAt:Date.now(),approved:false,scoringRules:clone(state.rules),results:state.teams.map(t=>({slot:t.slot,team:t.name,placement:0,kills:0,pp:0,total:0,compensation:0,players:[]})),review:[],rosterSnapshot:snap,mediaIds:[],mediaNames:[]});state.matches.push(m);state.activeMatchId=m.id;persist();if(files.length){for(const f of files){try{const id=await mediaPut(f);m.mediaIds.push(id);m.mediaNames.push(f.name)}catch(e){console.warn(e)}}m.resultOcrVersion='81';persist();pendingMediaDBDelete(workspaceId+':result:'+m.id)}$('newMatchName').value='';$('newGameId').value='';if($('newMatchResultFiles'))$('newMatchResultFiles').value='';renderMatches();if(files.length){pendingResultFiles=files;renderFileList('resultFileList',files);go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}else{go('matches');toast('Match created — add result screenshots whenever ready')}}
 function activeMatch(){return state.matches.find(m=>m.id===state.activeMatchId)||state.matches[state.matches.length-1]||null}
 function renderMatches(){const list=$('matchList');if(!list)return;if(!state.matches.length)list.innerHTML='<div class="empty">No matches yet.</div>';else list.innerHTML=state.matches.slice().reverse().map(m=>`<div class="matchItem ${m.id===state.activeMatchId?'active':''}"><div><b>${esc(m.name)}</b><div class="muted">${esc(m.gameId||'No Game ID')} · ${m.approved?'Approved':'Review'}</div></div><div class="row" style="max-width:190px"><button class="ghost small" onclick="openMatch('${m.id}')">Open</button><button class="danger small" onclick="deleteMatch('${m.id}')">Delete</button></div></div>`).join('');renderMatchEditor()}
 function openMatch(id){state.activeMatchId=id;persist();renderMatches();}
@@ -266,7 +266,7 @@ function manualPlacement(id,slot,v){const m=state.matches.find(x=>x.id===id);if(
 function manualPlayerKill(id,slot,index,v){const m=state.matches.find(x=>x.id===id);if(!m)return;const r=ensureResult(m,slot);while(r.players.length<4)r.players.push({name:m.rosterSnapshot?.[slot]?.players?.[r.players.length]||team(slot)?.players?.[r.players.length]?.name||'',kills:0,slot,playerIndex:r.players.length});r.players[index].kills=Math.max(0,Math.floor(Number(v)||0));r.kills=r.players.reduce((s,p)=>s+Number(p.kills||0),0);recalcResult(r,m);m.approved=false;m.review=[];m.updatedAt=Date.now();persist();renderMatchEditor();}
 function manualCompensation(id,slot,v){const m=state.matches.find(x=>x.id===id);if(!m)return;const r=ensureResult(m,slot);r.compensation=Math.max(0,Math.floor(Number(v)||0));recalcResult(r,m);m.approved=false;m.review=[];persist();renderMatchEditor();}
 function recalculateMatch(id){const m=state.matches.find(x=>x.id===id);if(!m)return;for(const r of m.results){r.kills=(r.players||[]).reduce((s,p)=>s+Number(p.kills||0),0);recalcResult(r,m);r.team=team(r.slot)?.name||r.team}m.approved=false;persist();renderMatchEditor();toast('Match scores recalculated');}
-async function attachMatchResultImages(id){const m=state.matches.find(x=>x.id===id),input=$('matchAttachFiles');if(!m||!input?.files?.length)return toast('Choose result screenshots first');const files=[...input.files];if(files.length>8)return toast('Maximum 8 result screenshots per match');try{const ids=new Set(m.mediaIds||[]),names=new Set(m.mediaNames||[]);for(const f of files){const mediaId=await mediaPut(f);ids.add(mediaId);names.add(f.name)}m.mediaIds=[...ids];m.mediaNames=[...names];m.approved=false;m.resultOcrVersion='80';persist();pendingResultFiles=files;pendingMediaDBPut(workspaceId+':result:'+m.id,files);renderFileList('resultFileList',files);renderMatches();go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}catch(e){toast('Could not save result screenshots: '+(e.message||e))}}
+async function attachMatchResultImages(id){const m=state.matches.find(x=>x.id===id),input=$('matchAttachFiles');if(!m||!input?.files?.length)return toast('Choose result screenshots first');const files=[...input.files];if(files.length>8)return toast('Maximum 8 result screenshots per match');try{const ids=new Set(m.mediaIds||[]),names=new Set(m.mediaNames||[]);for(const f of files){const mediaId=await mediaPut(f);ids.add(mediaId);names.add(f.name)}m.mediaIds=[...ids];m.mediaNames=[...names];m.approved=false;m.resultOcrVersion='81';persist();pendingResultFiles=files;pendingMediaDBPut(workspaceId+':result:'+m.id,files);renderFileList('resultFileList',files);renderMatches();go('ocr');await runResultOCR(files,m.id,m.mediaIds.slice())}catch(e){toast('Could not save result screenshots: '+(e.message||e))}}
 
 function imageFromFile(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error('Could not open '+file.name))};im.src=u})}
 function crop(img,x,y,w,h,scale=4){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;const c=document.createElement('canvas');c.width=Math.max(2,Math.round(w*scale));c.height=Math.max(2,Math.round(h*scale));const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(img,x*W,y*H,w*W,h*H,0,0,c.width,c.height);return c}
@@ -369,7 +369,7 @@ async function recognizeLobby(canvas,mode='original',psm='6',whitelist=''){let l
    Design: exact slot crop -> name-column consensus -> targeted row rescue
    -> roster-aware assignment -> immutable slot identity.
    ========================================================= */
-const OCR60={version:'80',slotCenters:[.085,.315,.545,.775],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
+const OCR60={version:'81',slotCenters:[.085,.315,.545,.775],slotRows:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1]};
 const RESULT_ROW_CENTERS=[.085,.315,.545,.775];
 function lobbyGeometry(img){
  const W=img?.naturalWidth||img?.width||852,H=img?.naturalHeight||img?.height||460;
@@ -1010,21 +1010,36 @@ function assignResultCardRoster(rows,m){
   if(!reliable){rows.forEach((r,i)=>{r.canonical='';r.slot=0;r.playerIndex=i;r.score=0;r.matchScore=0});return rows}
   rows.forEach((r,i)=>{const h=best.sol.assign[i];if(h&&h.score>=.48){r.name=h.player.name;r.canonical=h.player.name;r.slot=h.player.slot;r.playerIndex=h.player.playerIndex;r.score=h.score;r.matchScore=h.score;r.ocrName=r.rawName||r.name}else{r.canonical='';r.slot=best.team.slot;r.playerIndex=i;r.score=0;r.matchScore=0}});return rows;
 }
-async function readResultRecapCard(img,card,m,rank,onlyMissing=false){
+function resultRecapRowBand(card,rank,i){
+  // Left-side recap cards use a different coordinate system from the three right result cards.
+  // The previous engine accidentally reused resultKillTextArea(), which is why P1/P2 recap
+  // kills could be read from the wrong vertical rows.
   const centers=rank===1?[.08,.35,.59,.83]:[.22,.40,.60,.80];
+  return {x:card.x+card.w*.20,y:card.y+card.h*(centers[i]-.105),w:card.w*.54,h:card.h*.17};
+}
+function resultRecapKillArea(card,rank,i){
+  const centers=rank===1?[.08,.35,.59,.83]:[.22,.40,.60,.80];
+  return {x:card.x+card.w*.69,y:card.y+card.h*(centers[i]-.12),w:card.w*.27,h:card.h*.22};
+}
+async function readResultRecapCard(img,card,m,rank,onlyMissing=false){
   const rows=[0,1,2,3].map(i=>({index:i,name:'',canonical:'',rawName:'',slot:0,playerIndex:i,kills:null,score:0,confidence:0,candidates:[],rank,killCandidates:[]}));
   for(let i=0;i<4;i++){
-    const base={x:card.x+card.w*.20,y:card.y+card.h*(centers[i]-.11),w:card.w*.53,h:card.h*.18};
-    const kb=resultKillTextArea({...card,x:card.x,y:card.y,w:card.w,h:card.h},i);const no=[],ko=[];
+    const base=resultRecapRowBand(card,rank,i),kb=resultRecapKillArea(card,rank,i),no=[],ko=[];
     if(!onlyMissing){
       for(const [mode,psm,scale] of [['original','7',8],['contrast','7',8]]){try{const r=await resultOCRPass(cropCanvasNorm(img,base.x,base.y,base.w,base.h,scale),mode,psm,scale);const n=normalizeOcrCandidate(ocrClean(r?.data?.text||'').trim(),false);if(n&&plausibleName(n))no.push({text:n,confidence:r.confidence,source:`recap-name-${mode}`})}catch(e){}}
       for(const [mode,psm,scale] of [['original','7',8],['contrast','7',8]]){try{const r=await resultOCRPass(cropCanvasNorm(img,kb.x,kb.y,kb.w,kb.h,scale),mode,psm,scale);const txt=ocrClean(r?.data?.text||'').replace(/\s+/g,' ').trim();const v=extractResultKill(txt);if(v!==null)ko.push({v,c:r.confidence,source:`recap-kill-${mode}`,text:txt})}catch(e){}}
     }
     if(!onlyMissing || !no.length){try{const r=await resultOCRPass(cropCanvasNorm(img,base.x,base.y,base.w,base.h,9),'sharpen','7',9);const n=normalizeOcrCandidate(ocrClean(r?.data?.text||'').trim(),false);if(n&&plausibleName(n))no.push({text:n,confidence:r.confidence,source:'recap-name-rescue'})}catch(e){}}
     if(!onlyMissing || !ko.length){try{const r=await resultOCRPass(cropCanvasNorm(img,kb.x,kb.y,kb.w,kb.h,9),'sharpen','7',9);const txt=ocrClean(r?.data?.text||'').replace(/\s+/g,' ').trim();const v=extractResultKill(txt);if(v!==null)ko.push({v,c:r.confidence,source:'recap-kill-rescue',text:txt})}catch(e){}}
-    rows[i].candidates=chooseBestNameCandidate(no,m);rows[i].rawName=rows[i].candidates[0]?.text||'';rows[i].name=rows[i].rawName;rows[i].kills=chooseKillFromValues(ko);rows[i].killCandidates=ko;
+    // Last cheap rescue: read the complete visible recap row. On the real board Tesseract often
+    // returns the exact `NAME  N eliminations` string even when a narrow kill crop is noisy.
+    if(!ko.length){try{const full={x:card.x+card.w*.18,y:card.y+card.h*(rank===1?[.08,.35,.59,.83][i]-.12:[.22,.40,.60,.80][i]-.12),w:card.w*.78,h:card.h*.22};const r=await resultOCRPass(cropCanvasNorm(img,full.x,full.y,full.w,full.h,8),'original','7',8);const txt=ocrClean(r?.data?.text||'').replace(/\s+/g,' ').trim();const v=extractResultKill(txt);if(v!==null)ko.push({v,c:r.confidence,source:'recap-row-full',text:txt})}catch(e){}}
+    rows[i].candidates=chooseBestNameCandidate(no,m);rows[i].rawName=rows[i].candidates[0]?.text||'';rows[i].name=rows[i].rawName;rows[i].confidence=rows[i].candidates[0]?.confidence||0;rows[i].kills=chooseKillFromValues(ko);rows[i].killCandidates=ko;
   }
-  assignResultCardRoster(rows,m);return {rank,rows,quality:{players:rows.filter(r=>r.name).length,kills:rows.filter(r=>r.kills!=null).length},recap:true};
+  // Recap has no explicit player order mapping beyond the four visible rows. Use the same
+  // team-first assignment, but allow a stronger direct roster rescue for decorated names.
+  assignResultCardRoster(rows,m);
+  return {rank,rows,quality:{players:rows.filter(r=>r.name).length,kills:rows.filter(r=>r.kills!=null).length},recap:true};
 }
 async function readResultImage(img,m,imageIndex=0,totalImages=1,readRecap=true){
   const cards=resultGridCards(img,imageIndex,totalImages),groups=[];
@@ -1179,11 +1194,13 @@ async function runResultOCR(files,matchId=null,storedMediaIds=[]){
     // targeted rescue reads from later screenshots fill only those missing fields. This avoids
     // dozens of duplicate OCR passes while preserving cross-image evidence when needed.
     for(let i=0;i<files.length;i++){const img=await imageFromFile(files[i]);assertImageReady(img);const g=await readResultImage(img,m,i,files.length,i===0);imageGroups.push(g);setProgress('resultProgress',Math.round((i+1)/files.length*76)+8)}
-    const recapNeeded=imageGroups[0]?.recap?.some(g=>g.rows?.some(p=>!p.rawName||p.kills==null));
+    // Rank 1/2 are persistent recap panels, not right-side result cards. If either recap
+    // panel is weak, read the same panels from later screenshots as independent evidence.
+    const recapNeeded=(imageGroups[0]?.recap||[]).some(g=>g.rows?.some(p=>!p.rawName||p.kills==null||p.slot<3));
     if(recapNeeded){
       for(let i=1;i<imageGroups.length;i++){
         const need1=imageGroups[0]?.recap?.find(x=>x.rank===1),need2=imageGroups[0]?.recap?.find(x=>x.rank===2);
-        const need=(need1?.rows||[]).some(p=>!p.rawName||p.kills==null)||(need2?.rows||[]).some(p=>!p.rawName||p.kills==null);
+        const need=(need1?.rows||[]).some(p=>!p.rawName||p.kills==null||p.slot<3)||(need2?.rows||[]).some(p=>!p.rawName||p.kills==null||p.slot<3);
         if(!need)break;
         try{const img=await imageFromFile(files[i]);const extra=[];for(let r=1;r<=2;r++){const rc=r===1?{x:.100,y:.158,w:.415,h:.315}:{x:.100,y:.473,w:.415,h:.325};const rr=await readResultRecapCard(img,rc,m,r,true);extra.push({...rr,imageIndex:i,cardIndex:r-1,recap:true});}imageGroups[i].recap=extra}catch(e){console.warn('recap rescue',e)}
       }
@@ -1197,15 +1214,15 @@ async function runResultOCR(files,matchId=null,storedMediaIds=[]){
     const foundRanks=[...new Set([...recapMerged,...groups].map(x=>Number(x.rank)).filter(x=>x>=1&&x<=16))].sort((a,b)=>a-b);
     const missingRanks=Array.from({length:16},(_,i)=>i+1).filter(r=>!foundRanks.includes(r));
     const linked=complete.filter(r=>r.detected).length;
-    ocrReview={type:'result',matchId:id,rows:complete,detected:merged,files:[...files],mediaIds:savedIds.slice(),sourceFiles:files.map(f=>f.name),version:'80',foundRanks,missingRanks,placementNeedsManual:complete.filter(r=>!r.placement).length,sequence:ordered.map(g=>({imageIndex:g.imageIndex,start:g.rangeStart,source:files[g.imageIndex]?.name||''})),draftSavedAt:Date.now()};
-    m.reviewDraft=clone(ocrReview);m.resultOcrVersion='80';persist();pendingMediaDBPut(workspaceId+':result:'+id,files).catch(()=>{});renderOCRReview();setProgress('resultProgress',100);
+    ocrReview={type:'result',matchId:id,rows:complete,detected:merged,files:[...files],mediaIds:savedIds.slice(),sourceFiles:files.map(f=>f.name),version:'81',foundRanks,missingRanks,placementNeedsManual:complete.filter(r=>!r.placement).length,sequence:ordered.map(g=>({imageIndex:g.imageIndex,start:g.rangeStart,source:files[g.imageIndex]?.name||''})),draftSavedAt:Date.now()};
+    m.reviewDraft=clone(ocrReview);m.resultOcrVersion='81';persist();pendingMediaDBPut(workspaceId+':result:'+id,files).catch(()=>{});renderOCRReview();setProgress('resultProgress',100);
     const killReview=complete.reduce((n,r)=>n+r.players.filter(p=>p.needsKillReview).length,0);
     $('resultStatus').innerHTML=`Detected <b>${foundRanks.length}/16</b> placements · linked <b>${linked}/16</b> teams · <b>${killReview}</b> kill field(s) need review. ${missingRanks.length?`Missing placements: <b>${missingRanks.join(', ')}</b>.`:'All placements 1–16 detected.'}`;
     setEngine('ready','Results Engine · Rank + Kill Verification');
   }catch(e){console.error('Results Review',e);setProgress('resultProgress',0);$('resultStatus').innerHTML=`<span class="bad">${esc(e.message||e)}</span>`;$('ocrReview').innerHTML='<div class="notice">No match data was changed. Check the screenshots and try again.</div>';setEngine('bad','Results Engine · Error')}
   finally{ocrBusy=false}
 }
-function saveResultDraftNow(){try{if(ocrReview?.type==='result'){const m=state.matches.find(x=>x.id===ocrReview.matchId);if(m){m.reviewDraft=clone(ocrReview);m.resultOcrVersion='80';m.updatedAt=Date.now();persist();}}}catch(e){console.warn('result draft save',e)}}
+function saveResultDraftNow(){try{if(ocrReview?.type==='result'){const m=state.matches.find(x=>x.id===ocrReview.matchId);if(m){m.reviewDraft=clone(ocrReview);m.resultOcrVersion='81';m.updatedAt=Date.now();persist();}}}catch(e){console.warn('result draft save',e)}}
 function resultRowUpdate(i,field,value){if(!ocrReview?.rows?.[i])return;const r=ocrReview.rows[i];if(field==='placement')r.placement=Math.max(0,Math.floor(Number(value)||0));if(field==='kill'){const [pi]=String(value).split(':').map(Number);return}r.kills=r.players.reduce((s,p)=>s+Math.max(0,Number(p.kills)||0),0);renderOCRReview()}
 function setReviewKill(i,j,v){if(!ocrReview?.rows?.[i]?.players?.[j])return;ocrReview.rows[i].players[j].kills=Math.max(0,Math.floor(Number(v)||0));ocrReview.rows[i].players[j].needsKillReview=false;ocrReview.rows[i].kills=ocrReview.rows[i].players.reduce((s,p)=>s+Number(p.kills||0),0);saveResultDraftNow();renderOCRReview()}
 function setReviewPlacement(i,v){if(!ocrReview?.rows?.[i])return;ocrReview.rows[i].placement=Math.max(0,Math.floor(Number(v)||0));saveResultDraftNow();renderOCRReview()}
@@ -1229,7 +1246,7 @@ async function applyOCRToMatch(){
  const issues=reviewResultValidation(ocrReview.rows);if(issues.length)return toast(issues[0]);
  m.scoringRules=normalizeRules(state.rules);
  for(const r of ocrReview.rows){const x=ensureResult(m,r.slot),snap=m.rosterSnapshot?.[r.slot]||{},names=(snap.players||team(r.slot)?.players?.map(p=>p.name)||[]).map(String);x.team=snap.team||team(r.slot)?.name||r.team;x.placement=Number(r.placement);x.compensation=Math.max(0,Number(r.compensation)||0);x.players=[0,1,2,3].map(i=>({name:names[i]||r.players[i]?.name||'',kills:Math.max(0,Number(r.players[i]?.kills)||0),slot:Number(r.slot),playerIndex:i}));x.kills=x.players.reduce((s,p)=>s+p.kills,0);recalcResult(x,m)}
- m.approved=false;m.review=[];m.resultOcrVersion='80';m.reviewDraft=null;m.updatedAt=Date.now();m.mediaIds=[...new Set([...(m.mediaIds||[]),...(ocrReview.mediaIds||[])])];m.mediaNames=[...new Set([...(m.mediaNames||[]),...(ocrReview.sourceFiles||[])])];persist();renderAll();go('matches');toast('Results applied safely. Review the Match and Approve to lock the official score.');
+ m.approved=false;m.review=[];m.resultOcrVersion='81';m.reviewDraft=null;m.updatedAt=Date.now();m.mediaIds=[...new Set([...(m.mediaIds||[]),...(ocrReview.mediaIds||[])])];m.mediaNames=[...new Set([...(m.mediaNames||[]),...(ocrReview.sourceFiles||[])])];persist();renderAll();go('matches');toast('Results applied safely. Review the Match and Approve to lock the official score.');
 }
 async function reprocessStoredMatchImages(id){const m=state.matches.find(x=>x.id===id);if(!m)return toast('Match not found');const files=await loadMatchMedia(m);if(!files.length)return toast('No stored result screenshots for this match');pendingResultFiles=files;renderFileList('resultFileList',files);go('ocr');await runResultOCR(files,id,m.mediaIds.slice())}
 
